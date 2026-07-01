@@ -1,0 +1,35 @@
+{
+  "name": "@megacrow/megalo",
+  "version": "0.0.1",
+  "description": "Blam! engine Megalo script parser, compiler, decompiler etc.",
+  "keywords": [
+    "megalo",
+    "halo",
+    "blam"
+  ],
+  "homepage": "https://github.com/craftycodie/MegaCrow#readme",
+  "bugs": {
+    "url": "https://github.com/craftycodie/MegaCrow/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/craftycodie/MegaCrow.git"
+  },
+  "license": "ISC",
+  "author": "Codie Newark",
+  "type": "module",
+  "main": "index.ts",
+  "files": [
+    "parser"
+  ],
+  "scripts": {
+    "test": "vitest run",
+    "dev:debugger": "vite --config debugger/vite.config.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "vitest": "^3.2.6"
+  }
+}

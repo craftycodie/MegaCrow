@@ -24,6 +24,7 @@ export type ASTNode<K extends SyntaxKind> = {
 }
 
 export type AST = {
+    failed: boolean;
     elements: ASTElementNode[];
 }
 
@@ -40,8 +41,10 @@ export class Parser {
     public parse = (source: Tokens, diagnostics: Diagnostics): AST => {
         // AST is managed by this function, so is not included in Parser Context.
         const ast: AST = {
+            failed: false,
             elements: [],
         };
+        
         const ctx = new ParserContext(source, this.megaloVersion, diagnostics);
         
         while (ctx.available() > 0) {
@@ -80,6 +83,8 @@ export class Parser {
                     break;
             }
         }
+
+        ast.failed = ctx.diagnostics.hasErrors();
 
         return ast;
     }

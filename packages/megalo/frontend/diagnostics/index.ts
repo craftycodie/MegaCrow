@@ -42,4 +42,8 @@ export class Diagnostics {
     public getErrors(): Diagnostic[] {
         return this.errors;
     }
+
+    public hasErrors(): boolean {
+        return this.errors.length > 0;
+    }
 }

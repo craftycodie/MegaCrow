@@ -5,6 +5,7 @@ import { ParserContext } from "../context";
 import { CommentElementNode, commentParser } from "./comment";
 
 import { IncludeElementNode, includeParser } from "./include";
+import { LocalizedIncludeElementNode, localizedIncludeParser } from "./localized_include";
 
 // REGISTERING NEW ELEMENTS:
 // - Add an ElementKind enum value.
@@ -14,6 +15,7 @@ import { IncludeElementNode, includeParser } from "./include";
 
 export const enum ElementKind {
     INCLUDE,
+    LOCALIZED_INCLUDE,
     COMMENT,
 }
 
@@ -24,6 +26,7 @@ type ASTElementNodeWithBase<T extends ASTElementBase<any>> = T;
 
 export type ASTElementNode = ASTElementNodeWithBase<
     IncludeElementNode
+    | LocalizedIncludeElementNode
     | CommentElementNode
 >
 
@@ -43,6 +46,7 @@ export class ElementParserRepository {
     private registerParsers(megaloVersion: MegaloVersion) {
         this.registerParser("comment", commentParser);
         this.registerParser("include", includeParser);
+        this.registerParser("localized_include", localizedIncludeParser);
     }
 
     public constructor(megaloVersion: MegaloVersion) {

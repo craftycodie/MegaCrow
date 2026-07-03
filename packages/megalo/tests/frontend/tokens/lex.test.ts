@@ -1,18 +1,20 @@
 import { describe, expect, it } from "vitest";
 import {
-  lex,
+  Lexer,
   TokenKind,
   type Token,
   type Tokens,
-} from "../../../frontend/tokens/index.ts";
+} from "../../../frontend/tokens/index";
+import { MEGALO_VERSIONS } from "../../../version";
+import { Diagnostics } from "../../../frontend/diagnostics";
 
 const kinds = (source: string): TokenKind[] =>
-  lex(source).map((token) => token.kind);
+  new Lexer(MEGALO_VERSIONS["107-mcc"]).lex(source, new Diagnostics()).map((token) => token.kind);
 
 const values = (source: string): string[] =>
-  lex(source).map((token) => token.value);
+  new Lexer(MEGALO_VERSIONS["107-mcc"]).lex(source, new Diagnostics()).map((token) => token.value);
 
-const tokens = (source: string): Tokens => lex(source);
+const tokens = (source: string): Tokens => new Lexer(MEGALO_VERSIONS["107-mcc"]).lex(source, new Diagnostics());
 
 const expectToken = (
   token: Token,

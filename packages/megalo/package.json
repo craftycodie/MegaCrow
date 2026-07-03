@@ -24,7 +24,7 @@
   ],
   "scripts": {
     "test": "vitest run",
-    "dev:debugger": "vite --config debugger/vite.config.ts",
+    "debugger": "vite --config debugger/vite.config.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {

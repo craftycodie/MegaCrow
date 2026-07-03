@@ -117,6 +117,73 @@ body,
   font-style: italic;
 }
 
+.diagnostics-panel {
+  display: flex;
+  flex-direction: column;
+  max-height: 180px;
+  border-top: 1px solid #2d3036;
+  background: #1f2024;
+}
+
+.diagnostics-list {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow: auto;
+}
+
+.diagnostics-empty {
+  padding: 10px 12px;
+  color: #6b7280;
+  font-style: italic;
+}
+
+.diagnostic {
+  display: grid;
+  grid-template-columns: 72px 64px 1fr;
+  gap: 8px;
+  align-items: start;
+  padding: 8px 12px;
+  border-bottom: 1px solid #2d3036;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.diagnostic:last-child {
+  border-bottom: none;
+}
+
+.diagnostic-severity {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.diagnostic-error .diagnostic-severity {
+  color: #f87171;
+}
+
+.diagnostic-warning .diagnostic-severity {
+  color: #fbbf24;
+}
+
+.diagnostic-info .diagnostic-severity {
+  color: #60a5fa;
+}
+
+.diagnostic-location {
+  color: #9aa0a6;
+}
+
+.diagnostic-message {
+  color: #e8eaed;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 @media (max-width: 900px) {
   .panes {
     grid-template-columns: 1fr;

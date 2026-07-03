@@ -1,0 +1,4 @@
+1. Lexer
+- Megalo does not support multi-line tokens.
+2. Parser
+- Megalo actions are context-sensitive, some actions have different amounts of parameters based on parameter type, meaning the amount of tokens read can depend on declared variable types.

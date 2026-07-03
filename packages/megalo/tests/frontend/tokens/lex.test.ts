@@ -124,22 +124,16 @@ describe("lex", () => {
     const result = tokens(source);
 
     expectToken(result[0]!, TokenKind.Identifier, "foo", {
-      line: 1,
-      column: 1,
-      offset: 0,
-      length: 3,
+      start: { offset: 0, line: 1, column: 1 },
+      end: { offset: 3, line: 1, column: 4 },
     });
     expectToken(result[1]!, TokenKind.Comment, " bar", {
-      line: 2,
-      column: 1,
-      offset: 4,
-      length: 5,
+      start: { offset: 4, line: 2, column: 1 },
+      end: { offset: 9, line: 2, column: 6 },
     });
     expectToken(result[2]!, TokenKind.Identifier, "baz", {
-      line: 3,
-      column: 1,
-      offset: 10,
-      length: 3,
+      start: { offset: 10, line: 3, column: 1 },
+      end: { offset: 13, line: 3, column: 4 },
     });
   });
 

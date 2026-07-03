@@ -8,6 +8,14 @@ import {
   Diagnostics,
   type Diagnostic,
 } from "../../frontend/diagnostics";
+import {
+  getLocale,
+  setLocale,
+  SUPPORTED_LOCALES,
+  type SupportedLocale,
+} from "../../frontend/localization";
+
+const LOCALE_STORAGE_KEY = "megalo-debugger-locale";
 
 const NYI = "Not yet implemented.";
 
@@ -29,6 +37,15 @@ app.innerHTML = `
   <div class="app">
     <header class="toolbar">
       <h1>Megalo Debugger</h1>
+      <div
+        class="locale-toggle"
+        data-role="locale-toggle"
+        role="group"
+        aria-label="Language"
+      >
+        <button type="button" class="locale-toggle-button" data-locale="en">EN</button>
+        <button type="button" class="locale-toggle-button" data-locale="ja">JA</button>
+      </div>
       <span class="toolbar-status" data-role="token-count"></span>
       <span class="toolbar-status" data-role="total-time"></span>
     </header>
@@ -77,6 +94,7 @@ const diagnosticsView = app.querySelector<HTMLElement>('[data-role="diagnostics"
 const diagnosticsCount = app.querySelector<HTMLElement>(
   '[data-role="diagnostics-count"]',
 );
+const localeToggle = app.querySelector<HTMLElement>('[data-role="locale-toggle"]');
 
 if (
   !sourceEditor ||
@@ -88,10 +106,13 @@ if (
   !astTime ||
   !totalTime ||
   !diagnosticsView ||
-  !diagnosticsCount
+  !diagnosticsCount ||
+  !localeToggle
 ) {
   throw new Error("Debugger layout failed to initialize.");
 }
+
+const localeButtons = localeToggle.querySelectorAll<HTMLButtonElement>("[data-locale]");
 
 sourceEditor.value = DEFAULT_SOURCE;
 astView.textContent = NYI;
@@ -195,5 +216,36 @@ const update = () => {
   renderDiagnostics(diagnostics);
 };
 
+const syncLocaleToggle = (locale: SupportedLocale): void => {
+  for (const button of localeButtons) {
+    button.classList.toggle("is-active", button.dataset.locale === locale);
+  }
+};
+
+const applyLocale = (locale: SupportedLocale): void => {
+  setLocale(locale);
+  syncLocaleToggle(locale);
+  localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+  update();
+};
+
+for (const button of localeButtons) {
+  button.addEventListener("click", () => {
+    const locale = button.dataset.locale;
+    if (!locale || !SUPPORTED_LOCALES.includes(locale as SupportedLocale)) {
+      return;
+    }
+
+    if (locale !== getLocale()) {
+      applyLocale(locale as SupportedLocale);
+    }
+  });
+}
+
 sourceEditor.addEventListener("input", update);
-update();
+
+const storedLocale = localStorage.getItem(LOCALE_STORAGE_KEY);
+const initialLocale: SupportedLocale =
+  storedLocale === "en" || storedLocale === "ja" ? storedLocale : "en";
+
+applyLocale(initialLocale);

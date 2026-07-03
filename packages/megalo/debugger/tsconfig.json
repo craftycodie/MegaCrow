@@ -9,5 +9,5 @@
     "isolatedModules": true,
     "lib": ["ES2022", "DOM", "DOM.Iterable"]
   },
-  "include": ["src", "../parser"]
+  "include": ["src", "../frontend", "../parser"]
 }

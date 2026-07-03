@@ -1,0 +1,4 @@
+{
+  "expected_element": "Expected an element, got {{value}}",
+  "expected_quoted_string": "Expected token of type QuotedString, got one of type {{kind}}: {{token}}"
+}

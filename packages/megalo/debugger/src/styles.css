@@ -39,10 +39,44 @@ body,
   font-weight: 600;
 }
 
-.toolbar-status {
+.locale-toggle {
+  display: inline-flex;
   margin-left: auto;
+  padding: 2px;
+  border: 1px solid #3d4048;
+  border-radius: 6px;
+  background: #1a1b1e;
+}
+
+.locale-toggle-button {
+  min-width: 40px;
+  padding: 4px 10px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #9aa0a6;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.locale-toggle-button:hover {
+  color: #e8eaed;
+}
+
+.locale-toggle-button.is-active {
+  background: #3d4048;
+  color: #e8eaed;
+}
+
+.toolbar-status {
   font-size: 12px;
   color: #9aa0a6;
+}
+
+.toolbar-status + .toolbar-status {
+  margin-left: 12px;
 }
 
 .panes {

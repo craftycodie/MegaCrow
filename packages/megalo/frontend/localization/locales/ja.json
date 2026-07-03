@@ -1,0 +1,4 @@
+{
+  "expected_element": "要素が必要ですが、{{value}} が見つかりました",
+  "expected_quoted_string": "QuotedString 型のトークンが必要ですが、{{kind}} 型のトークン {{token}} が見つかりました"
+}

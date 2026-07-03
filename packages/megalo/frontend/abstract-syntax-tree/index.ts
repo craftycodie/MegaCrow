@@ -1,5 +1,6 @@
 import { MegaloVersion } from "../../version";
 import { Diagnostics, SourceLocation } from "../diagnostics";
+import { diagnosticMessages } from "../diagnostics/messages";
 import { Token, TokenKind, Tokens } from "../tokens"
 import { ParserContext } from "./context";
 import { ASTElementNode, ElementParserRepository } from "./elements";
@@ -44,7 +45,7 @@ export class Parser {
             failed: false,
             elements: [],
         };
-        
+
         const ctx = new ParserContext(source, this.megaloVersion, diagnostics);
         
         while (ctx.available() > 0) {
@@ -61,7 +62,7 @@ export class Parser {
                     else {
                         // MegaloEdit.exe: "Expected one of 'string_table|game_options|constants|loadout|loadout_palette|include|localized_include|teams|engine_data|player_rating|map_permissions|variables|trigger|requisition_palette|hud_widgets|map_object|game_stats' but got '<identifier>'"
                         // We do our own thing here.
-                        ctx.diagnostics.addError(`Expected an element, got ${token.value}`, token.location);
+                        ctx.diagnostics.addError(diagnosticMessages.expectedElement(token.value), token.location);
                     }
                     break;
                 case TokenKind.Comment:
@@ -72,14 +73,14 @@ export class Parser {
                         ast.elements.push(commentParser(ctx, token));
                     }
                     else {
-                        ctx.diagnostics.addError(`Expected a comment, got ${token.value}`, token.location);
+                        ctx.diagnostics.addError(diagnosticMessages.expectedElement(token.value), token.location);
                     }
                     break;
                 case TokenKind.MemberVariableSeparator:
                 case TokenKind.QuotedString:
                 case TokenKind.Integer:
                 case TokenKind.FloatingPoint:
-                    ctx.diagnostics.addError(`Expected an element, got ${token.value}`, token.location);
+                    ctx.diagnostics.addError(diagnosticMessages.expectedElement(token.value), token.location);
                     break;
             }
         }

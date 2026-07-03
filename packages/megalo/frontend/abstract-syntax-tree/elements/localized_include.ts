@@ -1,5 +1,6 @@
 import { ASTElementBase, ASTElementNode, ElementKind } from ".";
 import { ASTErrorNode, ASTNode, SyntaxKind } from "..";
+import { diagnosticMessages } from "../../diagnostics/messages";
 import { Token, TokenKind } from "../../tokens";
 import { ParserContext } from "../context";
 
@@ -15,7 +16,10 @@ export const localizedIncludeParser = (ctx: ParserContext, elementToken: Token):
 
     if (pathToken.kind !== TokenKind.QuotedString) {
         // MegaloEdit.exe: Expected token of type QuotedString, got one of type <type>: <token>
-        ctx.diagnostics?.addError(`Expected token of type QuotedString, got one of type ${pathToken.kind}: ${pathToken.value}`, pathToken.location);
+        ctx.diagnostics?.addError(
+            diagnosticMessages.expectedQuotedString(pathToken.kind, pathToken.value),
+            pathToken.location,
+        );
         file = {
             kind: SyntaxKind.INVALID,
             location: pathToken.location,

@@ -7,7 +7,8 @@
     "moduleResolution": "bundler",
     "isolatedModules": true,
     "noEmit": true,
-    "strict": true
+    "strict": true,
+    "resolveJsonModule": true
   },
   "include": ["frontend", "tests"]
 }

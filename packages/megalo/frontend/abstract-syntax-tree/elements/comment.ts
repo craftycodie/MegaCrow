@@ -11,15 +11,13 @@ export type CommentElementNode = ASTElementBase<ElementKind.COMMENT> & {
 }
 
 export const commentParser = (ctx: ParserContext, elementToken: Token): CommentElementNode => {
-    const commentMessage = ctx.getToken();
-
     return {
         kind: SyntaxKind.ELEMENT,
         elementKind: ElementKind.COMMENT,
         location: elementToken.location,
         comment: {
-            text: commentMessage.value,
-            location: commentMessage.location,
+            text: elementToken.value,
+            location: elementToken.location,
         },
     };
 }

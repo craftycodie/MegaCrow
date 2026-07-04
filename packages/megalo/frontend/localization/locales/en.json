@@ -11,5 +11,6 @@
   "unknown_loadout_property": "Expected loadout property, got '{{got}}'",
   "unknown_teams_block_property": "Expected teams block property, got '{{got}}'",
   "unknown_team_property": "Expected team property, got '{{got}}'",
+  "unknown_engine_data_property": "Expected engine_data property, got '{{got}}'",
   "string_already_defined": "String table for language {{language}} already has a string for token {{identifier}} defined"
 }

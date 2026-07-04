@@ -11,5 +11,6 @@
   "unknown_loadout_property": "loadout property が必要ですが、'{{got}}' が見つかりました",
   "unknown_teams_block_property": "teams block property が必要ですが、'{{got}}' が見つかりました",
   "unknown_team_property": "team property が必要ですが、'{{got}}' が見つかりました",
+  "unknown_engine_data_property": "engine_data property が必要ですが、'{{got}}' が見つかりました",
   "string_already_defined": "言語 {{language}} の string table には、トークン {{identifier}} 用の文字列が既に定義されています"
 }

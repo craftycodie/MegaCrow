@@ -83,6 +83,10 @@ export const diagnosticMessages = {
         return translate("unknown_team_property", { got });
     },
 
+    unknownEngineDataProperty(got: string): string {
+        return translate("unknown_engine_data_property", { got });
+    },
+
     expectedLoadoutPaletteItemOrEnd(got: string): string {
         return translate("expected_parameter_type", { expected: "item or end", got });
     },

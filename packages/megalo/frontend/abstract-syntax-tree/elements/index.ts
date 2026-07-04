@@ -10,6 +10,7 @@ import { HudWidgetsElementNode, hudWidgetsParser } from "./hud_widgets";
 import { LoadoutElementNode, loadoutParser } from "./loadout";
 import { LoadoutPaletteElementNode, loadoutPaletteParser } from "./loadout_palette";
 import { TeamsElementNode, teamsParser } from "./teams";
+import { EngineDataElementNode, engineDataParser } from "./engine_data";
 import { BaseElementNode, baseParser } from "./base";
 import { IncludeElementNode, includeParser } from "./include";
 import { LocalizedIncludeElementNode, localizedIncludeParser } from "./localized_include";
@@ -34,6 +35,7 @@ export const enum ElementKind {
     LOADOUT,
     LOADOUT_PALETTE,
     TEAMS,
+    ENGINE_DATA,
 }
 
 // used by elements
@@ -53,6 +55,7 @@ export type ASTElementNode = ASTElementNodeWithBase<
     | LoadoutElementNode
     | LoadoutPaletteElementNode
     | TeamsElementNode
+    | EngineDataElementNode
 >
 
 export type ElementParser<E extends ASTElementNode> = (ctx: ParserContext, elementToken: Token) => E;
@@ -80,6 +83,7 @@ export class ElementParserRepository {
         this.registerParser("loadout", loadoutParser);
         this.registerParser("loadout_palette", loadoutPaletteParser);
         this.registerParser("teams", teamsParser);
+        this.registerParser("engine_data", engineDataParser);
     }
 
     public constructor(megaloVersion: MegaloVersion) {

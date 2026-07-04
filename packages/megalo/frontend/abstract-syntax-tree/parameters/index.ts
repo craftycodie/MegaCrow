@@ -8,6 +8,7 @@ import { ParserContext } from "../context";
 export const enum ParameterType {
     Keyword,
     Number,
+    String,
     Timer,
     Team,
     Player,
@@ -53,6 +54,8 @@ const parameterTypeName = (spec: ParameterSpec): string => {
             return "keyword";
         case ParameterType.Number:
             return "number";
+        case ParameterType.String:
+            return "string";
         case ParameterType.Timer:
             return "timer";
         case ParameterType.Team:
@@ -88,6 +91,8 @@ const matchesParameterType = (entry: SymbolTableEntry, type: ParameterType): boo
             return entry.kind === SymbolKind.HudWidget;
         case ParameterType.Loadout:
             return entry.kind === SymbolKind.Loadout;
+        case ParameterType.String:
+            return entry.kind === SymbolKind.String;
         default:
             return false;
     }
@@ -103,6 +108,8 @@ const commitReferences = (ctx: ParserContext, nodes: readonly ASTParameterNode[]
             ctx.symbolParser.addHudWidgetReference(node.identifier, node.location);
         } else if (ctx.symbolParser.lookupLoadout(node.identifier) !== undefined) {
             ctx.symbolParser.addLoadoutReference(node.identifier, node.location);
+        } else if (ctx.symbolParser.lookupString(node.identifier) !== undefined) {
+            ctx.symbolParser.addStringReference(node.identifier, node.location);
         } else {
             ctx.symbolParser.addSymbolReference(node.identifier, node.location);
         }
@@ -254,6 +261,37 @@ const parseParameter = (
                 if (reportErrors) {
                     ctx.diagnostics.addError(
                         diagnosticMessages.expectedParameterType(parameterTypeName(spec), token.value),
+                        token.location,
+                    );
+                }
+                return undefined;
+            }
+
+            const referenceToken = ctx.getToken();
+            return {
+                kind: SyntaxKind.REFERENCE,
+                identifier: referenceToken.value,
+                symbolId,
+                location: referenceToken.location,
+            };
+        }
+
+        case ParameterType.String: {
+            if (token?.kind !== TokenKind.Identifier) {
+                if (reportErrors) {
+                    ctx.diagnostics.addError(
+                        diagnosticMessages.expectedParameterType(parameterTypeName(spec), token?.value ?? ""),
+                        token?.location ?? anchor,
+                    );
+                }
+                return undefined;
+            }
+
+            const symbolId = ctx.symbolParser.lookupString(token.value);
+            if (symbolId === undefined) {
+                if (reportErrors) {
+                    ctx.diagnostics.addError(
+                        diagnosticMessages.invalidStringIdentifier(token.value),
                         token.location,
                     );
                 }

@@ -177,6 +177,10 @@ export class ParserSymbolContext {
         return undefined;
     }
 
+    public lookupString(name: string): SymbolId | undefined {
+        return this.declaredStrings.get(name);
+    }
+
     public popScope(): void {
         this.symbolScopes.pop();
     }

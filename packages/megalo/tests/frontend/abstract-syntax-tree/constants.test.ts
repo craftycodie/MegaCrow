@@ -100,15 +100,17 @@ end
       return;
     }
 
-    expect(element.entries[2]?.value).toMatchObject({
-      kind: SyntaxKind.REFERENCE,
-      identifier: "k_special_death_type_melee",
-      symbolId: 3,
-    });
-
     const melee = userConstantSymbols(symbolTable).find(
       (entry) => entry.name === "k_special_death_type_melee",
     );
+    expect(melee).toBeDefined();
+
+    expect(element.entries[2]?.value).toMatchObject({
+      kind: SyntaxKind.REFERENCE,
+      identifier: "k_special_death_type_melee",
+      symbolId: melee!.id,
+    });
+
     expect(melee?.references).toHaveLength(1);
   });
 

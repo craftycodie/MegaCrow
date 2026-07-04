@@ -4,6 +4,8 @@ import { Token } from "../../tokens";
 import { ParserContext } from "../context";
 
 import { ConstantsElementNode, constantsParser } from "./constants";
+import { GameOptionsElementNode, gameOptionsParser } from "./game_options";
+export { GameOptionEntryKind } from "./game_options";
 import { IncludeElementNode, includeParser } from "./include";
 import { LocalizedIncludeElementNode, localizedIncludeParser } from "./localized_include";
 import { StringTableElementNode, stringTableParser } from "./string_table";
@@ -21,6 +23,7 @@ export const enum ElementKind {
     STRING_TABLE,
     CONSTANTS,
     VARIABLES,
+    GAME_OPTIONS,
 }
 
 // used by elements
@@ -34,6 +37,7 @@ export type ASTElementNode = ASTElementNodeWithBase<
     | StringTableElementNode
     | ConstantsElementNode
     | VariablesElementNode
+    | GameOptionsElementNode
 >
 
 export type ElementParser<E extends ASTElementNode> = (ctx: ParserContext, elementToken: Token) => E;
@@ -55,6 +59,7 @@ export class ElementParserRepository {
         this.registerParser("string_table", stringTableParser);
         this.registerParser("constants", constantsParser);
         this.registerParser("variables", variablesParser);
+        this.registerParser("game_options", gameOptionsParser);
     }
 
     public constructor(megaloVersion: MegaloVersion) {

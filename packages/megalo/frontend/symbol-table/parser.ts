@@ -1,7 +1,7 @@
 import { MegaloVersion } from "../../version";
 import { Diagnostics, SourceCodeLocation } from "../diagnostics";
 import { FrontendError } from "../error";
-import { SymbolId, SymbolBinder } from ".";
+import { SymbolId, SymbolBinder, SymbolTableEntry } from ".";
 import { addBuiltInConstants, addBuiltInGameOptions, addBuiltInVariables } from "./built-in";
 
 /**
@@ -16,6 +16,7 @@ export class ParserSymbolContext {
     // we store strings separately to everything else because Megalo supports variables
     // and strings with the same name, they dont shadow.
     private readonly declaredStrings: Map<string, SymbolId> = new Map();
+    private readonly declaredHudWidgets: Map<string, SymbolId> = new Map();
     private readonly symbolBinder: SymbolBinder;
 
     public constructor(megaloVersion: MegaloVersion, diagnostics: Diagnostics, symbolTable: SymbolBinder) {
@@ -74,18 +75,50 @@ export class ParserSymbolContext {
         return id;
     }
 
-    public addSymbolReference(symbolName: string, reference: SourceCodeLocation): SymbolId | undefined {
-        // backtrack through scopes to find the symbol
+    public lookupSymbol(symbolName: string): SymbolId | undefined {
         for (let i = this.symbolScopes.length - 1; i >= 0; i--) {
-            const scope = this.symbolScopes[i];
-            const id = scope.get(symbolName);
+            const id = this.symbolScopes[i].get(symbolName);
             if (id !== undefined) {
-                this.symbolBinder.addReference(id, reference);
                 return id;
             }
         }
 
         return undefined;
+    }
+
+    public getSymbolEntry(symbolId: SymbolId): SymbolTableEntry | undefined {
+        return this.symbolBinder.getSymbolEntry(symbolId);
+    }
+
+    public addHudWidgetToScope(name: string, declaration: SourceCodeLocation): SymbolId {
+        const id = this.symbolBinder.addHudWidget({
+            name,
+            declaration,
+        });
+        this.declaredHudWidgets.set(name, id);
+        return id;
+    }
+
+    public lookupHudWidget(name: string): SymbolId | undefined {
+        return this.declaredHudWidgets.get(name);
+    }
+
+    public addHudWidgetReference(name: string, reference: SourceCodeLocation): SymbolId | undefined {
+        const id = this.declaredHudWidgets.get(name);
+        if (id !== undefined) {
+            this.symbolBinder.addReference(id, reference);
+        }
+
+        return id;
+    }
+
+    public addSymbolReference(symbolName: string, reference: SourceCodeLocation): SymbolId | undefined {
+        const id = this.lookupSymbol(symbolName);
+        if (id !== undefined) {
+            this.symbolBinder.addReference(id, reference);
+        }
+
+        return id;
     }
 
     public addStringReference(symbolName: string, reference: SourceCodeLocation): SymbolId | undefined {

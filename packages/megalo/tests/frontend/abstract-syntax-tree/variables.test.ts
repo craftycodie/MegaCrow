@@ -21,7 +21,10 @@ const variableSymbols = (symbolTable: readonly { kind: SymbolKind; name: string 
 
 describe("variablesParser", () => {
   it("parses a global variables block", () => {
-    const source = `variables global
+    const source = `variables team
+\tnetworked team defenders none
+end
+variables global
 \tnetworked timer sd_vo 35
 \tnetworked team defending_team defenders
 \tnetworked object the_flag none
@@ -35,7 +38,7 @@ end
     expect(diagnostics.hasErrors()).toBe(false);
     expect(ast.failed).toBe(false);
 
-    const element = ast.elements[0]!;
+    const element = ast.elements[1]!;
     expect(element.elementKind).toBe(ElementKind.VARIABLES);
     if (element.elementKind !== ElementKind.VARIABLES) {
       return;
@@ -52,12 +55,12 @@ end
     expect(element.entries[1]).toMatchObject({
       type: { value: "team" },
       name: { value: "defending_team" },
-      initial: { value: "defenders" },
+      initial: { kind: SyntaxKind.REFERENCE, identifier: "defenders" },
     });
     expect(element.entries[2]).toMatchObject({
       type: { value: "object" },
       name: { value: "the_flag" },
-      initial: { value: "none" },
+      initial: { kind: SyntaxKind.REFERENCE, identifier: "none" },
     });
     expect(element.entries[3]).toMatchObject({
       type: { value: "number" },
@@ -72,8 +75,9 @@ end
     });
 
     const variables = variableSymbols(symbolTable);
-    expect(variables).toHaveLength(5);
-    expect(variables.every((entry) => entry.scope === 0)).toBe(true);
+    expect(variables.find((entry) => entry.name === "defenders")?.scope).toBe(1);
+    expect(variables.find((entry) => entry.name === "sd_vo")).toBeDefined();
+    expect(variables.find((entry) => entry.name === "defending_team")).toBeDefined();
   });
 
   it("parses scoped variable blocks", () => {

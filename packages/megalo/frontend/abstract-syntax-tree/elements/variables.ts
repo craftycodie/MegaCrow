@@ -18,10 +18,7 @@ import { type NumericInitialValue, parseNumericInitialValue } from "./constants"
 type VariableEntryNodeNetwork = { value: string; location: SourceCodeLocation };
 type VariableEntryNodeType = { value: VariableTypeName; location: SourceCodeLocation };
 type VariableEntryNodeName = { value: string; location: SourceCodeLocation };
-type IdentifierInitialValue =
-    | ASTReferenceNode
-    | { value: string; location: SourceCodeLocation }
-    | ASTErrorNode;
+type IdentifierInitialValue = ASTReferenceNode | ASTErrorNode;
 type VariableEntryNodeInitial = NumericInitialValue | IdentifierInitialValue;
 
 const isMissingInitial = (token: Token | undefined): boolean =>
@@ -65,8 +62,12 @@ const parseIdentifierInitialValue = (
         };
     }
 
+    ctx.diagnostics.addError(
+        diagnosticMessages.expectedVariableReference(valueToken.value),
+        valueToken.location,
+    );
     return {
-        value: valueToken.value,
+        kind: SyntaxKind.INVALID,
         location: valueToken.location,
     };
 };

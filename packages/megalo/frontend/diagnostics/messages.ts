@@ -45,4 +45,29 @@ export const diagnosticMessages = {
         // MegaloEdit.exe: Expected 'timer', 'number', 'team', 'player', or 'object', but got '<got>'
         return expectedOneOf(["'timer'", "'number'", "'team'", "'player'", "'object'"], got);
     },
+
+    expectedGameOptionElement(got: string): string {
+        return expectedOneOf(
+            ["'override'", "'option'", "'ranged_option'", "'player_traits'", "'lock'", "'hide'", "'end'"],
+            got,
+        );
+    },
+
+    invalidStringIdentifier(identifier: string): string {
+        // MegaloEdit.exe: Invalid string identifier '<token>'
+        return translate("invalid_string_identifier", { identifier });
+    },
+
+    expectedVariableReference(got: string): string {
+        return expectedOneOf([translate("variable_reference")], got);
+    },
+
+    expectedParameterType(expected: string, got: string): string {
+        return translate("expected_parameter_type", { expected, got });
+    },
+
+    unknownPlayerTrait(got: string): string {
+        // MegaloEdit.exe: Expected player trait modifier, got '<token>'
+        return translate("unknown_player_trait", { got });
+    },
 };

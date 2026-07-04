@@ -7,6 +7,7 @@ export const enum SymbolKind {
     Variable,
     String,
     GameOption,
+    HudWidget,
 }
 
 // Modelled based on Bungie.Megalo.VariableType 
@@ -58,11 +59,17 @@ export type SymbolTableStringEntry = SymbolTableEntryBase & {
     languageDeclarations: Map<string, SourceLocation>;
 }
 
+export type SymbolTableHudWidgetEntry = SymbolTableEntryBase & {
+    kind: SymbolKind.HudWidget;
+    declaration: SourceLocation;
+}
+
 export type SymbolTableEntry = 
       SymbolTableVariableEntry 
     | SymbolTableConstantEntry 
     | SymbolTableStringEntry 
-    | SymbolTableGameOptionEntry;
+    | SymbolTableGameOptionEntry
+    | SymbolTableHudWidgetEntry;
 
 export type SymbolTable = readonly SymbolTableEntry[];
 
@@ -151,8 +158,24 @@ export class SymbolBinder {
         return id;
     }
 
+    public addHudWidget(entry: Pick<SymbolTableHudWidgetEntry, "name" | "declaration">): SymbolId {
+        const id = this.table.length;
+        this.table.push({
+            id,
+            references: [],
+            name: entry.name,
+            kind: SymbolKind.HudWidget,
+            declaration: entry.declaration,
+        });
+        return id;
+    }
+
     public addReference(symbolId: SymbolId, reference: SourceCodeLocation): void {
         this.table[symbolId].references.push(reference);
+    }
+
+    public getSymbolEntry(symbolId: SymbolId): SymbolTableEntry | undefined {
+        return this.table[symbolId];
     }
 
     public getSymbolTable(): SymbolTable {

@@ -9,6 +9,8 @@ export const enum SyntaxKind {
     COMMENT = 2,
     INTEGER = 3,
     REFERENCE = 4,
+    KEYWORD = 5,
+    PARAMETER = 6,
 }
 
 export type ASTNode<K extends SyntaxKind> = {
@@ -19,6 +21,10 @@ export type ASTNode<K extends SyntaxKind> = {
 export type ASTErrorNode = {
     kind: SyntaxKind.INVALID;
     location: SourceCodeLocation;
+};
+
+export type ASTIntegerNode = ASTNode<SyntaxKind.INTEGER> & {
+    value: number;
 };
 
 export type ASTReferenceNode = ASTNode<SyntaxKind.REFERENCE> & {

@@ -317,7 +317,7 @@ end
     expect(entry.options[3]).toMatchObject({
       identifier: "initial_grenades",
       parameters: [
-        { kind: SyntaxKind.INTEGER, value: 2 },
+        { kind: SyntaxKind.KEYWORD, value: "2" },
         { kind: SyntaxKind.KEYWORD, value: "frag" },
       ],
     });

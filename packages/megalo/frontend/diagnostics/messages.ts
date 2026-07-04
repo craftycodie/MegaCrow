@@ -74,4 +74,8 @@ export const diagnosticMessages = {
     unknownLoadoutProperty(got: string): string {
         return translate("unknown_loadout_property", { got });
     },
+
+    expectedLoadoutPaletteItemOrEnd(got: string): string {
+        return translate("expected_parameter_type", { expected: "item or end", got });
+    },
 };

@@ -9,6 +9,7 @@ export const enum SymbolKind {
     GameOption,
     HudWidget,
     Loadout,
+    LoadoutPalette,
 }
 
 // Modelled based on Bungie.Megalo.VariableType 
@@ -70,13 +71,19 @@ export type SymbolTableLoadoutEntry = SymbolTableEntryBase & {
     declaration: SourceLocation;
 }
 
+export type SymbolTableLoadoutPaletteEntry = SymbolTableEntryBase & {
+    kind: SymbolKind.LoadoutPalette;
+    declaration: SourceLocation;
+}
+
 export type SymbolTableEntry = 
       SymbolTableVariableEntry 
     | SymbolTableConstantEntry 
     | SymbolTableStringEntry 
     | SymbolTableGameOptionEntry
     | SymbolTableHudWidgetEntry
-    | SymbolTableLoadoutEntry;
+    | SymbolTableLoadoutEntry
+    | SymbolTableLoadoutPaletteEntry;
 
 export type SymbolTable = readonly SymbolTableEntry[];
 
@@ -184,6 +191,18 @@ export class SymbolBinder {
             references: [],
             name: entry.name,
             kind: SymbolKind.Loadout,
+            declaration: entry.declaration,
+        });
+        return id;
+    }
+
+    public addLoadoutPalette(entry: Pick<SymbolTableLoadoutPaletteEntry, "name" | "declaration">): SymbolId {
+        const id = this.table.length;
+        this.table.push({
+            id,
+            references: [],
+            name: entry.name,
+            kind: SymbolKind.LoadoutPalette,
             declaration: entry.declaration,
         });
         return id;

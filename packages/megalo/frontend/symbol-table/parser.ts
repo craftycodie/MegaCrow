@@ -18,6 +18,7 @@ export class ParserSymbolContext {
     private readonly declaredStrings: Map<string, SymbolId> = new Map();
     private readonly declaredHudWidgets: Map<string, SymbolId> = new Map();
     private readonly declaredLoadouts: Map<string, SymbolId> = new Map();
+    private readonly declaredLoadoutPalettes: Map<string, SymbolId> = new Map();
     private readonly symbolBinder: SymbolBinder;
 
     public constructor(megaloVersion: MegaloVersion, diagnostics: Diagnostics, symbolTable: SymbolBinder) {
@@ -128,6 +129,28 @@ export class ParserSymbolContext {
 
     public addLoadoutReference(name: string, reference: SourceCodeLocation): SymbolId | undefined {
         const id = this.declaredLoadouts.get(name);
+        if (id !== undefined) {
+            this.symbolBinder.addReference(id, reference);
+        }
+
+        return id;
+    }
+
+    public addLoadoutPaletteToScope(name: string, declaration: SourceCodeLocation): SymbolId {
+        const id = this.symbolBinder.addLoadoutPalette({
+            name,
+            declaration,
+        });
+        this.declaredLoadoutPalettes.set(name, id);
+        return id;
+    }
+
+    public lookupLoadoutPalette(name: string): SymbolId | undefined {
+        return this.declaredLoadoutPalettes.get(name);
+    }
+
+    public addLoadoutPaletteReference(name: string, reference: SourceCodeLocation): SymbolId | undefined {
+        const id = this.declaredLoadoutPalettes.get(name);
         if (id !== undefined) {
             this.symbolBinder.addReference(id, reference);
         }

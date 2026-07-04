@@ -54,7 +54,7 @@ end
     expect(element.items[4]).toMatchObject({
       identifier: "grenades",
       parameters: [
-        { kind: SyntaxKind.INTEGER, value: 2 },
+        { kind: SyntaxKind.KEYWORD, value: "2" },
         { kind: SyntaxKind.KEYWORD, value: "frag" },
       ],
     });

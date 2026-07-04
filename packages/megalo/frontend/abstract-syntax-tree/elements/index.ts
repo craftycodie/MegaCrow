@@ -9,6 +9,7 @@ export { GameOptionEntryKind } from "./game_options";
 import { HudWidgetsElementNode, hudWidgetsParser } from "./hud_widgets";
 import { LoadoutElementNode, loadoutParser } from "./loadout";
 import { LoadoutPaletteElementNode, loadoutPaletteParser } from "./loadout_palette";
+import { BaseElementNode, baseParser } from "./base";
 import { IncludeElementNode, includeParser } from "./include";
 import { LocalizedIncludeElementNode, localizedIncludeParser } from "./localized_include";
 import { StringTableElementNode, stringTableParser } from "./string_table";
@@ -21,6 +22,7 @@ import { VariablesElementNode, variablesParser } from "./variables";
 // (we will probably very rarely do this lol)
 
 export const enum ElementKind {
+    BASE,
     INCLUDE,
     LOCALIZED_INCLUDE,
     STRING_TABLE,
@@ -38,7 +40,8 @@ export type ASTElementBase<K extends ElementKind> = ASTNode<SyntaxKind.ELEMENT> 
 type ASTElementNodeWithBase<T extends ASTElementBase<any>> = T;
 
 export type ASTElementNode = ASTElementNodeWithBase<
-      IncludeElementNode
+      BaseElementNode
+    | IncludeElementNode
     | LocalizedIncludeElementNode
     | StringTableElementNode
     | ConstantsElementNode
@@ -63,6 +66,7 @@ export class ElementParserRepository {
     }
 
     private registerParsers(megaloVersion: MegaloVersion) {
+        this.registerParser("base", baseParser);
         this.registerParser("include", includeParser);
         this.registerParser("localized_include", localizedIncludeParser);
         this.registerParser("string_table", stringTableParser);

@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { lex, TokenKind } from "../../../frontend/tokens/index.ts";
+import { Diagnostics } from "../../../frontend/diagnostics";
+import { Lexer, TokenKind } from "../../../frontend/tokens";
+import { MEGALO_VERSIONS } from "../../../version";
 
 describe("unescapeQuotedString", () => {
   const quotedValue = (source: string): string => {
-    const [token] = lex(source);
+    const token = new Lexer(MEGALO_VERSIONS["107-mcc"]).lex(source, new Diagnostics())[0];
     expect(token?.kind).toBe(TokenKind.QuotedString);
     return token!.value;
   };

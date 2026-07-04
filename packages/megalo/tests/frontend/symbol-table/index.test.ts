@@ -1,20 +1,25 @@
 import { describe, expect, it } from "vitest";
-import { Diagnostics, type SourceLocation } from "../../../frontend/diagnostics";
+import { Diagnostics, type SourceCodeLocation } from "../../../frontend/diagnostics";
 import {
   SymbolBinder,
   SymbolKind,
   type SymbolTableStringEntry,
 } from "../../../frontend/symbol-table";
+import { MEGALO_VERSIONS } from "../../../version";
 
-const loc = (line: number, column = 1): SourceLocation => ({
+const version = MEGALO_VERSIONS["107-mcc"];
+
+const loc = (line: number, column = 1): SourceCodeLocation => ({
   start: { offset: 0, line, column },
   end: { offset: 0, line, column: column + 1 },
 });
 
+const createBinder = () => new SymbolBinder(version, new Diagnostics());
+
 describe("SymbolBinder", () => {
   it("addString creates a string symbol with language declaration", () => {
     const diagnostics = new Diagnostics();
-    const binder = new SymbolBinder(diagnostics);
+    const binder = new SymbolBinder(version, diagnostics);
     const declaration = loc(2, 5);
 
     const id = binder.addString({
@@ -40,7 +45,7 @@ describe("SymbolBinder", () => {
 
   it("addString merges language declarations for the same symbol name", () => {
     const diagnostics = new Diagnostics();
-    const binder = new SymbolBinder(diagnostics);
+    const binder = new SymbolBinder(version, diagnostics);
     const englishDeclaration = loc(2);
     const frenchDeclaration = loc(5);
 
@@ -67,7 +72,7 @@ describe("SymbolBinder", () => {
 
   it("addString reports duplicate declarations for the same language", () => {
     const diagnostics = new Diagnostics();
-    const binder = new SymbolBinder(diagnostics);
+    const binder = new SymbolBinder(version, diagnostics);
     const firstDeclaration = loc(2);
     const duplicateDeclaration = loc(3);
 
@@ -85,7 +90,7 @@ describe("SymbolBinder", () => {
     expect(duplicateId).toBeUndefined();
     expect(diagnostics.hasErrors()).toBe(true);
     expect(diagnostics.getErrors()[0]?.message).toContain("msg_welcome");
-    expect(diagnostics.getErrors()[0]?.location).toEqual(firstDeclaration);
+    expect(diagnostics.getErrors()[0]?.location).toEqual(duplicateDeclaration);
 
     const stringEntry = binder.getSymbolTable()[0] as SymbolTableStringEntry;
     expect(stringEntry.languageDeclarations.get("english")).toEqual(firstDeclaration);
@@ -94,7 +99,7 @@ describe("SymbolBinder", () => {
 
   it("addVariable and addConstant append distinct entries", () => {
     const diagnostics = new Diagnostics();
-    const binder = new SymbolBinder(diagnostics);
+    const binder = new SymbolBinder(version, diagnostics);
     const variableDeclaration = loc(1);
     const constantDeclaration = loc(2);
 
@@ -133,8 +138,7 @@ describe("SymbolBinder", () => {
   });
 
   it("addReference records reference locations on a symbol", () => {
-    const diagnostics = new Diagnostics();
-    const binder = new SymbolBinder(diagnostics);
+    const binder = createBinder();
     const declaration = loc(2);
     const reference = loc(10, 8);
 

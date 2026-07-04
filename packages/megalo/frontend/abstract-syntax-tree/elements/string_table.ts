@@ -1,21 +1,21 @@
 import { ASTElementBase, ElementKind } from ".";
 import { ASTErrorNode, ASTNode, SyntaxKind } from "..";
-import { SourceLocation } from "../../diagnostics";
+import { SourceCodeLocation } from "../../diagnostics";
 import { diagnosticMessages } from "../../diagnostics/messages";
 import { Token, TokenKind } from "../../tokens";
 import { ParserContext } from "../context";
 
-type StringTableEntryNodeSymbol = { value: string; location: SourceLocation };
+type StringTableEntryNodeSymbol = { value: string; location: SourceCodeLocation };
 type StringTableEntryNodeValue = ASTNode<SyntaxKind.QUOTED_STRING> & { value: string };
 
 export type StringTableEntryNode = {
     symbol: StringTableEntryNodeSymbol | ASTErrorNode;
     value: StringTableEntryNodeValue | ASTErrorNode;
-    location: SourceLocation;
+    location: SourceCodeLocation;
 };
 
 export type StringTableElementNode = ASTElementBase<ElementKind.STRING_TABLE> & {
-    language: { value: string; location: SourceLocation };
+    language: { value: string; location: SourceCodeLocation };
     entries: StringTableEntryNode[];
 };
 
@@ -71,7 +71,7 @@ export const stringTableParser = (ctx: ParserContext, elementToken: Token): Stri
                 location: symbolToken.location,
             };
 
-            ctx.addStringToScope({
+            ctx.symbolParser.addStringToScope({
                 name: symbolToken.value,
                 declaration: symbolToken.location,
                 language: language.value,

@@ -6,10 +6,33 @@ export type SourcePosition = {
     column: number;
 }
 
-export type SourceLocation = {
+export const enum SourceLocationType {
+    SOURCE_CODE,
+    INCLUDE,
+    BUILT_IN,
+}
+
+export const BUILT_IN_LOCATION: BuiltInLocation = {
+    type: SourceLocationType.BUILT_IN,
+}
+
+export type SourceCodeLocation = {
     start: SourcePosition;
     end: SourcePosition;
 }
+
+// TODO
+// export type IncludeLocation = {
+//     type: SourceLocationType.INCLUDE;
+//     file: string;
+// }
+export type IncludeLocation = SourceCodeLocation;
+
+export type BuiltInLocation = {
+    type: SourceLocationType.BUILT_IN
+}
+
+export type SourceLocation = SourceCodeLocation | IncludeLocation | BuiltInLocation;
 
 export enum DiagnosticSeverity {
     Error,
@@ -20,18 +43,18 @@ export enum DiagnosticSeverity {
 export type Diagnostic = {
     message: string;
     severity: DiagnosticSeverity;
-    location: SourceLocation;
+    location: SourceCodeLocation;
 }
 
 export class Diagnostics {
     private warnings: Diagnostic[] = [];
     private errors: Diagnostic[] = [];
 
-    public addWarning(message: string, location: SourceLocation): void {
+    public addWarning(message: string, location: SourceCodeLocation): void {
         this.warnings.push({ message, severity: DiagnosticSeverity.Warning, location });
     }
 
-    public addError(message: string, location: SourceLocation): void {
+    public addError(message: string, location: SourceCodeLocation): void {
         this.errors.push({ message, severity: DiagnosticSeverity.Error, location });
     }
 

@@ -1,5 +1,5 @@
 import type { MegaloVersion } from "../../version";
-import { Diagnostics, SourceLocation } from "../diagnostics";
+import { Diagnostics, SourceCodeLocation } from "../diagnostics";
 
 // #region Types
 
@@ -18,7 +18,7 @@ export enum TokenKind
 export type Token = {
     kind: TokenKind;
     value: string;
-    location: SourceLocation;
+    location: SourceCodeLocation;
 }
 
 export type Tokens = Token[];

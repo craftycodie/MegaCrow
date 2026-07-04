@@ -1,4 +1,5 @@
-import { Diagnostics, SourceLocation } from "../diagnostics";
+import { MegaloVersion } from "../../version";
+import { Diagnostics, SourceCodeLocation, SourceLocation } from "../diagnostics";
 import { diagnosticMessages } from "../diagnostics/messages";
 
 export const enum SymbolKind {
@@ -22,7 +23,7 @@ export type SymbolTableEntryBase = {
     id: SymbolId;
     name: string;
 
-    references: SourceLocation[],
+    references: SourceCodeLocation[],
 }
 
 export type SymbolTableVariableEntry = SymbolTableEntryBase & {
@@ -52,14 +53,16 @@ export type SymbolTable = readonly SymbolTableEntry[];
  */
 // Analysis lifecycle - we build a new one each analysis pass.
 export class SymbolBinder {
+    private readonly megaloVersion: MegaloVersion;
     private readonly table: SymbolTableEntry[] = [];
     private readonly diagnostics: Diagnostics;
 
-    public constructor(diagnostics: Diagnostics) {
+    public constructor(megaloVersion: MegaloVersion, diagnostics: Diagnostics) {
+        this.megaloVersion = megaloVersion;
         this.diagnostics = diagnostics;
     }
 
-    public addString(entry: Pick<SymbolTableStringEntry, "name"> & { language: string, declaration: SourceLocation }): SymbolId | undefined {
+    public addString(entry: Pick<SymbolTableStringEntry, "name"> & { language: string, declaration: SourceCodeLocation }): SymbolId | undefined {
         const existingString = this.table.find(
             (symbol): symbol is SymbolTableStringEntry =>
                 symbol.kind === SymbolKind.String && symbol.name === entry.name,
@@ -68,7 +71,7 @@ export class SymbolBinder {
         if (existingString?.languageDeclarations.has(entry.language)) {
             this.diagnostics.addError(
                 diagnosticMessages.stringAlreadyDefined(entry.language, entry.name),
-                existingString.languageDeclarations.get(entry.language)!,
+                entry.declaration,
             );
             return undefined;
         }
@@ -115,7 +118,7 @@ export class SymbolBinder {
         return id;
     }
 
-    public addReference(symbolId: SymbolId, reference: SourceLocation): void {
+    public addReference(symbolId: SymbolId, reference: SourceCodeLocation): void {
         this.table[symbolId].references.push(reference);
     }
 

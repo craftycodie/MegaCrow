@@ -3,6 +3,7 @@ import { MegaloVersion } from "../../../version";
 import { Token } from "../../tokens";
 import { ParserContext } from "../context";
 
+import { ConstantsElementNode, constantsParser } from "./constants";
 import { IncludeElementNode, includeParser } from "./include";
 import { LocalizedIncludeElementNode, localizedIncludeParser } from "./localized_include";
 import { StringTableElementNode, stringTableParser } from "./string_table";
@@ -17,6 +18,7 @@ export const enum ElementKind {
     INCLUDE,
     LOCALIZED_INCLUDE,
     STRING_TABLE,
+    CONSTANTS,
 }
 
 // used by elements
@@ -28,6 +30,7 @@ export type ASTElementNode = ASTElementNodeWithBase<
       IncludeElementNode
     | LocalizedIncludeElementNode
     | StringTableElementNode
+    | ConstantsElementNode
 >
 
 export type ElementParser<E extends ASTElementNode> = (ctx: ParserContext, elementToken: Token) => E;
@@ -47,6 +50,7 @@ export class ElementParserRepository {
         this.registerParser("include", includeParser);
         this.registerParser("localized_include", localizedIncludeParser);
         this.registerParser("string_table", stringTableParser);
+        this.registerParser("constants", constantsParser);
     }
 
     public constructor(megaloVersion: MegaloVersion) {

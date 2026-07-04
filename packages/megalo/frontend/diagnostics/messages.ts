@@ -22,4 +22,14 @@ export const diagnosticMessages = {
         // MegaloEdit.exe: String table for language <language> already has a string for token <identifier> defined
         return translate("string_already_defined", { language, identifier });
     },
+
+    expectedNumberOrEnd(got: string): string {
+        // MegaloEdit.exe: Expected 'number' or 'end' but got '<got>'
+        return translate("expected_number_or_end", { got });
+    },
+
+    expectedConstantValue(got: string): string {
+        // MegaloEdit.exe: Expected 'true', 'false', or numeric constant name; got '<got>'
+        return translate("expected_constant_value", { got });
+    },
 };

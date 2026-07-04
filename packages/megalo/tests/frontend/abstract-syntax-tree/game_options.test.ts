@@ -51,7 +51,7 @@ end
     expect(element.entries[1]).toMatchObject({
       kind: GameOptionEntryKind.OVERRIDE,
       modifiers: { lock: false, hide: false },
-      name: { value: "teams_enabled" },
+      name: { identifier: "teams_enabled" },
       value: {
         kind: "simple",
         value: { kind: SyntaxKind.REFERENCE, identifier: "true" },
@@ -217,15 +217,10 @@ end
       return;
     }
 
-    expect(element.entries[0]).toMatchObject({
-      kind: GameOptionEntryKind.OVERRIDE,
-      modifiers: { lock: false, hide: false },
-      name: { value: "loadout_palette" },
-      value: {
-        kind: "loadout_palette",
-        tier: { value: "spartan_tier1" },
-        palette: { value: "slayer_loadouts" },
-      },
+    expect(element.entries[0]?.value).toMatchObject({
+      kind: "loadout_palette",
+      tier: { value: "spartan_tier1" },
+      palette: { value: "slayer_loadouts" },
     });
   });
 

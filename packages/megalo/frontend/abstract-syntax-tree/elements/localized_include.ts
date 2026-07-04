@@ -17,7 +17,7 @@ export const localizedIncludeParser = (ctx: ParserContext, elementToken: Token):
     if (pathToken.kind !== TokenKind.QuotedString) {
         // MegaloEdit.exe: Expected token of type QuotedString, got one of type <type>: <token>
         ctx.diagnostics?.addError(
-            diagnosticMessages.expectedQuotedString(pathToken.kind, pathToken.value),
+            diagnosticMessages.expectedTokenKind(TokenKind.QuotedString, pathToken.kind, pathToken.value),
             pathToken.location,
         );
         file = {

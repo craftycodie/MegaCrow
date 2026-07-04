@@ -1,4 +1,5 @@
 {
   "expected_element": "Expected an element, got {{value}}",
-  "expected_quoted_string": "Expected token of type QuotedString, got one of type {{kind}}: {{token}}"
+  "expected_token_kind": "Expected token of type {{expected}}, got one of type {{kind}}: {{token}}",
+  "expected_end_before_eof": "Expected 'end' before end of file"
 }

@@ -1,4 +1,5 @@
 {
   "expected_element": "要素が必要ですが、{{value}} が見つかりました",
-  "expected_quoted_string": "QuotedString 型のトークンが必要ですが、{{kind}} 型のトークン {{token}} が見つかりました"
+  "expected_token_kind": "{{expected}} 型のトークンが必要ですが、{{kind}} 型のトークン {{token}} が見つかりました",
+  "expected_end_before_eof": "ファイル末尾の前に 'end' が必要です"
 }

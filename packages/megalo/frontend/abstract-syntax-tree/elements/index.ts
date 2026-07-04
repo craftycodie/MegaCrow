@@ -25,7 +25,7 @@ export type ASTElementBase<K extends ElementKind> = ASTNode<SyntaxKind.ELEMENT> 
 type ASTElementNodeWithBase<T extends ASTElementBase<any>> = T;
 
 export type ASTElementNode = ASTElementNodeWithBase<
-    IncludeElementNode
+      IncludeElementNode
     | LocalizedIncludeElementNode
     | CommentElementNode
 >
@@ -37,10 +37,10 @@ export class ElementParserRepository {
     // We could proooobably get away with using a static object here,
     // but building up based on the megalo version allows us to configure
     // alternate parsers for different megalo versions if necessary.
-    private readonly parsers: Record<string, ElementParser<ASTElementNode>> = {};
+    private readonly parsers = new Map<string, ElementParser<ASTElementNode>>();
 
     private registerParser(name: string, parser: ElementParser<ASTElementNode>) {
-        this.parsers[name] = parser;
+        this.parsers.set(name, parser);
     }
 
     private registerParsers(megaloVersion: MegaloVersion) {
@@ -53,7 +53,7 @@ export class ElementParserRepository {
         this.registerParsers(megaloVersion);
     }
 
-    public getParser(name: string) {
-        return this.parsers[name];
+    public getParser(name: string): ElementParser<ASTElementNode> | undefined {
+        return this.parsers.get(name);
     }
 }

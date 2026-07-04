@@ -48,7 +48,7 @@ export class Parser {
 
         const ctx = new ParserContext(source, this.megaloVersion, diagnostics);
         
-        while (ctx.available() > 0) {
+        while (ctx.hasMore()) {
             const token = ctx.getToken();
 
             // Process top-level elements, delegate members to the appropriate parser.

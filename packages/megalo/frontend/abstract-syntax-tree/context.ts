@@ -21,7 +21,7 @@ export class ParserContext {
         return this.tokens[this.tokenIndex++];
     }
 
-    public available(): number {
-        return this.tokens.length - this.tokenIndex;
+    public hasMore(): boolean {
+        return this.tokenIndex < this.tokens.length;
     }
 }

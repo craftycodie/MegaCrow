@@ -1,11 +1,7 @@
-import { Lexer, TokenKind, type Token } from "../../frontend/tokens/index";
-import { Parser } from "../../frontend/abstract-syntax-tree/index";
-import { MEGALO_VERSIONS } from "../../version";
 import { DEFAULT_SOURCE } from "./example";
 import "./styles.css";
 import {
   DiagnosticSeverity,
-  Diagnostics,
   type Diagnostic,
 } from "../../frontend/diagnostics";
 import {
@@ -14,19 +10,17 @@ import {
   SUPPORTED_LOCALES,
   type SupportedLocale,
 } from "../../frontend/localization";
+import type { AnalyzeRequest, AnalyzeResponse } from "./analyze.types";
+import AnalyzeWorker from "./analyze.worker.ts?worker";
 
 const LOCALE_STORAGE_KEY = "megalo-debugger-locale";
 
 const NYI = "Not yet implemented.";
 
-const formatToken = (token: Token) => ({
-  kind: TokenKind[token.kind] ?? token.kind,
-  value: token.value,
-  location: token.location,
-});
-
-const formatTokens = (tokens: Token[]) =>
-  JSON.stringify(tokens.map(formatToken), null, 2);
+const PARSE_DEBOUNCE_MS = 150;
+const DOM_DEBOUNCE_MS = 400;
+const SOURCE_SETTLE_MS = 250;
+const MAX_DISPLAYED_DIAGNOSTICS = 200;
 
 const app = document.querySelector<HTMLDivElement>("#app");
 if (!app) {
@@ -77,7 +71,7 @@ app.innerHTML = `
         Diagnostics
         <span class="pane-header-meta" data-role="diagnostics-count"></span>
       </div>
-      <ul class="diagnostics-list" data-role="diagnostics"></ul>
+      <pre class="diagnostics-list" data-role="diagnostics"></pre>
     </section>
   </div>
 `;
@@ -125,30 +119,26 @@ const formatDiagnosticLocation = (diagnostic: Diagnostic): string => {
   return `${line}:${column}`;
 };
 
-const renderDiagnostics = (diagnostics: Diagnostics): void => {
-  const items = [
-    ...diagnostics.getErrors(),
-    ...diagnostics.getWarnings(),
-  ].sort(
+const sortDiagnostics = (diagnostics: Diagnostic[]): Diagnostic[] =>
+  [...diagnostics].sort(
     (left, right) =>
       left.location.start.offset - right.location.start.offset ||
       left.location.start.line - right.location.start.line ||
       left.location.start.column - right.location.start.column,
   );
 
-  diagnosticsView.replaceChildren();
+const formatDiagnosticsSummary = (diagnostics: Diagnostic[]): string => {
+  const errorCount = diagnostics.filter(
+    (diagnostic) => diagnostic.severity === DiagnosticSeverity.Error,
+  ).length;
+  const warningCount = diagnostics.filter(
+    (diagnostic) => diagnostic.severity === DiagnosticSeverity.Warning,
+  ).length;
 
-  if (items.length === 0) {
-    diagnosticsCount.textContent = "none";
-    const empty = document.createElement("li");
-    empty.className = "diagnostics-empty";
-    empty.textContent = "No diagnostics.";
-    diagnosticsView.append(empty);
-    return;
+  if (errorCount === 0 && warningCount === 0) {
+    return "none";
   }
 
-  const errorCount = diagnostics.getErrors().length;
-  const warningCount = diagnostics.getWarnings().length;
   const parts: string[] = [];
   if (errorCount > 0) {
     parts.push(`${errorCount} error${errorCount === 1 ? "" : "s"}`);
@@ -156,27 +146,28 @@ const renderDiagnostics = (diagnostics: Diagnostics): void => {
   if (warningCount > 0) {
     parts.push(`${warningCount} warning${warningCount === 1 ? "" : "s"}`);
   }
-  diagnosticsCount.textContent = parts.join(", ");
+  return parts.join(", ");
+};
 
-  for (const diagnostic of items) {
-    const item = document.createElement("li");
-    item.className = `diagnostic diagnostic-${severityLabel(diagnostic.severity).toLowerCase()}`;
-
-    const severity = document.createElement("span");
-    severity.className = "diagnostic-severity";
-    severity.textContent = severityLabel(diagnostic.severity);
-
-    const location = document.createElement("span");
-    location.className = "diagnostic-location";
-    location.textContent = formatDiagnosticLocation(diagnostic);
-
-    const message = document.createElement("span");
-    message.className = "diagnostic-message";
-    message.textContent = diagnostic.message;
-
-    item.append(severity, location, message);
-    diagnosticsView.append(item);
+const formatDiagnosticsText = (diagnostics: Diagnostic[]): string => {
+  const items = sortDiagnostics(diagnostics);
+  if (items.length === 0) {
+    return "No diagnostics.";
   }
+
+  const visible = items.slice(0, MAX_DISPLAYED_DIAGNOSTICS);
+  const lines = visible.map(
+    (diagnostic) =>
+      `${severityLabel(diagnostic.severity).padEnd(7)} ${formatDiagnosticLocation(diagnostic).padEnd(8)} ${diagnostic.message}`,
+  );
+
+  if (items.length > MAX_DISPLAYED_DIAGNOSTICS) {
+    lines.push(
+      `... ${items.length - MAX_DISPLAYED_DIAGNOSTICS} more diagnostic${items.length - MAX_DISPLAYED_DIAGNOSTICS === 1 ? "" : "s"}`,
+    );
+  }
+
+  return lines.join("\n");
 };
 
 const formatDuration = (milliseconds: number): string => {
@@ -189,57 +180,218 @@ const formatDuration = (milliseconds: number): string => {
   return `${milliseconds.toFixed(1)} ms`;
 };
 
-const MEGALO_VERSION = MEGALO_VERSIONS["107-mcc"];
-const lexer = new Lexer(MEGALO_VERSION);
-const parser = new Parser(MEGALO_VERSION);
+const setTextIfChanged = (element: HTMLElement, nextText: string, cache: { value: string | null }): void => {
+  if (cache.value === nextText) {
+    return;
+  }
+
+  element.replaceChildren(document.createTextNode(nextText));
+  cache.value = nextText;
+};
+
+const scheduleIdle = (callback: () => void, timeout: number): void => {
+  if ("requestIdleCallback" in window) {
+    requestIdleCallback(callback, { timeout });
+    return;
+  }
+
+  requestAnimationFrame(callback);
+};
+
+const scheduleIdleChain = (steps: Array<() => void>, timeout: number): void => {
+  const runStep = (index: number): void => {
+    if (index >= steps.length) {
+      return;
+    }
+
+    scheduleIdle(() => {
+      steps[index]!();
+      runStep(index + 1);
+    }, timeout);
+  };
+
+  runStep(0);
+};
+
+const analyzeWorker = new AnalyzeWorker();
 
 let cachedSource: string | null = null;
-let cachedTokens: Token[] | null = null;
-let cachedLexDuration = 0;
+let cachedTokensText: { value: string | null } = { value: null };
+let cachedAstText: { value: string | null } = { value: null };
+let cachedDiagnosticsText: { value: string | null } = { value: null };
+let cachedDiagnosticsSummary: { value: string | null } = { value: null };
+
+let updateGeneration = 0;
+let parseDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+let domDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+let sourceSettleTimer: ReturnType<typeof setTimeout> | null = null;
+let latestResult: AnalyzeResponse | null = null;
+let sourceEditorActive = false;
+let domFlushPending = false;
 
 type UpdateOptions = {
   /** Re-translate diagnostics without re-rendering tokens/AST panes. */
   diagnosticsOnly?: boolean;
+  /** Skip debounce for initial load and locale changes. */
+  immediate?: boolean;
 };
 
-const update = (options: UpdateOptions = {}) => {
-  const diagnostics = new Diagnostics();
+let pendingOptions: UpdateOptions = {};
+let pendingSourceChanged = false;
+
+const setSourceEditorActive = (active: boolean): void => {
+  sourceEditorActive = active;
+  app.classList.toggle("is-editing-source", active);
+};
+
+const markSourceEditorActive = (): void => {
+  setSourceEditorActive(true);
+  cancelDomFlush();
+
+  if (sourceSettleTimer !== null) {
+    clearTimeout(sourceSettleTimer);
+  }
+
+  sourceSettleTimer = setTimeout(() => {
+    sourceSettleTimer = null;
+    setSourceEditorActive(false);
+
+    if (domFlushPending) {
+      domFlushPending = false;
+      scheduleDomFlush();
+    }
+  }, SOURCE_SETTLE_MS);
+};
+
+const flushDom = (): void => {
+  const result = latestResult;
+  if (!result || result.id !== updateGeneration) {
+    return;
+  }
+
+  if (sourceEditorActive) {
+    domFlushPending = true;
+    return;
+  }
+
+  const options = pendingOptions;
+  const sourceChanged = pendingSourceChanged;
+
+  scheduleIdleChain([
+    () => {
+      tokenCount.textContent = `${result.tokenCount} token${result.tokenCount === 1 ? "" : "s"}`;
+      tokenTime.textContent = formatDuration(result.lexDuration);
+      astTime.textContent = formatDuration(result.parseDuration);
+      totalTime.textContent = formatDuration(result.lexDuration + result.parseDuration);
+    },
+    () => {
+      if (!latestResult || latestResult.id !== updateGeneration) {
+        return;
+      }
+
+      if (!options.diagnosticsOnly || sourceChanged) {
+        setTextIfChanged(tokensView, result.tokensText, cachedTokensText);
+      }
+    },
+    () => {
+      if (!latestResult || latestResult.id !== updateGeneration) {
+        return;
+      }
+
+      if (!options.diagnosticsOnly || sourceChanged) {
+        setTextIfChanged(astView, result.astText, cachedAstText);
+        astView.classList.remove("placeholder");
+      }
+    },
+    () => {
+      if (!latestResult || latestResult.id !== updateGeneration) {
+        return;
+      }
+
+      const diagnosticsText = formatDiagnosticsText(result.diagnostics);
+      setTextIfChanged(diagnosticsView, diagnosticsText, cachedDiagnosticsText);
+
+      const diagnosticsSummary = formatDiagnosticsSummary(result.diagnostics);
+      if (cachedDiagnosticsSummary.value !== diagnosticsSummary) {
+        diagnosticsCount.textContent = diagnosticsSummary;
+        cachedDiagnosticsSummary.value = diagnosticsSummary;
+      }
+    },
+  ], 500);
+};
+
+const scheduleDomFlush = (immediate = false): void => {
+  if (!immediate && sourceEditorActive) {
+    domFlushPending = true;
+    return;
+  }
+
+  if (domDebounceTimer !== null) {
+    clearTimeout(domDebounceTimer);
+    domDebounceTimer = null;
+  }
+
+  if (immediate) {
+    flushDom();
+    return;
+  }
+
+  domDebounceTimer = setTimeout(() => {
+    domDebounceTimer = null;
+    flushDom();
+  }, DOM_DEBOUNCE_MS);
+};
+
+const cancelDomFlush = (): void => {
+  if (domDebounceTimer !== null) {
+    clearTimeout(domDebounceTimer);
+    domDebounceTimer = null;
+  }
+};
+
+analyzeWorker.onmessage = (event: MessageEvent<AnalyzeResponse>) => {
+  if (event.data.id !== updateGeneration) {
+    return;
+  }
+
+  latestResult = event.data;
+  scheduleDomFlush(pendingOptions.immediate === true);
+};
+
+const runUpdate = (options: UpdateOptions = {}): void => {
+  const generation = ++updateGeneration;
   const source = sourceEditor.value;
-  const sourceChanged = source !== cachedSource;
+  pendingOptions = options;
+  pendingSourceChanged = source !== cachedSource;
+  cachedSource = source;
 
-  let tokens: Token[];
-  let lexDuration: number;
+  const request: AnalyzeRequest = {
+    id: generation,
+    source,
+    locale: getLocale(),
+  };
 
-  if (options.diagnosticsOnly && !sourceChanged && cachedTokens) {
-    tokens = cachedTokens;
-    lexDuration = cachedLexDuration;
-  } else {
-    const lexStart = performance.now();
-    tokens = lexer.lex(source, diagnostics);
-    lexDuration = performance.now() - lexStart;
+  analyzeWorker.postMessage(request);
+};
 
-    cachedSource = source;
-    cachedTokens = tokens;
-    cachedLexDuration = lexDuration;
-
-    tokensView.textContent = formatTokens(tokens);
-    tokenCount.textContent = `${tokens.length} token${tokens.length === 1 ? "" : "s"}`;
-    tokenTime.textContent = formatDuration(lexDuration);
+const scheduleUpdate = (options: UpdateOptions = {}): void => {
+  if (options.immediate) {
+    if (parseDebounceTimer !== null) {
+      clearTimeout(parseDebounceTimer);
+      parseDebounceTimer = null;
+    }
+    runUpdate(options);
+    return;
   }
 
-  const parseStart = performance.now();
-  const ast = parser.parse(tokens, diagnostics);
-  const parseDuration = performance.now() - parseStart;
-
-  if (!options.diagnosticsOnly || sourceChanged) {
-    astView.textContent = JSON.stringify(ast, null, 2);
-    astView.classList.remove("placeholder");
-    astTime.textContent = formatDuration(parseDuration);
-
-    totalTime.textContent = formatDuration(lexDuration + parseDuration);
+  if (parseDebounceTimer !== null) {
+    clearTimeout(parseDebounceTimer);
   }
 
-  renderDiagnostics(diagnostics);
+  parseDebounceTimer = setTimeout(() => {
+    parseDebounceTimer = null;
+    runUpdate(options);
+  }, PARSE_DEBOUNCE_MS);
 };
 
 const syncLocaleToggle = (locale: SupportedLocale): void => {
@@ -252,7 +404,7 @@ const applyLocale = (locale: SupportedLocale): void => {
   setLocale(locale);
   syncLocaleToggle(locale);
   localStorage.setItem(LOCALE_STORAGE_KEY, locale);
-  update({ diagnosticsOnly: true });
+  scheduleUpdate({ diagnosticsOnly: true, immediate: true });
 };
 
 for (const button of localeButtons) {
@@ -268,7 +420,18 @@ for (const button of localeButtons) {
   });
 }
 
-sourceEditor.addEventListener("input", () => update());
+sourceEditor.addEventListener("input", () => {
+  markSourceEditorActive();
+  scheduleUpdate();
+});
+
+sourceEditor.addEventListener("keydown", () => {
+  markSourceEditorActive();
+});
+
+sourceEditor.addEventListener("mousedown", () => {
+  markSourceEditorActive();
+});
 
 const storedLocale = localStorage.getItem(LOCALE_STORAGE_KEY);
 const initialLocale: SupportedLocale =

@@ -141,9 +141,20 @@ body,
   outline: none;
 }
 
+.source-editor {
+  contain: strict;
+}
+
+.app.is-editing-source .output-view,
+.app.is-editing-source .diagnostics-list {
+  visibility: hidden;
+}
+
 .output-view {
   overflow: auto;
   white-space: pre;
+  contain: strict;
+  content-visibility: auto;
 }
 
 .output-view.placeholder {
@@ -163,59 +174,23 @@ body,
   flex: 1;
   min-height: 0;
   margin: 0;
-  padding: 0;
-  list-style: none;
-  overflow: auto;
-}
-
-.diagnostics-empty {
   padding: 10px 12px;
-  color: #6b7280;
-  font-style: italic;
-}
-
-.diagnostic {
-  display: grid;
-  grid-template-columns: 72px 64px 1fr;
-  gap: 8px;
-  align-items: start;
-  padding: 8px 12px;
-  border-bottom: 1px solid #2d3036;
+  border: none;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: transparent;
+  color: #e8eaed;
   font-family: Consolas, "Courier New", monospace;
   font-size: 12px;
   line-height: 1.4;
+  contain: strict;
+  content-visibility: auto;
 }
 
-.diagnostic:last-child {
-  border-bottom: none;
-}
-
-.diagnostic-severity {
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.diagnostic-error .diagnostic-severity {
-  color: #f87171;
-}
-
-.diagnostic-warning .diagnostic-severity {
-  color: #fbbf24;
-}
-
-.diagnostic-info .diagnostic-severity {
-  color: #60a5fa;
-}
-
-.diagnostic-location {
-  color: #9aa0a6;
-}
-
-.diagnostic-message {
-  color: #e8eaed;
-  white-space: pre-wrap;
-  word-break: break-word;
+.diagnostics-empty {
+  color: #6b7280;
+  font-style: italic;
 }
 
 @media (max-width: 900px) {

@@ -7,7 +7,7 @@
     "noEmit": true,
     "skipLibCheck": true,
     "isolatedModules": true,
-    "lib": ["ES2022", "DOM", "DOM.Iterable"]
+    "lib": ["ES2022", "DOM", "DOM.Iterable", "WebWorker"]
   },
   "include": ["src", "../frontend", "../parser"]
 }

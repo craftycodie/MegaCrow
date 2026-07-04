@@ -1,5 +1,6 @@
 {
   "expected_element": "Expected an element, got {{value}}",
   "expected_token_kind": "Expected token of type {{expected}}, got one of type {{kind}}: {{token}}",
-  "expected_end_before_eof": "Expected 'end' before end of file"
+  "expected_end_before_eof": "Expected 'end' before end of file",
+  "string_already_defined": "String table for language {{language}} already has a string for token {{identifier}} defined"
 }

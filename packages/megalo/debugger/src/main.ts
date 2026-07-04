@@ -43,27 +43,36 @@ app.innerHTML = `
       <span class="toolbar-status" data-role="token-count"></span>
       <span class="toolbar-status" data-role="total-time"></span>
     </header>
-    <div class="panes">
-      <section class="pane">
-        <div class="pane-header">Source</div>
-        <textarea class="source-editor" spellcheck="false"></textarea>
-      </section>
-      <section class="pane">
+    <div class="workspace">
+      <div class="panes">
+        <section class="pane">
+          <div class="pane-header">Source</div>
+          <textarea class="source-editor" spellcheck="false"></textarea>
+        </section>
+        <section class="pane">
+          <div class="pane-header">
+            Tokens
+            <span class="pane-header-meta" data-role="token-time"></span>
+          </div>
+          <pre class="output-view" data-role="tokens"></pre>
+        </section>
+        <section class="pane">
+          <div class="pane-header">AST
+            <span class="pane-header-meta" data-role="ast-time"></span>
+          </div>
+          <pre class="output-view" data-role="ast"></pre>
+        </section>
+        <section class="pane">
+          <div class="pane-header">IR</div>
+          <pre class="output-view placeholder" data-role="ir"></pre>
+        </section>
+      </div>
+      <section class="pane pane-symbols">
         <div class="pane-header">
-          Tokens
-          <span class="pane-header-meta" data-role="token-time"></span>
+          Symbol Table
+          <span class="pane-header-meta" data-role="symbol-count"></span>
         </div>
-        <pre class="output-view" data-role="tokens"></pre>
-      </section>
-      <section class="pane">
-        <div class="pane-header">AST
-          <span class="pane-header-meta" data-role="ast-time"></span>
-        </div>
-        <pre class="output-view" data-role="ast"></pre>
-      </section>
-      <section class="pane">
-        <div class="pane-header">IR</div>
-        <pre class="output-view placeholder" data-role="ir"></pre>
+        <pre class="output-view" data-role="symbols"></pre>
       </section>
     </div>
     <section class="diagnostics-panel">
@@ -81,6 +90,8 @@ const tokensView = app.querySelector<HTMLElement>('[data-role="tokens"]');
 const astView = app.querySelector<HTMLElement>('[data-role="ast"]');
 const astTime = app.querySelector<HTMLElement>('[data-role="ast-time"]');
 const irView = app.querySelector<HTMLElement>('[data-role="ir"]');
+const symbolsView = app.querySelector<HTMLElement>('[data-role="symbols"]');
+const symbolCount = app.querySelector<HTMLElement>('[data-role="symbol-count"]');
 const tokenCount = app.querySelector<HTMLElement>('[data-role="token-count"]');
 const tokenTime = app.querySelector<HTMLElement>('[data-role="token-time"]');
 const totalTime = app.querySelector<HTMLElement>('[data-role="total-time"]');
@@ -95,6 +106,8 @@ if (
   !tokensView ||
   !astView ||
   !irView ||
+  !symbolsView ||
+  !symbolCount ||
   !tokenCount ||
   !tokenTime ||
   !astTime ||
@@ -218,6 +231,7 @@ const analyzeWorker = new AnalyzeWorker();
 let cachedSource: string | null = null;
 let cachedTokensText: { value: string | null } = { value: null };
 let cachedAstText: { value: string | null } = { value: null };
+let cachedSymbolTableText: { value: string | null } = { value: null };
 let cachedDiagnosticsText: { value: string | null } = { value: null };
 let cachedDiagnosticsSummary: { value: string | null } = { value: null };
 
@@ -301,6 +315,16 @@ const flushDom = (): void => {
       if (!options.diagnosticsOnly || sourceChanged) {
         setTextIfChanged(astView, result.astText, cachedAstText);
         astView.classList.remove("placeholder");
+      }
+    },
+    () => {
+      if (!latestResult || latestResult.id !== updateGeneration) {
+        return;
+      }
+
+      if (!options.diagnosticsOnly || sourceChanged) {
+        setTextIfChanged(symbolsView, result.symbolTableText, cachedSymbolTableText);
+        symbolCount.textContent = `${result.symbolCount} symbol${result.symbolCount === 1 ? "" : "s"}`;
       }
     },
     () => {

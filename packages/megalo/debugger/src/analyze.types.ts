@@ -11,7 +11,9 @@ export type AnalyzeResponse = {
   id: number;
   tokensText: string;
   astText: string;
+  symbolTableText: string;
   tokenCount: number;
+  symbolCount: number;
   lexDuration: number;
   parseDuration: number;
   diagnostics: Diagnostic[];

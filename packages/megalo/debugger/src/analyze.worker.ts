@@ -3,6 +3,14 @@ import { Parser } from "../../frontend/abstract-syntax-tree/index";
 import { MEGALO_VERSIONS } from "../../version";
 import { Diagnostics } from "../../frontend/diagnostics";
 import { setLocale } from "../../frontend/localization";
+import {
+  SymbolKind,
+  type SymbolTable,
+  type SymbolTableConstantEntry,
+  type SymbolTableEntry,
+  type SymbolTableStringEntry,
+  type SymbolTableVariableEntry,
+} from "../../frontend/symbol-table";
 import type { AnalyzeRequest, AnalyzeResponse } from "./analyze.types";
 
 const MEGALO_VERSION = MEGALO_VERSIONS["107-mcc"];
@@ -20,6 +28,46 @@ const formatTokens = (tokens: Token[]): string =>
     2,
   );
 
+const serializeSymbolTableEntry = (entry: SymbolTableEntry): object => {
+  const base = {
+    id: entry.id,
+    name: entry.name,
+    kind: SymbolKind[entry.kind] ?? entry.kind,
+    references: entry.references,
+  };
+
+  switch (entry.kind) {
+    case SymbolKind.String: {
+      const stringEntry = entry as SymbolTableStringEntry;
+      return {
+        ...base,
+        languageDeclarations: [...stringEntry.languageDeclarations.entries()].map(
+          ([language, declaration]) => ({ language, declaration }),
+        ),
+      };
+    }
+    case SymbolKind.Variable: {
+      const variableEntry = entry as SymbolTableVariableEntry;
+      return {
+        ...base,
+        type: variableEntry.type,
+        declaration: variableEntry.declaration,
+      };
+    }
+    case SymbolKind.Constant: {
+      const constantEntry = entry as SymbolTableConstantEntry;
+      return {
+        ...base,
+        type: constantEntry.type,
+        declaration: constantEntry.declaration,
+      };
+    }
+  }
+};
+
+const formatSymbolTable = (symbolTable: SymbolTable): string =>
+  JSON.stringify(symbolTable.map(serializeSymbolTableEntry), null, 2);
+
 self.onmessage = (event: MessageEvent<AnalyzeRequest>): void => {
   const { id, source, locale } = event.data;
 
@@ -32,14 +80,16 @@ self.onmessage = (event: MessageEvent<AnalyzeRequest>): void => {
   const lexDuration = performance.now() - lexStart;
 
   const parseStart = performance.now();
-  const ast = parser.parse(tokens, diagnostics);
+  const { ast, symbolTable } = parser.parse(tokens, diagnostics);
   const parseDuration = performance.now() - parseStart;
 
   const response: AnalyzeResponse = {
     id,
     tokensText: formatTokens(tokens),
     astText: JSON.stringify(ast, null, 2),
+    symbolTableText: formatSymbolTable(symbolTable),
     tokenCount: tokens.length,
+    symbolCount: symbolTable.length,
     lexDuration,
     parseDuration,
     diagnostics: [...diagnostics.getErrors(), ...diagnostics.getWarnings()],

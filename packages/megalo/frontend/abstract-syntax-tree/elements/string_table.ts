@@ -5,8 +5,6 @@ import { diagnosticMessages } from "../../diagnostics/messages";
 import { Token, TokenKind } from "../../tokens";
 import { ParserContext } from "../context";
 
-const DEFAULT_LANGUAGE = "default";
-
 type StringTableEntryNodeSymbol = { value: string; location: SourceLocation };
 type StringTableEntryNodeValue = ASTNode<SyntaxKind.QUOTED_STRING> & { value: string };
 
@@ -21,33 +19,38 @@ export type StringTableElementNode = ASTElementBase<ElementKind.STRING_TABLE> & 
     entries: StringTableEntryNode[];
 };
 
-export const stringTableParser = (ctx: ParserContext, elementToken: Token): StringTableElementNode => {
-    let language: StringTableElementNode["language"] = {
-        value: DEFAULT_LANGUAGE,
-        location: elementToken.location,
-    };
-
+const parseLanguage = (
+    ctx: ParserContext,
+    elementToken: Token,
+): StringTableElementNode["language"] => {
     const next = ctx.peekToken();
     if (
-        next &&
-        next.kind === TokenKind.Identifier &&
-        next.value !== "end" &&
-        next.location.start.line === elementToken.location.start.line
+        !next ||
+        next.kind !== TokenKind.Identifier ||
+        next.location.start.line !== elementToken.location.start.line
     ) {
-        const langToken = ctx.getToken();
-        if (langToken.kind === TokenKind.Identifier) {
-            language = {
-                value: langToken.value,
-                location: langToken.location,
-            };
-        } else {
-            ctx.diagnostics.addError(
-                diagnosticMessages.expectedTokenKind(TokenKind.Identifier, langToken.kind, langToken.value),
-                langToken.location,
-            );
-        }
+        return {
+            value: "",
+            location: elementToken.location,
+        };
     }
 
+    const langToken = ctx.getToken();
+    if (langToken.kind !== TokenKind.Identifier) {
+        ctx.diagnostics.addError(
+            diagnosticMessages.expectedTokenKind(TokenKind.Identifier, langToken.kind, langToken.value),
+            langToken.location,
+        );
+    }
+
+    return {
+        value: langToken.value,
+        location: langToken.location,
+    };
+};
+
+export const stringTableParser = (ctx: ParserContext, elementToken: Token): StringTableElementNode => {
+    const language = parseLanguage(ctx, elementToken);
     const entries: StringTableEntryNode[] = [];
 
     ctx.parseUntilEnd(() => {
@@ -67,6 +70,12 @@ export const stringTableParser = (ctx: ParserContext, elementToken: Token): Stri
                 value: symbolToken.value,
                 location: symbolToken.location,
             };
+
+            ctx.addStringToScope({
+                name: symbolToken.value,
+                declaration: symbolToken.location,
+                language: language.value,
+            });
         } else {
             ctx.diagnostics.addError(
                 diagnosticMessages.expectedTokenKind(TokenKind.Identifier, symbolToken.kind, symbolToken.value),

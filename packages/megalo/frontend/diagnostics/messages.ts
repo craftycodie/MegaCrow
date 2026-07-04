@@ -17,4 +17,9 @@ export const diagnosticMessages = {
         // MegaloEdit.exe: Reached end of file reading string table
         return translate("expected_end_before_eof");
     },
+
+    stringAlreadyDefined(language: string, identifier: string): string {
+        // MegaloEdit.exe: String table for language <language> already has a string for token <identifier> defined
+        return translate("string_already_defined", { language, identifier });
+    },
 };

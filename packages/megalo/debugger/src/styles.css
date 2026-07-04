@@ -79,12 +79,30 @@ body,
   margin-left: 12px;
 }
 
+.workspace {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
 .panes {
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr;
   flex: 1;
+  min-width: 0;
   min-height: 0;
+}
+
+.pane-symbols {
+  width: min(36vw, 420px);
+  min-width: 280px;
+  border-left: 1px solid #2d3036;
+  border-bottom: none;
+}
+
+.pane-symbols .output-view {
+  border-right: none;
 }
 
 .pane {
@@ -150,6 +168,10 @@ body,
   visibility: hidden;
 }
 
+.pane-symbols {
+  contain: strict;
+}
+
 .output-view {
   overflow: auto;
   white-space: pre;
@@ -165,7 +187,11 @@ body,
 .diagnostics-panel {
   display: flex;
   flex-direction: column;
-  max-height: 180px;
+  flex: 0 0 30vh;
+  min-height: 220px;
+  max-height: 50vh;
+  resize: vertical;
+  overflow: hidden;
   border-top: 1px solid #2d3036;
   background: #1f2024;
 }
@@ -174,7 +200,7 @@ body,
   flex: 1;
   min-height: 0;
   margin: 0;
-  padding: 10px 12px;
+  padding: 12px;
   border: none;
   overflow: auto;
   white-space: pre-wrap;
@@ -182,8 +208,8 @@ body,
   background: transparent;
   color: #e8eaed;
   font-family: Consolas, "Courier New", monospace;
-  font-size: 12px;
-  line-height: 1.4;
+  font-size: 13px;
+  line-height: 1.5;
   contain: strict;
   content-visibility: auto;
 }
@@ -194,6 +220,18 @@ body,
 }
 
 @media (max-width: 900px) {
+  .workspace {
+    flex-direction: column;
+  }
+
+  .pane-symbols {
+    width: auto;
+    min-width: 0;
+    min-height: 240px;
+    border-left: none;
+    border-top: 1px solid #2d3036;
+  }
+
   .panes {
     grid-template-columns: 1fr;
     grid-template-rows: repeat(4, 1fr);

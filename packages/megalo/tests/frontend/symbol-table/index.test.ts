@@ -1,0 +1,151 @@
+import { describe, expect, it } from "vitest";
+import { Diagnostics, type SourceLocation } from "../../../frontend/diagnostics";
+import {
+  SymbolBinder,
+  SymbolKind,
+  type SymbolTableStringEntry,
+} from "../../../frontend/symbol-table";
+
+const loc = (line: number, column = 1): SourceLocation => ({
+  start: { offset: 0, line, column },
+  end: { offset: 0, line, column: column + 1 },
+});
+
+describe("SymbolBinder", () => {
+  it("addString creates a string symbol with language declaration", () => {
+    const diagnostics = new Diagnostics();
+    const binder = new SymbolBinder(diagnostics);
+    const declaration = loc(2, 5);
+
+    const id = binder.addString({
+      name: "slayer_title",
+      language: "english",
+      declaration,
+    });
+
+    expect(id).toBe(0);
+    expect(diagnostics.hasErrors()).toBe(false);
+
+    const [entry] = binder.getSymbolTable();
+    expect(entry).toMatchObject({
+      id: 0,
+      name: "slayer_title",
+      kind: SymbolKind.String,
+      references: [],
+    });
+
+    const stringEntry = entry as SymbolTableStringEntry;
+    expect(stringEntry.languageDeclarations.get("english")).toEqual(declaration);
+  });
+
+  it("addString merges language declarations for the same symbol name", () => {
+    const diagnostics = new Diagnostics();
+    const binder = new SymbolBinder(diagnostics);
+    const englishDeclaration = loc(2);
+    const frenchDeclaration = loc(5);
+
+    const englishId = binder.addString({
+      name: "msg_welcome",
+      language: "english",
+      declaration: englishDeclaration,
+    });
+    const frenchId = binder.addString({
+      name: "msg_welcome",
+      language: "french",
+      declaration: frenchDeclaration,
+    });
+
+    expect(englishId).toBe(0);
+    expect(frenchId).toBe(0);
+    expect(diagnostics.hasErrors()).toBe(false);
+    expect(binder.getSymbolTable()).toHaveLength(1);
+
+    const stringEntry = binder.getSymbolTable()[0] as SymbolTableStringEntry;
+    expect(stringEntry.languageDeclarations.get("english")).toEqual(englishDeclaration);
+    expect(stringEntry.languageDeclarations.get("french")).toEqual(frenchDeclaration);
+  });
+
+  it("addString reports duplicate declarations for the same language", () => {
+    const diagnostics = new Diagnostics();
+    const binder = new SymbolBinder(diagnostics);
+    const firstDeclaration = loc(2);
+    const duplicateDeclaration = loc(3);
+
+    binder.addString({
+      name: "msg_welcome",
+      language: "english",
+      declaration: firstDeclaration,
+    });
+    const duplicateId = binder.addString({
+      name: "msg_welcome",
+      language: "english",
+      declaration: duplicateDeclaration,
+    });
+
+    expect(duplicateId).toBeUndefined();
+    expect(diagnostics.hasErrors()).toBe(true);
+    expect(diagnostics.getErrors()[0]?.message).toContain("msg_welcome");
+    expect(diagnostics.getErrors()[0]?.location).toEqual(firstDeclaration);
+
+    const stringEntry = binder.getSymbolTable()[0] as SymbolTableStringEntry;
+    expect(stringEntry.languageDeclarations.get("english")).toEqual(firstDeclaration);
+    expect(stringEntry.languageDeclarations.size).toBe(1);
+  });
+
+  it("addVariable and addConstant append distinct entries", () => {
+    const diagnostics = new Diagnostics();
+    const binder = new SymbolBinder(diagnostics);
+    const variableDeclaration = loc(1);
+    const constantDeclaration = loc(2);
+
+    const variableId = binder.addVariable({
+      name: "player_count",
+      type: 1,
+      declaration: variableDeclaration,
+    });
+    const constantId = binder.addConstant({
+      name: "max_score",
+      declaration: constantDeclaration,
+    });
+
+    expect(variableId).toBe(0);
+    expect(constantId).toBe(1);
+    expect(diagnostics.hasErrors()).toBe(false);
+
+    const table = binder.getSymbolTable();
+    expect(table).toHaveLength(2);
+    expect(table[0]).toMatchObject({
+      id: 0,
+      name: "player_count",
+      kind: SymbolKind.Variable,
+      type: 1,
+      declaration: variableDeclaration,
+      references: [],
+    });
+    expect(table[1]).toMatchObject({
+      id: 1,
+      name: "max_score",
+      kind: SymbolKind.Constant,
+      type: 1,
+      declaration: constantDeclaration,
+      references: [],
+    });
+  });
+
+  it("addReference records reference locations on a symbol", () => {
+    const diagnostics = new Diagnostics();
+    const binder = new SymbolBinder(diagnostics);
+    const declaration = loc(2);
+    const reference = loc(10, 8);
+
+    const id = binder.addString({
+      name: "msg_welcome",
+      language: "english",
+      declaration,
+    });
+    binder.addReference(id!, reference);
+
+    const stringEntry = binder.getSymbolTable()[0] as SymbolTableStringEntry;
+    expect(stringEntry.references).toEqual([reference]);
+  });
+});

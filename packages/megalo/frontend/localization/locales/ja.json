@@ -1,5 +1,6 @@
 {
   "expected_element": "要素が必要ですが、{{value}} が見つかりました",
   "expected_token_kind": "{{expected}} 型のトークンが必要ですが、{{kind}} 型のトークン {{token}} が見つかりました",
-  "expected_end_before_eof": "ファイル末尾の前に 'end' が必要です"
+  "expected_end_before_eof": "ファイル末尾の前に 'end' が必要です",
+  "string_already_defined": "言語 {{language}} の string table には、トークン {{identifier}} 用の文字列が既に定義されています"
 }

@@ -1,7 +1,10 @@
 import { MegaloVersion } from "../../version";
 import { Diagnostics, SourceLocation } from "../diagnostics";
 import { diagnosticMessages } from "../diagnostics/messages";
+import { FrontendError } from "../error";
+import { SymbolBinder, SymbolTable } from "../symbol-table";
 import { Token, TokenKind, Tokens } from "../tokens"
+import { ASTCommentNode, commentParser } from "./comment";
 import { ParserContext } from "./context";
 import { ASTElementNode, ElementParserRepository } from "./elements";
 
@@ -10,6 +13,7 @@ export const enum SyntaxKind {
     INVALID = -1,
     ELEMENT = 0,
     QUOTED_STRING = 1,
+    COMMENT = 2,
 }
 
 // The details of the error are handled by diagnostics.
@@ -26,6 +30,7 @@ export type ASTNode<K extends SyntaxKind> = {
 
 export type AST = {
     failed: boolean;
+    comments: ASTCommentNode[];
     elements: ASTElementNode[];
 }
 
@@ -39,15 +44,29 @@ export class Parser {
         this.elementParserRepository = new ElementParserRepository(megaloVersion);
     }
 
-    public parse = (source: Tokens, diagnostics: Diagnostics): AST => {
+    public parse = (tokens: Tokens, diagnostics: Diagnostics): {ast: AST, symbolTable: SymbolTable} => {
         // AST is managed by this function, so is not included in Parser Context.
         const ast: AST = {
             failed: false,
+            comments: [],
             elements: [],
         };
 
-        const ctx = new ParserContext(source, this.megaloVersion, diagnostics);
+        // Pass 1. Collect comments.
+        // This makes parsing elements which contain comments easier.
+        // Comment parse is done without the ParserContext because its not necessary.
+        for (const token of tokens) {
+            if (token.kind === TokenKind.Comment) {
+                ast.comments.push(commentParser(token));
+            }
+        }
         
+        // Pass 2. Parse elements.
+        // (everything else)
+        const tokensWithoutComments = tokens.filter(token => token.kind !== TokenKind.Comment);
+        const symbolBinder = new SymbolBinder(diagnostics);
+        const ctx = new ParserContext(tokensWithoutComments, this.megaloVersion, diagnostics, symbolBinder);
+
         while (ctx.hasMore()) {
             const token = ctx.getToken();
 
@@ -65,17 +84,8 @@ export class Parser {
                         ctx.diagnostics.addError(diagnosticMessages.expectedElement(token.value), token.location);
                     }
                     break;
+
                 case TokenKind.Comment:
-                    // This should never really fail,
-                    // but on off chance the comment changes syntax in some version...
-                    const commentParser = this.elementParserRepository.getParser("comment");
-                    if (commentParser) {
-                        ast.elements.push(commentParser(ctx, token));
-                    }
-                    else {
-                        ctx.diagnostics.addError(diagnosticMessages.expectedElement(token.value), token.location);
-                    }
-                    break;
                 case TokenKind.MemberVariableSeparator:
                 case TokenKind.QuotedString:
                 case TokenKind.Integer:
@@ -86,7 +96,8 @@ export class Parser {
         }
 
         ast.failed = ctx.diagnostics.hasErrors();
+        const symbolTable = symbolBinder.getSymbolTable();
 
-        return ast;
+        return {ast, symbolTable};
     }
 }

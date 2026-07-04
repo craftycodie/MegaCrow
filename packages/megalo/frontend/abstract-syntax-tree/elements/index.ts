@@ -1,8 +1,7 @@
 import { ASTNode, SyntaxKind } from "..";
 import { MegaloVersion } from "../../../version";
-import { Token, Tokens } from "../../tokens";
+import { Token } from "../../tokens";
 import { ParserContext } from "../context";
-import { CommentElementNode, commentParser } from "./comment";
 
 import { IncludeElementNode, includeParser } from "./include";
 import { LocalizedIncludeElementNode, localizedIncludeParser } from "./localized_include";
@@ -17,7 +16,6 @@ import { StringTableElementNode, stringTableParser } from "./string_table";
 export const enum ElementKind {
     INCLUDE,
     LOCALIZED_INCLUDE,
-    COMMENT,
     STRING_TABLE,
 }
 
@@ -29,7 +27,6 @@ type ASTElementNodeWithBase<T extends ASTElementBase<any>> = T;
 export type ASTElementNode = ASTElementNodeWithBase<
       IncludeElementNode
     | LocalizedIncludeElementNode
-    | CommentElementNode
     | StringTableElementNode
 >
 
@@ -47,7 +44,6 @@ export class ElementParserRepository {
     }
 
     private registerParsers(megaloVersion: MegaloVersion) {
-        this.registerParser("comment", commentParser);
         this.registerParser("include", includeParser);
         this.registerParser("localized_include", localizedIncludeParser);
         this.registerParser("string_table", stringTableParser);

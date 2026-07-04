@@ -1,0 +1,24 @@
+{
+  "devDependencies": {
+    "@biomejs/biome": "2.4.15",
+    "turbo": "^2.9.6",
+    "ultracite": "7.7.0"
+  },
+  "name": "megacrow",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "check": "ultracite check",
+    "fix": "ultracite fix"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "npm@11.12.1"
+}

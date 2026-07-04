@@ -13,6 +13,8 @@ import { TeamsElementNode, teamsParser } from "./teams";
 import { EngineDataElementNode, engineDataParser } from "./engine_data";
 import { PlayerRatingElementNode, playerRatingParser } from "./player_rating";
 import { MapPermissionsElementNode, mapPermissionsParser } from "./map_permissions";
+import { GameStatsElementNode, gameStatsParser } from "./game_stats";
+import { MapObjectElementNode, mapObjectParser } from "./map_object";
 import { BaseElementNode, baseParser } from "./base";
 import { IncludeElementNode, includeParser } from "./include";
 import { LocalizedIncludeElementNode, localizedIncludeParser } from "./localized_include";
@@ -40,6 +42,8 @@ export const enum ElementKind {
     ENGINE_DATA,
     PLAYER_RATING,
     MAP_PERMISSIONS,
+    GAME_STATS,
+    MAP_OBJECT,
 }
 
 // used by elements
@@ -62,6 +66,8 @@ export type ASTElementNode = ASTElementNodeWithBase<
     | EngineDataElementNode
     | PlayerRatingElementNode
     | MapPermissionsElementNode
+    | GameStatsElementNode
+    | MapObjectElementNode
 >
 
 export type ElementParser<E extends ASTElementNode> = (ctx: ParserContext, elementToken: Token) => E;
@@ -92,6 +98,8 @@ export class ElementParserRepository {
         this.registerParser("engine_data", engineDataParser);
         this.registerParser("player_rating", playerRatingParser);
         this.registerParser("map_permissions", mapPermissionsParser);
+        this.registerParser("game_stats", gameStatsParser);
+        this.registerParser("map_object", mapObjectParser);
     }
 
     public constructor(megaloVersion: MegaloVersion) {

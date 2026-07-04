@@ -9,6 +9,7 @@ export { GameOptionEntryKind } from "./game_options";
 import { HudWidgetsElementNode, hudWidgetsParser } from "./hud_widgets";
 import { LoadoutElementNode, loadoutParser } from "./loadout";
 import { LoadoutPaletteElementNode, loadoutPaletteParser } from "./loadout_palette";
+import { TeamsElementNode, teamsParser } from "./teams";
 import { BaseElementNode, baseParser } from "./base";
 import { IncludeElementNode, includeParser } from "./include";
 import { LocalizedIncludeElementNode, localizedIncludeParser } from "./localized_include";
@@ -32,6 +33,7 @@ export const enum ElementKind {
     HUD_WIDGETS,
     LOADOUT,
     LOADOUT_PALETTE,
+    TEAMS,
 }
 
 // used by elements
@@ -50,6 +52,7 @@ export type ASTElementNode = ASTElementNodeWithBase<
     | HudWidgetsElementNode
     | LoadoutElementNode
     | LoadoutPaletteElementNode
+    | TeamsElementNode
 >
 
 export type ElementParser<E extends ASTElementNode> = (ctx: ParserContext, elementToken: Token) => E;
@@ -76,6 +79,7 @@ export class ElementParserRepository {
         this.registerParser("hud_widgets", hudWidgetsParser);
         this.registerParser("loadout", loadoutParser);
         this.registerParser("loadout_palette", loadoutPaletteParser);
+        this.registerParser("teams", teamsParser);
     }
 
     public constructor(megaloVersion: MegaloVersion) {

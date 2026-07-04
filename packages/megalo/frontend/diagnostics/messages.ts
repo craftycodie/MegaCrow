@@ -75,6 +75,14 @@ export const diagnosticMessages = {
         return translate("unknown_loadout_property", { got });
     },
 
+    unknownTeamsBlockProperty(got: string): string {
+        return translate("unknown_teams_block_property", { got });
+    },
+
+    unknownTeamProperty(got: string): string {
+        return translate("unknown_team_property", { got });
+    },
+
     expectedLoadoutPaletteItemOrEnd(got: string): string {
         return translate("expected_parameter_type", { expected: "item or end", got });
     },

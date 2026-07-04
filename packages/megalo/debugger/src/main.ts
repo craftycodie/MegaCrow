@@ -65,7 +65,7 @@ app.innerHTML = `
         <div class="pane-header">AST
           <span class="pane-header-meta" data-role="ast-time"></span>
         </div>
-        <pre class="output-view placeholder" data-role="ast"></pre>
+        <pre class="output-view" data-role="ast"></pre>
       </section>
       <section class="pane">
         <div class="pane-header">IR</div>
@@ -115,7 +115,6 @@ if (
 const localeButtons = localeToggle.querySelectorAll<HTMLButtonElement>("[data-locale]");
 
 sourceEditor.value = DEFAULT_SOURCE;
-astView.textContent = NYI;
 irView.textContent = NYI;
 
 const severityLabel = (severity: DiagnosticSeverity): string =>
@@ -194,24 +193,51 @@ const MEGALO_VERSION = MEGALO_VERSIONS["107-mcc"];
 const lexer = new Lexer(MEGALO_VERSION);
 const parser = new Parser(MEGALO_VERSION);
 
-const update = () => {
+let cachedSource: string | null = null;
+let cachedTokens: Token[] | null = null;
+let cachedLexDuration = 0;
+
+type UpdateOptions = {
+  /** Re-translate diagnostics without re-rendering tokens/AST panes. */
+  diagnosticsOnly?: boolean;
+};
+
+const update = (options: UpdateOptions = {}) => {
   const diagnostics = new Diagnostics();
   const source = sourceEditor.value;
+  const sourceChanged = source !== cachedSource;
 
-  const lexStart = performance.now();
-  const tokens = lexer.lex(source, diagnostics);
-  const lexDuration = performance.now() - lexStart;
-  tokensView.textContent = formatTokens(tokens);
-  tokenCount.textContent = `${tokens.length} token${tokens.length === 1 ? "" : "s"}`;
-  tokenTime.textContent = formatDuration(lexDuration);
+  let tokens: Token[];
+  let lexDuration: number;
+
+  if (options.diagnosticsOnly && !sourceChanged && cachedTokens) {
+    tokens = cachedTokens;
+    lexDuration = cachedLexDuration;
+  } else {
+    const lexStart = performance.now();
+    tokens = lexer.lex(source, diagnostics);
+    lexDuration = performance.now() - lexStart;
+
+    cachedSource = source;
+    cachedTokens = tokens;
+    cachedLexDuration = lexDuration;
+
+    tokensView.textContent = formatTokens(tokens);
+    tokenCount.textContent = `${tokens.length} token${tokens.length === 1 ? "" : "s"}`;
+    tokenTime.textContent = formatDuration(lexDuration);
+  }
 
   const parseStart = performance.now();
   const ast = parser.parse(tokens, diagnostics);
   const parseDuration = performance.now() - parseStart;
-  astView.textContent = JSON.stringify(ast, null, 2);
-  astTime.textContent = formatDuration(parseDuration);
 
-  totalTime.textContent = formatDuration(lexDuration + parseDuration);
+  if (!options.diagnosticsOnly || sourceChanged) {
+    astView.textContent = JSON.stringify(ast, null, 2);
+    astView.classList.remove("placeholder");
+    astTime.textContent = formatDuration(parseDuration);
+
+    totalTime.textContent = formatDuration(lexDuration + parseDuration);
+  }
 
   renderDiagnostics(diagnostics);
 };
@@ -226,7 +252,7 @@ const applyLocale = (locale: SupportedLocale): void => {
   setLocale(locale);
   syncLocaleToggle(locale);
   localStorage.setItem(LOCALE_STORAGE_KEY, locale);
-  update();
+  update({ diagnosticsOnly: true });
 };
 
 for (const button of localeButtons) {
@@ -242,7 +268,7 @@ for (const button of localeButtons) {
   });
 }
 
-sourceEditor.addEventListener("input", update);
+sourceEditor.addEventListener("input", () => update());
 
 const storedLocale = localStorage.getItem(LOCALE_STORAGE_KEY);
 const initialLocale: SupportedLocale =

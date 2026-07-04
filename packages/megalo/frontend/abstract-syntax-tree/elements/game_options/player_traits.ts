@@ -7,13 +7,54 @@ import { ASTErrorNode, ASTNode, isAstErrorNode, SyntaxKind } from "../../kinds";
 import { ASTParameterNode, KeywordParameter, ParameterParser, ParameterType, parameterParserBuilder as buildParameterParser } from "../../parameters";
 import { grenadeCountParser } from "../../parameters/grenade-count";
 import { ASTStringLiteralOrReference, parseStringLiteralOrReference } from "../string_literal_or_reference";
-import { consumeUntilEnd, locationSpan, parseIdentifier } from "./shared";
+import { locationSpan, parseIdentifier } from "./shared";
 import { GameOptionEntryKind, type GameOptionModifiers } from "./types";
 
 export type PlayerTraitOptionNode = {
     identifier: string,
     parameters: ASTParameterNode[]
 }
+
+export const parsePlayerTraitOptions = (
+    ctx: ParserContext,
+    anchor: Token,
+): { options: PlayerTraitOptionNode[]; location: SourceCodeLocation } => {
+    const options: PlayerTraitOptionNode[] = [];
+
+    while (ctx.hasMore()) {
+        const optionIdentifier = parseIdentifier(ctx, anchor);
+
+        if (isAstErrorNode(optionIdentifier)) {
+            continue;
+        }
+
+        if (optionIdentifier.value === "end") {
+            return {
+                options,
+                location: locationSpan(anchor.location, optionIdentifier.location),
+            };
+        }
+
+        const parser = ctx.playerTraitParserRepository.getParser(optionIdentifier.value);
+        if (parser) {
+            options.push({
+                identifier: optionIdentifier.value,
+                parameters: parser(ctx, optionIdentifier.location),
+            });
+        } else {
+            ctx.diagnostics.addError(
+                diagnosticMessages.unknownPlayerTrait(optionIdentifier.value),
+                optionIdentifier.location,
+            );
+        }
+    }
+
+    ctx.diagnostics.addError(diagnosticMessages.expectedEndBeforeEof(), anchor.location);
+    return {
+        options,
+        location: anchor.location,
+    };
+};
 
 export type PlayerTraitsElementNode = {
     kind: GameOptionEntryKind.PLAYER_TRAITS;
@@ -33,48 +74,16 @@ export const playerTraitsParser = (
     const name = parseIdentifier(ctx, keywordToken);
     const displayName = parseStringLiteralOrReference(ctx, keywordToken);
     const description = parseStringLiteralOrReference(ctx, keywordToken);
-    
-    const options: PlayerTraitOptionNode[] = [];
-    
-    while (ctx.hasMore()) {
-        const optionIdentifier = parseIdentifier(ctx, keywordToken);
+    const { options, location } = parsePlayerTraitOptions(ctx, keywordToken);
 
-        if (isAstErrorNode(optionIdentifier)) {
-            continue;
-        }
-
-        if (optionIdentifier.value === "end") {
-            return {
-                kind: GameOptionEntryKind.PLAYER_TRAITS,
-                modifiers,
-                name,
-                displayName,
-                description,
-                location: locationSpan(keywordToken.location, optionIdentifier.location),
-                options,
-            };
-        }
-
-        const parser = ctx.playerTraitParserRepository.getParser(optionIdentifier.value);
-        if (parser) {
-            options.push({ identifier: optionIdentifier.value, parameters: parser(ctx, optionIdentifier.location) });
-        } else {
-            ctx.diagnostics.addError(
-                diagnosticMessages.unknownPlayerTrait(optionIdentifier.value),
-                optionIdentifier.location,
-            );
-        }
-    }
-
-    ctx.diagnostics.addError(diagnosticMessages.expectedEndBeforeEof(), keywordToken.location);
     return {
         kind: GameOptionEntryKind.PLAYER_TRAITS,
         modifiers,
         name,
         displayName,
         description,
+        location,
         options,
-        location: keywordToken.location,
     };
 };
 

@@ -117,17 +117,26 @@ end
     expect(element.items).toHaveLength(0);
   });
 
-  it("reports invalid item states", () => {
+  it("accepts any identifier as an item state", () => {
     const source = `requisition_palette test_palette
 \tbaseline spartan
 \titem "falcon" maybe
 end
 `;
 
-    const { diagnostics } = parse(source);
+    const { ast, diagnostics } = parse(source);
 
-    expect(diagnostics.hasErrors()).toBe(true);
-    expect(diagnostics.getErrors()[0]?.message).toContain("maybe");
+    expect(diagnostics.hasErrors()).toBe(false);
+
+    const element = ast.elements[0]!;
+    if (element.elementKind !== ElementKind.REQUISITION_PALETTE) {
+      return;
+    }
+
+    expect(element.items[0]?.state).toMatchObject({
+      kind: SyntaxKind.KEYWORD,
+      value: "maybe",
+    });
   });
 
   it("reports missing quoted string on item lines", () => {

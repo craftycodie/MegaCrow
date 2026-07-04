@@ -97,6 +97,10 @@ const parseItemState = (
         };
     }
 
+    ctx.diagnostics.addError(
+        diagnosticMessages.expectedTokenKind(TokenKind.Identifier, token.kind, token.value),
+        token.location,
+    );
     return {
         kind: SyntaxKind.INVALID,
         location: anchor.location,

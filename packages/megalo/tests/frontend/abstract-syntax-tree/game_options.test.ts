@@ -202,6 +202,79 @@ end
     expect(entry.values[1]?.value).toMatchObject({ kind: SyntaxKind.INTEGER, value: 10 });
   });
 
+  it("parses nested base_player_traits override", () => {
+    const source = `game_options
+\toverride base_player_traits
+\t\tshield_multiplier 200
+\t\tweapon_pickup 0
+\tend
+end
+`;
+
+    const { ast, diagnostics } = parse(source);
+
+    expect(diagnostics.hasErrors()).toBe(false);
+
+    const element = ast.elements[0]!;
+    if (element.elementKind !== ElementKind.GAME_OPTIONS) {
+      return;
+    }
+
+    expect(element.entries[0]?.name).toMatchObject({
+      kind: SyntaxKind.KEYWORD,
+      value: "base_player_traits",
+    });
+    expect(element.entries[0]?.value).toMatchObject({
+      kind: "nested",
+      body: {
+        options: [
+          {
+            identifier: "shield_multiplier",
+            parameters: [{ kind: SyntaxKind.INTEGER, value: 200 }],
+          },
+          {
+            identifier: "weapon_pickup",
+            parameters: [{ kind: SyntaxKind.INTEGER, value: 0 }],
+          },
+        ],
+      },
+    });
+  });
+
+  it("parses weapon_set and vehicle_set as simple overrides", () => {
+    const source = `game_options
+\toverride weapon_set none
+\toverride vehicle_set no_vehicles
+end
+`;
+
+    const { ast, diagnostics } = parse(source);
+
+    expect(diagnostics.hasErrors()).toBe(false);
+
+    const element = ast.elements[0]!;
+    if (element.elementKind !== ElementKind.GAME_OPTIONS) {
+      return;
+    }
+
+    expect(element.entries[0]?.name).toMatchObject({
+      kind: SyntaxKind.KEYWORD,
+      value: "weapon_set",
+    });
+    expect(element.entries[0]?.value).toMatchObject({
+      kind: "simple",
+      value: { kind: SyntaxKind.REFERENCE, identifier: "none" },
+    });
+    expect(element.entries[1]?.name).toMatchObject({
+      kind: SyntaxKind.KEYWORD,
+      value: "vehicle_set",
+    });
+    expect(element.entries[1]?.value).toMatchObject({
+      kind: "simple",
+      value: { kind: SyntaxKind.KEYWORD, value: "no_vehicles" },
+    });
+  });
+
   it("parses loadout_palette override", () => {
     const source = `game_options
 \toverride loadout_palette spartan_tier1 slayer_loadouts
@@ -217,8 +290,11 @@ end
       return;
     }
 
+    expect(element.entries[0]?.name).toMatchObject({
+      kind: SyntaxKind.KEYWORD,
+      value: "loadout_palette",
+    });
     expect(element.entries[0]?.value).toMatchObject({
-      kind: "loadout_palette",
       tier: { value: "spartan_tier1" },
       palette: { value: "slayer_loadouts" },
     });

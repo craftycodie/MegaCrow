@@ -1,9 +1,10 @@
 import { ASTElementBase, ElementKind } from "..";
 import { ASTErrorNode, ASTReferenceNode, SyntaxKind } from "../..";
+import { ASTKeywordParameterNode } from "../../parameters";
 import { SourceCodeLocation } from "../../../diagnostics";
 import { type NumericInitialValue } from "../constants";
 import { type ASTStringLiteralOrReference } from "../string_literal_or_reference";
-import { PlayerTraitsElementNode } from "./player_traits";
+import { PlayerTraitsElementNode, type PlayerTraitOptionNode } from "./player_traits";
 
 export type { ASTStringLiteralOrReference } from "../string_literal_or_reference";
 
@@ -39,7 +40,7 @@ export type UserDefinedOptionNode = {
 
 export type OverrideSimpleValueNode = {
     kind: "simple";
-    value: NumericInitialValue;
+    value: NumericInitialValue | ASTKeywordParameterNode;
 };
 
 export type OverrideLoadoutPaletteNode = {
@@ -50,13 +51,18 @@ export type OverrideLoadoutPaletteNode = {
 
 export type OverrideNestedBodyNode = {
     kind: "nested";
-    body: { location: SourceCodeLocation };
+    body: {
+        options: PlayerTraitOptionNode[];
+        location: SourceCodeLocation;
+    };
 };
+
+export type OverrideNameNode = ASTReferenceNode | ASTKeywordParameterNode | ASTErrorNode;
 
 export type OverrideEntryNode = {
     kind: GameOptionEntryKind.OVERRIDE;
     modifiers: GameOptionModifiers;
-    name: ASTReferenceNode | ASTErrorNode;
+    name: OverrideNameNode;
     value: OverrideSimpleValueNode | OverrideLoadoutPaletteNode | OverrideNestedBodyNode | ASTErrorNode;
     location: SourceCodeLocation;
 };

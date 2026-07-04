@@ -1,12 +1,12 @@
 import { MegaloVersion } from "../../version";
-import { Diagnostics, SourceCodeLocation } from "../diagnostics";
+import { Diagnostics } from "../diagnostics";
 import { diagnosticMessages } from "../diagnostics/messages";
 import { SymbolBinder, SymbolTable } from "../symbol-table";
 import { TokenKind, Tokens } from "../tokens"
 import { ASTCommentNode, commentParser } from "./comment";
 import { ParserContext } from "./context";
 import { ASTElementNode, ElementParserRepository } from "./elements";
-export { SyntaxKind, isAstErrorNode, type ASTErrorNode, type ASTNode, type ASTReferenceNode } from "./kinds";
+export { SyntaxKind, isAstErrorNode, type ASTErrorNode, type ASTFloatingPointNode, type ASTIntegerNode, type ASTNode, type ASTReferenceNode } from "./kinds";
 
 export type AST = {
     failed: boolean;

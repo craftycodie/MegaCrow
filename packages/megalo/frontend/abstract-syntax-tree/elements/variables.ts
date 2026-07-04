@@ -224,10 +224,6 @@ export const variablesParser = (ctx: ParserContext, elementToken: Token): Variab
 
     while (ctx.hasMore()) {
         const token = ctx.peekToken()!;
-        if (token.kind === TokenKind.Comment) {
-            ctx.getToken();
-            continue;
-        }
         if (token.kind === TokenKind.Identifier && token.value === "end") {
             ctx.getToken();
             foundEnd = true;

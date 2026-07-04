@@ -66,10 +66,6 @@ export const parseGameOptionReference = (ctx: ParserContext, nameToken: Token): 
 export const consumeUntilEnd = (ctx: ParserContext, anchor: Token): SourceCodeLocation => {
     while (ctx.hasMore()) {
         const token = ctx.peekToken()!;
-        if (token.kind === TokenKind.Comment) {
-            ctx.getToken();
-            continue;
-        }
         if (isEndToken(token)) {
             const endToken = ctx.getToken();
             return locationSpan(anchor.location, endToken.location);

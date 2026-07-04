@@ -19,6 +19,9 @@ describe("engineDataParser", () => {
 \tslayer_title "Slayer"
 \tslayer_description "Slayer description"
 end
+constants number
+\tk_engine_icon_slayer 5
+end
 engine_data
 \tname slayer_title
 \tdescription slayer_description
@@ -32,7 +35,7 @@ end
     expect(diagnostics.hasErrors()).toBe(false);
     expect(ast.failed).toBe(false);
 
-    const element = ast.elements[1]!;
+    const element = ast.elements[2]!;
     expect(element.elementKind).toBe(ElementKind.ENGINE_DATA);
     if (element.elementKind !== ElementKind.ENGINE_DATA) {
       return;
@@ -49,7 +52,7 @@ end
     });
     expect(element.properties[2]).toMatchObject({
       identifier: "icon",
-      parameters: [{ kind: SyntaxKind.KEYWORD, value: "k_engine_icon_slayer" }],
+      parameters: [{ kind: SyntaxKind.REFERENCE, identifier: "k_engine_icon_slayer" }],
     });
     expect(element.properties[3]).toMatchObject({
       identifier: "category",
@@ -69,7 +72,7 @@ engine_data
 \tname engine_name
 \tdescription engine_description
 \ticon k_engine_icon_slayer
-\tcategory 2
+\tcategory invasion
 end
 `;
 
@@ -88,7 +91,7 @@ end
     });
     expect(element.properties[3]).toMatchObject({
       identifier: "category",
-      parameters: [{ kind: SyntaxKind.INTEGER, value: 2 }],
+      parameters: [{ kind: SyntaxKind.KEYWORD, value: "invasion" }],
     });
   });
 

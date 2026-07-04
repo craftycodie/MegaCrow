@@ -54,15 +54,6 @@ export const stringTableParser = (ctx: ParserContext, elementToken: Token): Stri
     const entries: StringTableEntryNode[] = [];
 
     ctx.parseUntilEnd(() => {
-        const token = ctx.peekToken();
-        if (!token) {
-            return;
-        }
-        if (token.kind === TokenKind.Comment) {
-            ctx.getToken();
-            return;
-        }
-
         const symbolToken = ctx.getToken();
         let symbol: StringTableEntryNode["symbol"];
         if (symbolToken.kind === TokenKind.Identifier) {

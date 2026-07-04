@@ -80,15 +80,6 @@ export const hudWidgetsParser = (ctx: ParserContext, elementToken: Token): HudWi
     const entries: HudWidgetEntryNode[] = [];
 
     ctx.parseUntilEnd(() => {
-        const token = ctx.peekToken();
-        if (!token) {
-            return;
-        }
-        if (token.kind === TokenKind.Comment) {
-            ctx.getToken();
-            return;
-        }
-
         entries.push(parseHudWidgetEntry(ctx));
     });
 

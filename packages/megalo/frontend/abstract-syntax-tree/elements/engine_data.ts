@@ -56,11 +56,6 @@ export const engineDataParser = (
             break;
         }
 
-        if (token.kind === TokenKind.Comment) {
-            ctx.getToken();
-            continue;
-        }
-
         if (isEndToken(token)) {
             const endToken = ctx.getToken();
             return {

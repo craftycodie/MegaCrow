@@ -11,6 +11,7 @@ export const enum SyntaxKind {
     REFERENCE = 4,
     KEYWORD = 5,
     PARAMETER = 6,
+    FLOATING_POINT = 7,
 }
 
 export type ASTNode<K extends SyntaxKind> = {
@@ -24,6 +25,10 @@ export type ASTErrorNode = {
 };
 
 export type ASTIntegerNode = ASTNode<SyntaxKind.INTEGER> & {
+    value: number;
+};
+
+export type ASTFloatingPointNode = ASTNode<SyntaxKind.FLOATING_POINT> & {
     value: number;
 };
 

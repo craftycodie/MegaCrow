@@ -38,10 +38,6 @@ export const gameOptionsParser = (ctx: ParserContext, elementToken: Token): Game
 
     while (ctx.hasMore()) {
         const token = ctx.peekToken()!;
-        if (token.kind === TokenKind.Comment) {
-            ctx.getToken();
-            continue;
-        }
         if (isEndToken(token)) {
             ctx.getToken();
             foundEnd = true;

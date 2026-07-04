@@ -77,10 +77,6 @@ export const parseUserDefinedOption = (
 
     while (ctx.hasMore()) {
         const peek = ctx.peekToken()!;
-        if (peek.kind === TokenKind.Comment) {
-            ctx.getToken();
-            continue;
-        }
         if (isEndToken(peek)) {
             ctx.getToken();
             break;

@@ -109,11 +109,6 @@ export const teamsParser = (ctx: ParserContext, elementToken: Token): TeamsEleme
             break;
         }
 
-        if (token.kind === TokenKind.Comment) {
-            ctx.getToken();
-            continue;
-        }
-
         if (isEndToken(token)) {
             const endToken = ctx.getToken();
             return {

@@ -53,12 +53,6 @@ export type SymbolTable = readonly SymbolTableEntry[];
 // Analysis lifecycle - we build a new one each analysis pass.
 export class SymbolBinder {
     private readonly table: SymbolTableEntry[] = [];
-    /**
-     * We dont publish scopes to the LSP, its not necessary,
-     * but since the Parser depends on symbols, it need to know what symbols are in scope.
-     */
-    private readonly symbolScopes: Map<string, SymbolId>[] = [new Map()];
-    
     private readonly diagnostics: Diagnostics;
 
     public constructor(diagnostics: Diagnostics) {

@@ -17,6 +17,7 @@ export class ParserSymbolContext {
     // and strings with the same name, they dont shadow.
     private readonly declaredStrings: Map<string, SymbolId> = new Map();
     private readonly declaredHudWidgets: Map<string, SymbolId> = new Map();
+    private readonly declaredLoadouts: Map<string, SymbolId> = new Map();
     private readonly symbolBinder: SymbolBinder;
 
     public constructor(megaloVersion: MegaloVersion, diagnostics: Diagnostics, symbolTable: SymbolBinder) {
@@ -105,6 +106,28 @@ export class ParserSymbolContext {
 
     public addHudWidgetReference(name: string, reference: SourceCodeLocation): SymbolId | undefined {
         const id = this.declaredHudWidgets.get(name);
+        if (id !== undefined) {
+            this.symbolBinder.addReference(id, reference);
+        }
+
+        return id;
+    }
+
+    public addLoadoutToScope(name: string, declaration: SourceCodeLocation): SymbolId {
+        const id = this.symbolBinder.addLoadout({
+            name,
+            declaration,
+        });
+        this.declaredLoadouts.set(name, id);
+        return id;
+    }
+
+    public lookupLoadout(name: string): SymbolId | undefined {
+        return this.declaredLoadouts.get(name);
+    }
+
+    public addLoadoutReference(name: string, reference: SourceCodeLocation): SymbolId | undefined {
+        const id = this.declaredLoadouts.get(name);
         if (id !== undefined) {
             this.symbolBinder.addReference(id, reference);
         }

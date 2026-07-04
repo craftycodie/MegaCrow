@@ -4,6 +4,7 @@ import { diagnosticMessages } from "../diagnostics/messages";
 import { SymbolBinder } from "../symbol-table";
 import { ParserSymbolContext as ParserSymbolContext } from "../symbol-table/parser";
 import { Token, TokenKind, Tokens } from "../tokens";
+import { LoadoutParserRepository } from "./elements/loadout";
 import { PlayerTraitParserRepository } from "./elements/game_options/player_traits";
 
 // Used by the parse function to track it's progress & refer to variables in scope.
@@ -14,12 +15,14 @@ export class ParserContext {
     public readonly diagnostics: Diagnostics;
     public readonly symbolParser: ParserSymbolContext;
     public readonly playerTraitParserRepository: PlayerTraitParserRepository;
+    public readonly loadoutParserRepository: LoadoutParserRepository;
 
     public constructor(tokens: Tokens, megaloVersion: MegaloVersion, diagnostics: Diagnostics, symbolTable: SymbolBinder) {
         this.diagnostics = diagnostics;
         this.tokens = tokens;
         this.symbolParser = new ParserSymbolContext(megaloVersion, diagnostics, symbolTable);
         this.playerTraitParserRepository = new PlayerTraitParserRepository(megaloVersion);
+        this.loadoutParserRepository = new LoadoutParserRepository(megaloVersion);
     }
 
     public getToken(): Token {

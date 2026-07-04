@@ -8,5 +8,6 @@
   "variable_reference": "変数参照",
   "expected_parameter_type": "{{expected}} パラメータが必要ですが、'{{got}}' が見つかりました",
   "unknown_player_trait": "player trait modifier が必要ですが、'{{got}}' が見つかりました",
+  "unknown_loadout_property": "loadout property が必要ですが、'{{got}}' が見つかりました",
   "string_already_defined": "言語 {{language}} の string table には、トークン {{identifier}} 用の文字列が既に定義されています"
 }

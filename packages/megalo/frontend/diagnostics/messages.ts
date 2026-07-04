@@ -70,4 +70,8 @@ export const diagnosticMessages = {
         // MegaloEdit.exe: Expected player trait modifier, got '<token>'
         return translate("unknown_player_trait", { got });
     },
+
+    unknownLoadoutProperty(got: string): string {
+        return translate("unknown_loadout_property", { got });
+    },
 };

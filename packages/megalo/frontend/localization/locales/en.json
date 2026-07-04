@@ -8,5 +8,6 @@
   "variable_reference": "variable reference",
   "expected_parameter_type": "Expected {{expected}} parameter but got '{{got}}'",
   "unknown_player_trait": "Expected player trait modifier, got '{{got}}'",
+  "unknown_loadout_property": "Expected loadout property, got '{{got}}'",
   "string_already_defined": "String table for language {{language}} already has a string for token {{identifier}} defined"
 }

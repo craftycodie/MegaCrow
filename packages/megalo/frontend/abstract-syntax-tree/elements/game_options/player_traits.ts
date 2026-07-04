@@ -5,6 +5,7 @@ import { Token } from "../../../tokens";
 import { ParserContext } from "../../context";
 import { ASTErrorNode, ASTNode, isAstErrorNode, SyntaxKind } from "../../kinds";
 import { ASTParameterNode, KeywordParameter, ParameterParser, ParameterType, parameterParserBuilder as buildParameterParser } from "../../parameters";
+import { grenadeCountParser } from "../../parameters/grenade-count";
 import { ASTStringLiteralOrReference, parseStringLiteralOrReference } from "../string_literal_or_reference";
 import { consumeUntilEnd, locationSpan, parseIdentifier } from "./shared";
 import { GameOptionEntryKind, type GameOptionModifiers } from "./types";
@@ -103,7 +104,7 @@ export class PlayerTraitParserRepository {
         this.registerParser("initial_primary_weapon", buildParameterParser([ParameterType.Number]));
         this.registerParser("initial_secondary_weapon", buildParameterParser([ParameterType.Number]));
         this.registerParser("initial_equipment", buildParameterParser([ParameterType.Keyword]));
-        this.registerParser("initial_grenades", buildParameterParser([ParameterType.Number, ParameterType.Keyword]));
+        this.registerParser("initial_grenades", grenadeCountParser);
         this.registerParser("recharging_grenades", buildParameterParser([ParameterType.Number]));
         this.registerParser("infinite_ammo", buildParameterParser([ParameterType.Number]));
         this.registerParser("bottomless_clip", buildParameterParser([ParameterType.Number]));

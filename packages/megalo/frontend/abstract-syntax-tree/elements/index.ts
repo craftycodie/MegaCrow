@@ -7,6 +7,7 @@ import { ConstantsElementNode, constantsParser } from "./constants";
 import { GameOptionsElementNode, gameOptionsParser } from "./game_options";
 export { GameOptionEntryKind } from "./game_options";
 import { HudWidgetsElementNode, hudWidgetsParser } from "./hud_widgets";
+import { LoadoutElementNode, loadoutParser } from "./loadout";
 import { IncludeElementNode, includeParser } from "./include";
 import { LocalizedIncludeElementNode, localizedIncludeParser } from "./localized_include";
 import { StringTableElementNode, stringTableParser } from "./string_table";
@@ -26,6 +27,7 @@ export const enum ElementKind {
     VARIABLES,
     GAME_OPTIONS,
     HUD_WIDGETS,
+    LOADOUT,
 }
 
 // used by elements
@@ -41,6 +43,7 @@ export type ASTElementNode = ASTElementNodeWithBase<
     | VariablesElementNode
     | GameOptionsElementNode
     | HudWidgetsElementNode
+    | LoadoutElementNode
 >
 
 export type ElementParser<E extends ASTElementNode> = (ctx: ParserContext, elementToken: Token) => E;
@@ -64,6 +67,7 @@ export class ElementParserRepository {
         this.registerParser("variables", variablesParser);
         this.registerParser("game_options", gameOptionsParser);
         this.registerParser("hud_widgets", hudWidgetsParser);
+        this.registerParser("loadout", loadoutParser);
     }
 
     public constructor(megaloVersion: MegaloVersion) {

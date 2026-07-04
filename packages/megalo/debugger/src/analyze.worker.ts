@@ -10,6 +10,7 @@ import {
   type SymbolTableEntry,
   type SymbolTableGameOptionEntry,
   type SymbolTableHudWidgetEntry,
+  type SymbolTableLoadoutEntry,
   type SymbolTableStringEntry,
   type SymbolTableVariableEntry,
 } from "../../frontend/symbol-table";
@@ -42,6 +43,8 @@ const symbolKindName = (kind: SymbolKind): string => {
       return "GameOption";
     case SymbolKind.HudWidget:
       return "HudWidget";
+    case SymbolKind.Loadout:
+      return "Loadout";
   }
 };
 
@@ -93,6 +96,13 @@ const serializeSymbolTableEntry = (entry: SymbolTableEntry): object => {
       return {
         ...base,
         declaration: hudWidgetEntry.declaration,
+      };
+    }
+    case SymbolKind.Loadout: {
+      const loadoutEntry = entry as SymbolTableLoadoutEntry;
+      return {
+        ...base,
+        declaration: loadoutEntry.declaration,
       };
     }
   }

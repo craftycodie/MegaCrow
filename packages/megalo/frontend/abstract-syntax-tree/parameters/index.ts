@@ -1,9 +1,9 @@
-import { ASTErrorNode, ASTIntegerNode, ASTNode, ASTReferenceNode, SyntaxKind } from "./kinds";
-import { SourceCodeLocation } from "../diagnostics";
-import { diagnosticMessages } from "../diagnostics/messages";
-import { SymbolKind, SymbolTableEntry, VariableType } from "../symbol-table";
-import { TokenKind } from "../tokens";
-import { ParserContext } from "./context";
+import { ASTErrorNode, ASTIntegerNode, ASTNode, ASTReferenceNode, SyntaxKind } from "../kinds";
+import { SourceCodeLocation } from "../../diagnostics";
+import { diagnosticMessages } from "../../diagnostics/messages";
+import { SymbolKind, SymbolTableEntry, VariableType } from "../../symbol-table";
+import { TokenKind } from "../../tokens";
+import { ParserContext } from "../context";
 
 export const enum ParameterType {
     Keyword,

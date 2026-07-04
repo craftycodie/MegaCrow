@@ -1,5 +1,5 @@
 import { MegaloVersion } from "../../version";
-import { Diagnostics, SourceCodeLocation } from "../diagnostics";
+import { Diagnostics, SourceCodeLocation, SourceLocationType } from "../diagnostics";
 import { diagnosticMessages } from "../diagnostics/messages";
 import { SymbolBinder } from "../symbol-table";
 import { ParserSymbolContext as ParserSymbolContext } from "../symbol-table/parser";
@@ -53,6 +53,7 @@ export class ParserContext {
 
         const lastToken = this.tokens.at(-1);
         const location: SourceCodeLocation = lastToken?.location ?? {
+            type: SourceLocationType.SOURCE_CODE,
             start: { offset: 0, line: 1, column: 1 },
             end: { offset: 0, line: 1, column: 1 },
         };

@@ -8,6 +8,7 @@ import {
   type SymbolTable,
   type SymbolTableConstantEntry,
   type SymbolTableEntry,
+  type SymbolTableGameOptionEntry,
   type SymbolTableStringEntry,
   type SymbolTableVariableEntry,
 } from "../../frontend/symbol-table";
@@ -28,11 +29,24 @@ const formatTokens = (tokens: Token[]): string =>
     2,
   );
 
+const symbolKindName = (kind: SymbolKind): string => {
+  switch (kind) {
+    case SymbolKind.Constant:
+      return "Constant";
+    case SymbolKind.Variable:
+      return "Variable";
+    case SymbolKind.String:
+      return "String";
+    case SymbolKind.GameOption:
+      return "GameOption";
+  }
+};
+
 const serializeSymbolTableEntry = (entry: SymbolTableEntry): object => {
   const base = {
     id: entry.id,
     name: entry.name,
-    kind: SymbolKind[entry.kind] ?? entry.kind,
+    kind: symbolKindName(entry.kind),
     references: entry.references,
   };
 
@@ -52,6 +66,7 @@ const serializeSymbolTableEntry = (entry: SymbolTableEntry): object => {
         ...base,
         type: variableEntry.type,
         declaration: variableEntry.declaration,
+        scope: variableEntry.scope,
       };
     }
     case SymbolKind.Constant: {
@@ -62,7 +77,17 @@ const serializeSymbolTableEntry = (entry: SymbolTableEntry): object => {
         declaration: constantEntry.declaration,
       };
     }
+    case SymbolKind.GameOption: {
+      const gameOptionEntry = entry as SymbolTableGameOptionEntry;
+      return {
+        ...base,
+        type: gameOptionEntry.type,
+        declaration: gameOptionEntry.declaration,
+      };
+    }
   }
+
+  return base;
 };
 
 const formatSymbolTable = (symbolTable: SymbolTable): string =>

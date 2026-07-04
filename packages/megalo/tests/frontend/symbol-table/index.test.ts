@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { Diagnostics, type SourceCodeLocation } from "../../../frontend/diagnostics";
+import { Diagnostics, SourceLocationType, type SourceCodeLocation } from "../../../frontend/diagnostics";
 import {
   SymbolBinder,
   SymbolKind,
+  VariableScope,
   type SymbolTableStringEntry,
 } from "../../../frontend/symbol-table";
 import { MEGALO_VERSIONS } from "../../../version";
@@ -10,6 +11,7 @@ import { MEGALO_VERSIONS } from "../../../version";
 const version = MEGALO_VERSIONS["107-mcc"];
 
 const loc = (line: number, column = 1): SourceCodeLocation => ({
+  type: SourceLocationType.SOURCE_CODE,
   start: { offset: 0, line, column },
   end: { offset: 0, line, column: column + 1 },
 });
@@ -107,6 +109,7 @@ describe("SymbolBinder", () => {
       name: "player_count",
       type: 1,
       declaration: variableDeclaration,
+      scope: VariableScope.Global,
     });
     const constantId = binder.addConstant({
       name: "max_score",

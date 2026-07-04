@@ -1,38 +1,12 @@
 import { MegaloVersion } from "../../version";
 import { Diagnostics, SourceCodeLocation } from "../diagnostics";
 import { diagnosticMessages } from "../diagnostics/messages";
-import { SymbolBinder, SymbolId, SymbolTable } from "../symbol-table";
+import { SymbolBinder, SymbolTable } from "../symbol-table";
 import { TokenKind, Tokens } from "../tokens"
 import { ASTCommentNode, commentParser } from "./comment";
 import { ParserContext } from "./context";
 import { ASTElementNode, ElementParserRepository } from "./elements";
-
-// A numeric const enum is used for efficiency.
-export const enum SyntaxKind {
-    INVALID = -1,
-    ELEMENT = 0,
-    QUOTED_STRING = 1,
-    COMMENT = 2,
-    INTEGER = 3,
-    REFERENCE = 4,
-}
-
-// The details of the error are handled by diagnostics.
-// So for now we just move on.
-export type ASTErrorNode = {
-    kind: SyntaxKind.INVALID;
-    location: SourceCodeLocation;
-}
-
-export type ASTReferenceNode = ASTNode<SyntaxKind.REFERENCE> & {
-    identifier: string;
-    symbolId: SymbolId;
-}
-
-export type ASTNode<K extends SyntaxKind> = {
-    kind: K;
-    location: SourceCodeLocation;
-}
+export { SyntaxKind, isAstErrorNode, type ASTErrorNode, type ASTNode, type ASTReferenceNode } from "./kinds";
 
 export type AST = {
     failed: boolean;

@@ -1,5 +1,5 @@
 import type { MegaloVersion } from "../../version";
-import { Diagnostics, SourceCodeLocation } from "../diagnostics";
+import { Diagnostics, SourceCodeLocation, SourceLocationType } from "../diagnostics";
 
 // #region Types
 
@@ -157,6 +157,7 @@ export class Lexer {
                 kind,
                 value,
                 location: {
+                    type: SourceLocationType.SOURCE_CODE,
                     start: { offset: tokenStart, line: tokenLine, column: tokenColumn },
                     end: { offset: tokenEnd, line: tokenLine, column: endColumn },
                 },

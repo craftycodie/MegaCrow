@@ -17,6 +17,7 @@ export const BUILT_IN_LOCATION: BuiltInLocation = {
 }
 
 export type SourceCodeLocation = {
+    type: SourceLocationType.SOURCE_CODE;
     start: SourcePosition;
     end: SourcePosition;
 }

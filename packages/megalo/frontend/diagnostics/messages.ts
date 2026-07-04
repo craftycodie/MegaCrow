@@ -1,5 +1,8 @@
-import { translate } from "../localization";
+import { formatAlternatives, translate } from "../localization";
 import { TokenKind } from "../tokens";
+
+const expectedOneOf = (alternatives: readonly string[], got: string): string =>
+    translate("expected_one_of", { expected: formatAlternatives(alternatives), got });
 
 export const diagnosticMessages = {
     expectedElement(value: string): string {
@@ -25,11 +28,21 @@ export const diagnosticMessages = {
 
     expectedNumberOrEnd(got: string): string {
         // MegaloEdit.exe: Expected 'number' or 'end' but got '<got>'
-        return translate("expected_number_or_end", { got });
+        return expectedOneOf(["'number'", "'end'"], got);
     },
 
     expectedConstantValue(got: string): string {
         // MegaloEdit.exe: Expected 'true', 'false', or numeric constant name; got '<got>'
-        return translate("expected_constant_value", { got });
+        return expectedOneOf(["'true'", "'false'", translate("numeric_constant_name")], got);
+    },
+
+    expectedVariableNetworkOrEnd(got: string): string {
+        // MegaloEdit.exe: Expected 'local', 'networked', 'networked_high' or 'end' but got '<got>'
+        return expectedOneOf(["'local'", "'networked'", "'networked_high'", "'end'"], got);
+    },
+
+    expectedVariableType(got: string): string {
+        // MegaloEdit.exe: Expected 'timer', 'number', 'team', 'player', or 'object', but got '<got>'
+        return expectedOneOf(["'timer'", "'number'", "'team'", "'player'", "'object'"], got);
     },
 };

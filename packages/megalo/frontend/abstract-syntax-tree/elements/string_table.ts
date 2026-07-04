@@ -1,6 +1,6 @@
 import { ASTElementBase, ElementKind } from ".";
 import { ASTErrorNode, ASTNode, SyntaxKind } from "..";
-import { SourceCodeLocation } from "../../diagnostics";
+import { SourceCodeLocation, SourceLocationType } from "../../diagnostics";
 import { diagnosticMessages } from "../../diagnostics/messages";
 import { Token, TokenKind } from "../../tokens";
 import { ParserContext } from "../context";
@@ -110,6 +110,7 @@ export const stringTableParser = (ctx: ParserContext, elementToken: Token): Stri
             symbol,
             value,
             location: {
+                type: SourceLocationType.SOURCE_CODE,
                 start: symbolToken.location.start,
                 end: valueToken.location.end,
             },

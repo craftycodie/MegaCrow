@@ -2,7 +2,7 @@
   "expected_element": "Expected an element, got {{value}}",
   "expected_token_kind": "Expected token of type {{expected}}, got one of type {{kind}}: {{token}}",
   "expected_end_before_eof": "Expected 'end' before end of file",
-  "string_already_defined": "String table for language {{language}} already has a string for token {{identifier}} defined",
-  "expected_number_or_end": "Expected 'number' or 'end' but got '{{got}}'",
-  "expected_constant_value": "Expected 'true', 'false', or numeric constant name; got '{{got}}'"
+  "expected_one_of": "Expected {{expected}} but got '{{got}}'",
+  "numeric_constant_name": "numeric constant name",
+  "string_already_defined": "String table for language {{language}} already has a string for token {{identifier}} defined"
 }

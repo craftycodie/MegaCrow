@@ -1,23 +1,22 @@
 import { ASTElementBase, ElementKind } from ".";
 import { ASTErrorNode, ASTNode, ASTReferenceNode, SyntaxKind } from "..";
-import { SourceCodeLocation } from "../../diagnostics";
+import { SourceCodeLocation, SourceLocationType } from "../../diagnostics";
 import { diagnosticMessages } from "../../diagnostics/messages";
 import { Token, TokenKind } from "../../tokens";
 import { ParserContext } from "../context";
 
 type ConstantEntryNodeType = { value: "number"; location: SourceCodeLocation };
 type ConstantEntryNodeName = { value: string; location: SourceCodeLocation };
-type ConstantEntryNodeIntegerValue = ASTNode<SyntaxKind.INTEGER> & { value: number };
-type ConstantEntryNodeReferenceValue = ASTReferenceNode;
-type ConstantEntryNodeValue =
-    | ConstantEntryNodeIntegerValue
-    | ConstantEntryNodeReferenceValue
+
+export type NumericInitialValue =
+    | (ASTNode<SyntaxKind.INTEGER> & { value: number })
+    | ASTReferenceNode
     | ASTErrorNode;
 
 export type ConstantEntryNode = {
     type: ConstantEntryNodeType | ASTErrorNode;
     name: ConstantEntryNodeName | ASTErrorNode;
-    value: ConstantEntryNodeValue;
+    value: NumericInitialValue;
     location: SourceCodeLocation;
 };
 
@@ -25,22 +24,22 @@ export type ConstantsElementNode = ASTElementBase<ElementKind.CONSTANTS> & {
     entries: ConstantEntryNode[];
 };
 
-const parseConstantValue = (
+const isMissingInitial = (token: Token | undefined): boolean =>
+    !token || (token.kind === TokenKind.Identifier && token.value === "end");
+
+export const parseNumericInitialValue = (
     ctx: ParserContext,
-    nameToken: Token,
-): ConstantEntryNodeValue => {
+    anchor: Token,
+): NumericInitialValue => {
     const valuePeek = ctx.peekToken();
-    if (
-        !valuePeek ||
-        (valuePeek.kind === TokenKind.Identifier && valuePeek.value === "end")
-    ) {
+    if (isMissingInitial(valuePeek)) {
         ctx.diagnostics.addError(
             diagnosticMessages.expectedConstantValue(valuePeek?.value ?? ""),
-            nameToken.location,
+            anchor.location,
         );
         return {
             kind: SyntaxKind.INVALID,
-            location: nameToken.location,
+            location: anchor.location,
         };
     }
 
@@ -84,85 +83,93 @@ const parseConstantValue = (
     };
 };
 
+const parseConstantEntry = (ctx: ParserContext): ConstantEntryNode => {
+    const typeToken = ctx.getToken();
+    let type: ConstantEntryNode["type"];
+    if (typeToken.kind === TokenKind.Identifier && typeToken.value === "number") {
+        type = {
+            value: "number",
+            location: typeToken.location,
+        };
+    } else {
+        ctx.diagnostics.addError(
+            diagnosticMessages.expectedNumberOrEnd(typeToken.value),
+            typeToken.location,
+        );
+        type = {
+            kind: SyntaxKind.INVALID,
+            location: typeToken.location,
+        };
+        return {
+            type,
+            name: {
+                kind: SyntaxKind.INVALID,
+                location: typeToken.location,
+            },
+            value: {
+                kind: SyntaxKind.INVALID,
+                location: typeToken.location,
+            },
+            location: typeToken.location,
+        };
+    }
+
+    const nameToken = ctx.getToken();
+    let name: ConstantEntryNode["name"];
+    if (nameToken.kind === TokenKind.Identifier) {
+        name = {
+            value: nameToken.value,
+            location: nameToken.location,
+        };
+
+        ctx.symbolParser.addConstantToScope({
+            name: nameToken.value,
+            declaration: nameToken.location,
+        });
+    } else {
+        ctx.diagnostics.addError(
+            diagnosticMessages.expectedTokenKind(TokenKind.Identifier, nameToken.kind, nameToken.value),
+            nameToken.location,
+        );
+        name = {
+            kind: SyntaxKind.INVALID,
+            location: nameToken.location,
+        };
+    }
+
+    const value = parseNumericInitialValue(ctx, nameToken);
+
+    return {
+        type,
+        name,
+        value,
+        location: {
+            type: SourceLocationType.SOURCE_CODE,
+            start: typeToken.location.start,
+            end: value.location.end,
+        },
+    };
+};
+
 export const constantsParser = (ctx: ParserContext, elementToken: Token): ConstantsElementNode => {
     const entries: ConstantEntryNode[] = [];
+    let foundEnd = false;
 
-    ctx.parseUntilEnd(() => {
-        const token = ctx.peekToken();
-        if (!token) {
-            return;
-        }
-        if (token.kind === TokenKind.Comment) {
+    while (ctx.hasMore()) {
+        const token = ctx.peekToken()!;
+        if (token.kind === TokenKind.Identifier && token.value === "end") {
             ctx.getToken();
-            return;
+            foundEnd = true;
+            break;
         }
 
-        const typeToken = ctx.getToken();
-        let type: ConstantEntryNode["type"];
-        if (typeToken.kind === TokenKind.Identifier && typeToken.value === "number") {
-            type = {
-                value: "number",
-                location: typeToken.location,
-            };
-        } else {
-            ctx.diagnostics.addError(
-                diagnosticMessages.expectedNumberOrEnd(typeToken.value),
-                typeToken.location,
-            );
-            type = {
-                kind: SyntaxKind.INVALID,
-                location: typeToken.location,
-            };
-            entries.push({
-                type,
-                name: {
-                    kind: SyntaxKind.INVALID,
-                    location: typeToken.location,
-                },
-                value: {
-                    kind: SyntaxKind.INVALID,
-                    location: typeToken.location,
-                },
-                location: typeToken.location,
-            });
-            return;
-        }
+        entries.push(parseConstantEntry(ctx));
+    }
 
-        const nameToken = ctx.getToken();
-        let name: ConstantEntryNode["name"];
-        if (nameToken.kind === TokenKind.Identifier) {
-            name = {
-                value: nameToken.value,
-                location: nameToken.location,
-            };
-
-            ctx.symbolParser.addConstantToScope({
-                name: nameToken.value,
-                declaration: nameToken.location,
-            });
-        } else {
-            ctx.diagnostics.addError(
-                diagnosticMessages.expectedTokenKind(TokenKind.Identifier, nameToken.kind, nameToken.value),
-                nameToken.location,
-            );
-            name = {
-                kind: SyntaxKind.INVALID,
-                location: nameToken.location,
-            };
-        }
-
-        const value = parseConstantValue(ctx, nameToken);
-
-        entries.push({
-            type,
-            name,
-            value,
-            location: {
-                start: typeToken.location.start,
-                end: value.location.end,
-            },
-        });
-    });
+    if (!foundEnd) {
+        const location: SourceCodeLocation = entries.at(-1)?.location ?? elementToken.location;
+        ctx.diagnostics.addError(diagnosticMessages.expectedEndBeforeEof(), location);
+    }
 
     return {
         kind: SyntaxKind.ELEMENT,

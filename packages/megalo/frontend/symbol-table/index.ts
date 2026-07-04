@@ -1,20 +1,28 @@
 import { MegaloVersion } from "../../version";
-import { Diagnostics, SourceCodeLocation, SourceLocation } from "../diagnostics";
+import { Diagnostics, SourceCodeLocation, SourceLocation, SourceLocationType } from "../diagnostics";
 import { diagnosticMessages } from "../diagnostics/messages";
 
 export const enum SymbolKind {
     Constant,
     Variable,
     String,
+    GameOption,
 }
 
 // Modelled based on Bungie.Megalo.VariableType 
-const enum VariableType {
+export const enum VariableType {
     Timer,
     Number,
     Team,
     Player,
     Object
+}
+
+export const enum VariableScope {
+    Global,
+    Team,
+    Player,
+    Object,
 }
 
 export type SymbolId = number;
@@ -30,6 +38,13 @@ export type SymbolTableVariableEntry = SymbolTableEntryBase & {
     kind: SymbolKind.Variable;
     type: VariableType;
     declaration: SourceLocation,
+    scope: VariableScope,
+}
+
+export type SymbolTableGameOptionEntry = SymbolTableEntryBase & {
+    kind: SymbolKind.GameOption;
+    type: VariableType.Number
+    declaration: SourceLocation,
 }
 
 export type SymbolTableConstantEntry = SymbolTableEntryBase & {
@@ -43,7 +58,11 @@ export type SymbolTableStringEntry = SymbolTableEntryBase & {
     languageDeclarations: Map<string, SourceLocation>;
 }
 
-export type SymbolTableEntry = SymbolTableVariableEntry | SymbolTableConstantEntry | SymbolTableStringEntry;
+export type SymbolTableEntry = 
+      SymbolTableVariableEntry 
+    | SymbolTableConstantEntry 
+    | SymbolTableStringEntry 
+    | SymbolTableGameOptionEntry;
 
 export type SymbolTable = readonly SymbolTableEntry[];
 
@@ -92,13 +111,27 @@ export class SymbolBinder {
         return id;
     }
 
-    public addVariable(entry: Pick<SymbolTableVariableEntry, "name" | "type" | "declaration">): SymbolId {
+    public addVariable(entry: Pick<SymbolTableVariableEntry, "name" | "type" | "declaration" | "scope">): SymbolId {
         const id = this.table.length;
         this.table.push({
             id,
             references: [],
             name: entry.name,
             kind: SymbolKind.Variable,
+            type: entry.type,
+            declaration: entry.declaration,
+            scope: entry.scope,
+        });
+        return id;
+    }
+
+    public addGameOption(entry: Pick<SymbolTableGameOptionEntry, "name" | "type" | "declaration">): SymbolId {
+        const id = this.table.length;
+        this.table.push({
+            id,
+            references: [],
+            name: entry.name,
+            kind: SymbolKind.GameOption,
             type: entry.type,
             declaration: entry.declaration,
         });

@@ -2,7 +2,7 @@ import { MegaloVersion } from "../../version";
 import { Diagnostics, SourceCodeLocation } from "../diagnostics";
 import { FrontendError } from "../error";
 import { SymbolId, SymbolBinder } from ".";
-import { addBuiltInConstants } from "./built-in";
+import { addBuiltInConstants, addBuiltInGameOptions, addBuiltInVariables } from "./built-in";
 
 /**
  * SymbolParser is used by the parser to refer to variables in scope.
@@ -12,7 +12,10 @@ export class ParserSymbolContext {
     private readonly megaloVersion: MegaloVersion;
     public readonly diagnostics: Diagnostics;
 
-    public readonly symbolScopes: Map<string, SymbolId>[] = [new Map()];
+    private readonly symbolScopes: Map<string, SymbolId>[] = [new Map()];
+    // we store strings separately to everything else because Megalo supports variables
+    // and strings with the same name, they dont shadow.
+    private readonly declaredStrings: Map<string, SymbolId> = new Map();
     private readonly symbolBinder: SymbolBinder;
 
     public constructor(megaloVersion: MegaloVersion, diagnostics: Diagnostics, symbolTable: SymbolBinder) {
@@ -21,9 +24,9 @@ export class ParserSymbolContext {
         this.symbolBinder = symbolTable;
 
         addBuiltInConstants(this.megaloVersion, this);
+        addBuiltInVariables(this.megaloVersion, this);
+        addBuiltInGameOptions(this.megaloVersion, this);
     }
-
-    // #region Symbol Scope Management
 
     public currentScopeIsGlobal(): boolean {
         return this.symbolScopes.length === 1;
@@ -37,18 +40,36 @@ export class ParserSymbolContext {
 
         const id = this.symbolBinder.addString(entry);
         if (id !== undefined) {
-            this.symbolScopes.at(-1)!.set(entry.name, id);
+            this.declaredStrings.set(entry.name, id);
         }
 
         return id;
     }
 
     public addConstantToScope(entry: Parameters<SymbolBinder["addConstant"]>[0]): SymbolId {
+        // constants is only valid at top-level, so a string declaration not at global scope should be impossible.
         if (!this.currentScopeIsGlobal()) {
             throw new FrontendError("Constants can only be declared in global scope.", entry.declaration);
         }
 
         const id = this.symbolBinder.addConstant(entry);
+        this.symbolScopes.at(-1)!.set(entry.name, id);
+        return id;
+    }
+
+    public addVariableToScope(entry: Parameters<SymbolBinder["addVariable"]>[0]): SymbolId {
+        const id = this.symbolBinder.addVariable(entry);
+        this.symbolScopes.at(-1)!.set(entry.name, id);
+        return id;
+    }
+
+    public addGameOptionToScope(entry: Parameters<SymbolBinder["addGameOption"]>[0]): SymbolId {
+        // game_options is only valid at top-level, so a string declaration not at global scope should be impossible.
+        if (!this.currentScopeIsGlobal()) {
+            throw new FrontendError("Game options can only be declared in global scope.", entry.declaration);
+        }
+
+        const id = this.symbolBinder.addGameOption(entry);
         this.symbolScopes.at(-1)!.set(entry.name, id);
         return id;
     }
@@ -67,9 +88,17 @@ export class ParserSymbolContext {
         return undefined;
     }
 
+    public addStringReference(symbolName: string, reference: SourceCodeLocation): SymbolId | undefined {
+        const id = this.declaredStrings.get(symbolName);
+        if (id !== undefined) {
+            this.symbolBinder.addReference(id, reference);
+            return id;
+        }
+
+        return undefined;
+    }
+
     public popScope(): void {
         this.symbolScopes.pop();
     }
-
-    // #endregion
 }

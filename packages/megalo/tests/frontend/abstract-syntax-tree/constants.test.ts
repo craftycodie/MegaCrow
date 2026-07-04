@@ -136,6 +136,28 @@ end
     expect(diagnostics.getErrors()[0]?.message).toContain("end");
   });
 
+  it("parses a constant named end", () => {
+    const source = `constants
+\tnumber end 0
+\tnumber k_other 1
+end
+`;
+
+    const { ast, diagnostics } = parse(source);
+
+    expect(diagnostics.hasErrors()).toBe(false);
+    expect(ast.failed).toBe(false);
+
+    const element = ast.elements[0]!;
+    if (element.elementKind !== ElementKind.CONSTANTS) {
+      return;
+    }
+
+    expect(element.entries).toHaveLength(2);
+    expect(element.entries[0]?.name).toMatchObject({ value: "end" });
+    expect(element.entries[1]?.name).toMatchObject({ value: "k_other" });
+  });
+
   it("reports missing end before eof", () => {
     const source = `constants
 \tnumber k_special_death_type_none 0

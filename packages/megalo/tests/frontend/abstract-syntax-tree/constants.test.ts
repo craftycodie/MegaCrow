@@ -63,7 +63,7 @@ end
 end
 `;
 
-    const { ast, symbolTable, diagnostics } = parse(source);
+    const { ast, diagnostics } = parse(source);
 
     expect(diagnostics.hasErrors()).toBe(false);
     expect(ast.failed).toBe(false);
@@ -78,9 +78,6 @@ end
       identifier: "true",
       symbolId: 0,
     });
-
-    const builtInTrue = symbolTable.find((entry) => entry.name === "true");
-    expect(builtInTrue?.references).toHaveLength(1);
   });
 
   it("parses a constant value that references another constant", () => {
@@ -110,8 +107,6 @@ end
       identifier: "k_special_death_type_melee",
       symbolId: melee!.id,
     });
-
-    expect(melee?.references).toHaveLength(1);
   });
 
   it("reports unexpected tokens inside the block", () => {

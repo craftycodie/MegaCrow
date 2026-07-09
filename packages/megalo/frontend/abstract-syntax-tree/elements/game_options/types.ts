@@ -3,10 +3,10 @@ import { ASTErrorNode, ASTReferenceNode, SyntaxKind } from "../..";
 import { ASTKeywordParameterNode } from "../../parameters";
 import { SourceCodeLocation } from "../../../diagnostics";
 import { type NumericInitialValue } from "../constants";
-import { type ASTStringLiteralOrReference } from "../string_literal_or_reference";
+import { type ASTStringLiteralOrReference } from "../../parameters/string_literal_or_reference";
 import { PlayerTraitsElementNode, type PlayerTraitOptionNode } from "./player_traits";
 
-export type { ASTStringLiteralOrReference } from "../string_literal_or_reference";
+export type { ASTStringLiteralOrReference } from "../../parameters/string_literal_or_reference";
 
 export const enum GameOptionEntryKind {
     OVERRIDE = 0,

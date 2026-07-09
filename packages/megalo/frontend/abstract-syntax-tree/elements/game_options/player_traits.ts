@@ -6,7 +6,7 @@ import { ParserContext } from "../../context";
 import { ASTErrorNode, ASTNode, isAstErrorNode, SyntaxKind } from "../../kinds";
 import { ASTParameterNode, KeywordParameter, ParameterParser, ParameterType, parameterParserBuilder as buildParameterParser } from "../../parameters";
 import { grenadeCountParser } from "../../parameters/grenade-count";
-import { ASTStringLiteralOrReference, parseStringLiteralOrReference } from "../string_literal_or_reference";
+import { ASTStringLiteralOrReference, parseStringLiteralOrReference } from "../../parameters/string_literal_or_reference";
 import { locationSpan, parseIdentifier } from "./shared";
 import { GameOptionEntryKind, type GameOptionModifiers } from "./types";
 

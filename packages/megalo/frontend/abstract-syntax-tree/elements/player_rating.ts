@@ -71,7 +71,6 @@ const parsePlayerRatingValue = (
             };
         }
 
-        ctx.symbolParser.addSymbolReference(valueToken.value, valueToken.location);
         return {
             kind: SyntaxKind.REFERENCE,
             location: valueToken.location,

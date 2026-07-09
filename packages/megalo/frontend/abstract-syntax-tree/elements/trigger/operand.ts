@@ -67,29 +67,6 @@ const matchesVariableType = (ctx: ParserContext, symbolId: number, type: Paramet
     }
 };
 
-const commitOperandReference = (ctx: ParserContext, node: ASTConditionOperandNode): void => {
-    if (node.kind === SyntaxKind.REFERENCE) {
-        if (ctx.symbolParser.lookupHudWidget(node.identifier) !== undefined) {
-            ctx.symbolParser.addHudWidgetReference(node.identifier, node.location);
-        } else if (ctx.symbolParser.lookupLoadoutPalette(node.identifier) !== undefined) {
-            ctx.symbolParser.addLoadoutPaletteReference(node.identifier, node.location);
-        } else if (ctx.symbolParser.lookupRequisitionPalette(node.identifier) !== undefined) {
-            ctx.symbolParser.addRequisitionPaletteReference(node.identifier, node.location);
-        } else if (ctx.symbolParser.lookupLoadout(node.identifier) !== undefined) {
-            ctx.symbolParser.addLoadoutReference(node.identifier, node.location);
-        } else if (ctx.symbolParser.lookupString(node.identifier) !== undefined) {
-            ctx.symbolParser.addStringReference(node.identifier, node.location);
-        } else {
-            ctx.symbolParser.addSymbolReference(node.identifier, node.location);
-        }
-        return;
-    }
-
-    if (node.kind === SyntaxKind.MEMBER_REFERENCE && node.rootSymbolId !== undefined) {
-        ctx.symbolParser.addSymbolReference(node.root, node.location);
-    }
-};
-
 const parseMemberSuffix = (
     ctx: ParserContext,
     rootToken: { value: string; location: SourceCodeLocation },
@@ -181,7 +158,6 @@ export const parseIfOperand = (
             rootToken,
             symbolId,
         );
-        commitOperandReference(ctx, memberNode);
         return memberNode;
     }
 
@@ -192,7 +168,6 @@ export const parseIfOperand = (
             symbolId,
             location: rootToken.location,
         };
-        commitOperandReference(ctx, referenceNode);
         return referenceNode;
     }
 
@@ -235,7 +210,6 @@ export const parseTypedOperand = (
 
     if (ctx.peekToken()?.kind === TokenKind.MemberVariableSeparator) {
         const memberNode = parseMemberSuffix(ctx, rootToken, symbolId);
-        commitOperandReference(ctx, memberNode);
         return memberNode;
     }
 
@@ -256,7 +230,6 @@ export const parseTypedOperand = (
         symbolId,
         location: rootToken.location,
     };
-    commitOperandReference(ctx, referenceNode);
     return referenceNode;
 };
 

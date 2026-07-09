@@ -7,7 +7,7 @@ import { parseNumericInitialValue } from "../constants";
 import {
     parseStringLiteralOrReference,
     stringLiteralOrReferenceLocation,
-} from "../string_literal_or_reference";
+} from "../../parameters/string_literal_or_reference";
 import { isEndToken, locationSpan } from "./shared";
 import {
     GameOptionEntryKind,

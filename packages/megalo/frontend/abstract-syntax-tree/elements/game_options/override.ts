@@ -46,7 +46,6 @@ const parseOverrideName = (
     if (symbolId !== undefined) {
         const entry = ctx.symbolParser.getSymbolEntry(symbolId);
         if (entry?.kind === SymbolKind.GameOption) {
-            ctx.symbolParser.addSymbolReference(nameToken.value, nameToken.location);
             return {
                 kind: SyntaxKind.REFERENCE,
                 identifier: nameToken.value,
@@ -93,7 +92,6 @@ const parseOverrideSimpleValue = (
         const valueToken = ctx.getToken();
         const symbolId = ctx.symbolParser.lookupSymbol(valueToken.value);
         if (symbolId !== undefined) {
-            ctx.symbolParser.addSymbolReference(valueToken.value, valueToken.location);
             return {
                 kind: SyntaxKind.REFERENCE,
                 identifier: valueToken.value,

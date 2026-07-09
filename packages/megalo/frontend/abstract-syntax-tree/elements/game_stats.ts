@@ -7,7 +7,7 @@ import { Token, TokenKind } from "../../tokens";
 import { ParserContext } from "../context";
 import { isEndToken, locationSpan } from "./game_options/shared";
 import { isAstErrorNode } from "../kinds";
-import { ASTStringLiteralOrReference, parseStringLiteralOrReference } from "./string_literal_or_reference";
+import { ASTStringLiteralOrReference, parseStringLiteralOrReference } from "../parameters/string_literal_or_reference";
 
 const GAME_STAT_FORMAT_KINDS = new Set(["number", "timer", "delta", "percentage"]);
 
@@ -140,7 +140,6 @@ const parseUnitString = (
             };
         }
 
-        ctx.symbolParser.addStringReference(unitToken.value, unitToken.location);
         return {
             kind: SyntaxKind.REFERENCE,
             identifier: unitToken.value,

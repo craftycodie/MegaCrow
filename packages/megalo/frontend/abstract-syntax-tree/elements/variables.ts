@@ -52,7 +52,7 @@ const parseIdentifierInitialValue = (
         };
     }
 
-    const symbolId = ctx.symbolParser.addSymbolReference(valueToken.value, valueToken.location);
+    const symbolId = ctx.symbolParser.lookupSymbol(valueToken.value);
     if (symbolId !== undefined) {
         return {
             kind: SyntaxKind.REFERENCE,

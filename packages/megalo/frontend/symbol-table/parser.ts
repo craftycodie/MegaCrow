@@ -107,15 +107,6 @@ export class ParserSymbolContext {
         return this.declaredHudWidgets.get(name);
     }
 
-    public addHudWidgetReference(name: string, reference: SourceCodeLocation): SymbolId | undefined {
-        const id = this.declaredHudWidgets.get(name);
-        if (id !== undefined) {
-            this.symbolBinder.addReference(id, reference);
-        }
-
-        return id;
-    }
-
     public addLoadoutToScope(name: string, declaration: SourceCodeLocation): SymbolId {
         const id = this.symbolBinder.addLoadout({
             name,
@@ -127,15 +118,6 @@ export class ParserSymbolContext {
 
     public lookupLoadout(name: string): SymbolId | undefined {
         return this.declaredLoadouts.get(name);
-    }
-
-    public addLoadoutReference(name: string, reference: SourceCodeLocation): SymbolId | undefined {
-        const id = this.declaredLoadouts.get(name);
-        if (id !== undefined) {
-            this.symbolBinder.addReference(id, reference);
-        }
-
-        return id;
     }
 
     public addLoadoutPaletteToScope(name: string, declaration: SourceCodeLocation): SymbolId {
@@ -151,15 +133,6 @@ export class ParserSymbolContext {
         return this.declaredLoadoutPalettes.get(name);
     }
 
-    public addLoadoutPaletteReference(name: string, reference: SourceCodeLocation): SymbolId | undefined {
-        const id = this.declaredLoadoutPalettes.get(name);
-        if (id !== undefined) {
-            this.symbolBinder.addReference(id, reference);
-        }
-
-        return id;
-    }
-
     public addRequisitionPaletteToScope(name: string, declaration: SourceCodeLocation): SymbolId {
         const id = this.symbolBinder.addRequisitionPalette({
             name,
@@ -171,34 +144,6 @@ export class ParserSymbolContext {
 
     public lookupRequisitionPalette(name: string): SymbolId | undefined {
         return this.declaredRequisitionPalettes.get(name);
-    }
-
-    public addRequisitionPaletteReference(name: string, reference: SourceCodeLocation): SymbolId | undefined {
-        const id = this.declaredRequisitionPalettes.get(name);
-        if (id !== undefined) {
-            this.symbolBinder.addReference(id, reference);
-        }
-
-        return id;
-    }
-
-    public addSymbolReference(symbolName: string, reference: SourceCodeLocation): SymbolId | undefined {
-        const id = this.lookupSymbol(symbolName);
-        if (id !== undefined) {
-            this.symbolBinder.addReference(id, reference);
-        }
-
-        return id;
-    }
-
-    public addStringReference(symbolName: string, reference: SourceCodeLocation): SymbolId | undefined {
-        const id = this.declaredStrings.get(symbolName);
-        if (id !== undefined) {
-            this.symbolBinder.addReference(id, reference);
-            return id;
-        }
-
-        return undefined;
     }
 
     public lookupString(name: string): SymbolId | undefined {

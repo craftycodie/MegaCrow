@@ -100,28 +100,6 @@ const matchesParameterType = (entry: SymbolTableEntry, type: ParameterType): boo
     }
 };
 
-const commitReferences = (ctx: ParserContext, nodes: readonly ASTParameterNode[]): void => {
-    for (const node of nodes) {
-        if (node.kind !== SyntaxKind.REFERENCE) {
-            continue;
-        }
-
-        if (ctx.symbolParser.lookupHudWidget(node.identifier) !== undefined) {
-            ctx.symbolParser.addHudWidgetReference(node.identifier, node.location);
-        } else if (ctx.symbolParser.lookupLoadoutPalette(node.identifier) !== undefined) {
-            ctx.symbolParser.addLoadoutPaletteReference(node.identifier, node.location);
-        } else if (ctx.symbolParser.lookupRequisitionPalette(node.identifier) !== undefined) {
-            ctx.symbolParser.addRequisitionPaletteReference(node.identifier, node.location);
-        } else if (ctx.symbolParser.lookupLoadout(node.identifier) !== undefined) {
-            ctx.symbolParser.addLoadoutReference(node.identifier, node.location);
-        } else if (ctx.symbolParser.lookupString(node.identifier) !== undefined) {
-            ctx.symbolParser.addStringReference(node.identifier, node.location);
-        } else {
-            ctx.symbolParser.addSymbolReference(node.identifier, node.location);
-        }
-    }
-};
-
 const lookupReferenceSymbolId = (ctx: ParserContext, name: string): SymbolId | undefined =>
     ctx.symbolParser.lookupSymbol(name)
     ?? ctx.symbolParser.lookupString(name)
@@ -509,7 +487,6 @@ export const parameterParserBuilder = (...signatures: ParameterSignature[]): Par
             const mark = ctx.mark();
             const parameters = tryParseSignature(ctx, signature);
             if (parameters !== undefined) {
-                commitReferences(ctx, parameters);
                 return parameters;
             }
 
@@ -517,7 +494,6 @@ export const parameterParserBuilder = (...signatures: ParameterSignature[]): Par
         }
 
         const parameters = parseSignature(ctx, signatures[0]!, parseAnchor);
-        commitReferences(ctx, parameters);
         return parameters;
     };
 };

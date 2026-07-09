@@ -47,7 +47,7 @@ export const parseGameOptionReference = (ctx: ParserContext, nameToken: Token): 
         };
     }
 
-    const symbolId = ctx.symbolParser.addSymbolReference(nameToken.value, nameToken.location);
+    const symbolId = ctx.symbolParser.lookupSymbol(nameToken.value);
     if (symbolId === undefined) {
         return {
             kind: SyntaxKind.INVALID,

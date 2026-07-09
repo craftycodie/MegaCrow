@@ -1,4 +1,4 @@
-import { ASTErrorNode, ASTNode, ASTReferenceNode, SyntaxKind } from "..";
+import { ASTErrorNode, ASTNode, ASTReferenceNode, SyntaxKind } from "../kinds";
 import { SourceCodeLocation } from "../../diagnostics";
 import { diagnosticMessages } from "../../diagnostics/messages";
 import { Token, TokenKind } from "../../tokens";
@@ -42,7 +42,7 @@ export const parseStringLiteralOrReference = (
     }
 
     if (token.kind === TokenKind.Identifier) {
-        const symbolId = ctx.symbolParser.addStringReference(token.value, token.location);
+        const symbolId = ctx.symbolParser.lookupString(token.value);
         if (symbolId !== undefined) {
             return {
                 kind: SyntaxKind.REFERENCE,

@@ -53,7 +53,7 @@ export const parseNumericInitialValue = (
     }
 
     if (valueToken.kind === TokenKind.Identifier) {
-        const symbolId = ctx.symbolParser.addSymbolReference(valueToken.value, valueToken.location);
+        const symbolId = ctx.symbolParser.lookupSymbol(valueToken.value);
         if (symbolId === undefined) {
             ctx.diagnostics.addError(
                 diagnosticMessages.expectedConstantValue(valueToken.value),

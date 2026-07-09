@@ -4,8 +4,11 @@ import {
   SymbolBinder,
   SymbolKind,
   VariableScope,
+  VariableType,
   type SymbolTableStringEntry,
 } from "../../../frontend/symbol-table";
+import { ParserSymbolContext } from "../../../frontend/symbol-table/parser";
+import { ParserScopeKind } from "../../../frontend/symbol-table/scope";
 import { MEGALO_VERSIONS } from "../../../version";
 
 const version = MEGALO_VERSIONS["107-mcc"];
@@ -154,5 +157,36 @@ describe("SymbolBinder", () => {
 
     const stringEntry = binder.getSymbolTable()[0] as SymbolTableStringEntry;
     expect(stringEntry.references).toEqual([reference]);
+  });
+
+  it("pushScope and popScope isolate variable lookups", () => {
+    const diagnostics = new Diagnostics();
+    const binder = new SymbolBinder(version, diagnostics);
+    const parser = new ParserSymbolContext(version, diagnostics, binder);
+
+    parser.addVariableToScope({
+      name: "outer_var",
+      type: VariableType.Number,
+      declaration: loc(1),
+      scope: VariableScope.Global,
+    });
+
+    parser.pushScope({ kind: ParserScopeKind.Block });
+    parser.addVariableToScope({
+      name: "inner_var",
+      type: VariableType.Number,
+      declaration: loc(2),
+      scope: VariableScope.Global,
+    });
+
+    expect(parser.lookupSymbol("inner_var")).toBeDefined();
+    expect(parser.lookupSymbol("outer_var")).toBeDefined();
+    expect(parser.currentScopeIsGlobal()).toBe(false);
+
+    parser.popScope();
+
+    expect(parser.lookupSymbol("inner_var")).toBeUndefined();
+    expect(parser.lookupSymbol("outer_var")).toBeDefined();
+    expect(parser.currentScopeIsGlobal()).toBe(true);
   });
 });

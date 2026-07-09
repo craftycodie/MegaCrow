@@ -12,7 +12,8 @@ export enum TokenKind
     QuotedString,   
     Integer,
     FloatingPoint,
-    Comment
+    Comment,
+    Operator,
 }
 
 export type Token = {
@@ -33,6 +34,7 @@ const CharCode = {
     Backslash: "\\".charCodeAt(0),
     Dot: ".".charCodeAt(0),
     Minus: "-".charCodeAt(0),
+    Plus: "+".charCodeAt(0),
     LineFeed: "\n".charCodeAt(0),
     CarriageReturn: "\r".charCodeAt(0),
 } as const;
@@ -58,6 +60,14 @@ for (const ch of "0123456789") {
     lexerCharsetTable[ch.charCodeAt(0)] |= Char.Digit | Char.Ident;
 }
 
+// Longest match first so `<<` wins over `<`, `+=` over `+`, etc.
+// This is more exhaustive than Megalo, we do that to provide more informed diagnostics.
+const OPERATOR_LEXEMES = [
+    "==", "!=", "<=", ">=", "<<", ">>",
+    "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "~=",
+    "+", "-", "*", "/", "%", "<", ">", "=", "&", "|", "^", "~",
+] as const;
+
 // #endregion
 
 export class Lexer {
@@ -67,13 +77,31 @@ export class Lexer {
         this.megaloVersion = megaloVersion;
     }
 
+    private matchOperatorLexeme = (source: string, start: number): string | undefined => {
+        const ch = source[start];
+        if ((ch === "+" || ch === "-") && start + 1 < source.length) {
+            const next = source.charCodeAt(start + 1);
+            if (next >= 48 && next <= 57) {
+                return undefined;
+            }
+        }
+    
+        for (const lexeme of OPERATOR_LEXEMES) {
+            if (source.startsWith(lexeme, start)) {
+                return lexeme;
+            }
+        }
+    
+        return undefined;
+    };
+
     private classifyNumeric = (text: string): TokenKind.Integer | TokenKind.FloatingPoint | TokenKind.None => {
         if (text.length === 0) {
             return TokenKind.None;
         }
 
         let index = 0;
-        if (text.charCodeAt(0) === CharCode.Minus) {
+        if (text.charCodeAt(0) === CharCode.Minus || text.charCodeAt(0) === CharCode.Plus) {
             index = 1;
         }
         if (index >= text.length) {
@@ -175,6 +203,15 @@ export class Lexer {
             tokenStart = index;
             tokenLine = line;
             tokenColumn = column;
+
+            const operatorLexeme = this.matchOperatorLexeme(source, index);
+            if (operatorLexeme !== undefined) {
+                index += operatorLexeme.length;
+                tokenEnd = index;
+                push(TokenKind.Operator, operatorLexeme);
+                advanceSpan(tokenStart, index);
+                continue;
+            }
 
             // COMMENTS (';' to end of line)
             if (code === CharCode.Semicolon) {

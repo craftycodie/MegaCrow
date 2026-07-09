@@ -9,6 +9,8 @@ import { LoadoutPaletteParserRepository } from "./elements/loadout_palette";
 import { PlayerTraitParserRepository } from "./elements/game_options/player_traits";
 import { EngineDataParserRepository } from "./elements/engine_data";
 import { TeamsParserRepository } from "./elements/teams";
+import { ActionParserRepository } from "./elements/trigger/action";
+import { ConditionParserRepository } from "./elements/trigger/condition";
 
 // Used by the parse function to track it's progress & refer to variables in scope.
 export class ParserContext {
@@ -23,6 +25,8 @@ export class ParserContext {
     public readonly loadoutPaletteParserRepository: LoadoutPaletteParserRepository;
     public readonly teamsParserRepository: TeamsParserRepository;
     public readonly engineDataParserRepository: EngineDataParserRepository;
+    public readonly actionParserRepository: ActionParserRepository;
+    public readonly conditionParserRepository: ConditionParserRepository;
 
     public constructor(tokens: Tokens, megaloVersion: MegaloVersion, diagnostics: Diagnostics, symbolTable: SymbolBinder) {
         this.diagnostics = diagnostics;
@@ -33,6 +37,8 @@ export class ParserContext {
         this.loadoutPaletteParserRepository = new LoadoutPaletteParserRepository(megaloVersion);
         this.teamsParserRepository = new TeamsParserRepository(megaloVersion);
         this.engineDataParserRepository = new EngineDataParserRepository(megaloVersion);
+        this.actionParserRepository = new ActionParserRepository(megaloVersion);
+        this.conditionParserRepository = new ConditionParserRepository(megaloVersion);
     }
 
     public getToken(): Token {

@@ -21,6 +21,7 @@ import { IncludeElementNode, includeParser } from "./include";
 import { LocalizedIncludeElementNode, localizedIncludeParser } from "./localized_include";
 import { StringTableElementNode, stringTableParser } from "./string_table";
 import { VariablesElementNode, variablesParser } from "./variables";
+import { TriggerElementNode, triggerParser } from "./trigger";
 
 // REGISTERING NEW ELEMENTS:
 // - Add an ElementKind enum value.
@@ -46,6 +47,7 @@ export const enum ElementKind {
     GAME_STATS,
     MAP_OBJECT,
     REQUISITION_PALETTE,
+    TRIGGER,
 }
 
 // used by elements
@@ -71,6 +73,7 @@ export type ASTElementNode = ASTElementNodeWithBase<
     | GameStatsElementNode
     | MapObjectElementNode
     | RequisitionPaletteElementNode
+    | TriggerElementNode
 >
 
 export type ElementParser<E extends ASTElementNode> = (ctx: ParserContext, elementToken: Token) => E;
@@ -104,6 +107,7 @@ export class ElementParserRepository {
         this.registerParser("game_stats", gameStatsParser);
         this.registerParser("map_object", mapObjectParser);
         this.registerParser("requisition_palette", requisitionPaletteParser);
+        this.registerParser("trigger", triggerParser);
     }
 
     public constructor(megaloVersion: MegaloVersion) {

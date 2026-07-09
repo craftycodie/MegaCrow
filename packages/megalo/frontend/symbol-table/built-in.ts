@@ -49,9 +49,6 @@ export const addBuiltInVariables = (megaloVersion: MegaloVersion, symbolParser: 
     // Halo: Reach
     addBuiltInVariable("round_index")
     addBuiltInVariable("symmetric_gametype")
-
-    // only in object death trigger, added with trigger scope.
-    // addBuiltInVariable("object_death_damage_type");
 };
 
 export const addBuiltInGameOptions = (megaloVersion: MegaloVersion, symbolParser: ParserSymbolContext): void => {

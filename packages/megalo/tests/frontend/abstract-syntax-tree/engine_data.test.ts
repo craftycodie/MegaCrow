@@ -115,16 +115,25 @@ end
     expect(element.properties).toHaveLength(0);
   });
 
-  it("reports unresolved string references", () => {
+  it("parses unresolved string references leniently", () => {
     const source = `engine_data
 \tname missing_title
 end
 `;
 
-    const { diagnostics } = parse(source);
+    const { ast, diagnostics } = parse(source);
 
-    expect(diagnostics.hasErrors()).toBe(true);
-    expect(diagnostics.getErrors()[0]?.message).toContain("missing_title");
+    expect(diagnostics.hasErrors()).toBe(false);
+
+    const element = ast.elements[0]!;
+    if (element.elementKind !== ElementKind.ENGINE_DATA) {
+      return;
+    }
+
+    expect(element.properties[0]?.parameters[0]).toMatchObject({
+      kind: SyntaxKind.KEYWORD,
+      value: "missing_title",
+    });
   });
 
   it("reports missing end before eof", () => {

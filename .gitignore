@@ -3,3 +3,10 @@ dist/
 dist-cli/
 .turbo/
 *.tsbuildinfo
+
+# for now
+packages/ide
+
+# for ever
+packages/megalo-old
+packages/parse-debugger-old

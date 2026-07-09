@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { ParserContext } from "../../../frontend/abstract-syntax-tree/context";
 import {
     KeywordParameter,
+    OptionalParameter,
     ParameterType,
     parameterParserBuilder,
 } from "../../../frontend/abstract-syntax-tree/parameters";
@@ -35,6 +36,24 @@ const parseParameters = (source: string, parser: ReturnType<typeof parameterPars
         declaration: BUILT_IN_LOCATION,
     });
     ctx.symbolParser.addHudWidgetToScope("health_meter", tokens[0]!.location);
+    ctx.symbolParser.addVariableToScope({
+        name: "spawn_point",
+        type: VariableType.Object,
+        declaration: BUILT_IN_LOCATION,
+        scope: VariableScope.Global,
+    });
+    ctx.symbolParser.addVariableToScope({
+        name: "created_object",
+        type: VariableType.Object,
+        declaration: BUILT_IN_LOCATION,
+        scope: VariableScope.Global,
+    });
+    ctx.symbolParser.addVariableToScope({
+        name: "the_hill",
+        type: VariableType.Object,
+        declaration: BUILT_IN_LOCATION,
+        scope: VariableScope.Global,
+    });
 
     const anchor = tokens[0]!.location;
     const parameters = parser(ctx, anchor);
@@ -100,13 +119,90 @@ describe("parameterParserBuilder", () => {
         });
     });
 
-    it("rejects timer variables when a number parameter is required", () => {
+    it("still consumes tokens when a parameter does not match the expected type", () => {
         const parser = parameterParserBuilder(
             [ParameterType.HudWidget, ParameterType.Number, ParameterType.Number],
         );
 
-        const { diagnostics } = parseParameters("health_meter round_timer 50", parser);
+        const { parameters, diagnostics } = parseParameters("health_meter round_timer 50", parser);
 
-        expect(diagnostics.hasErrors()).toBe(true);
+        expect(diagnostics.hasErrors()).toBe(false);
+        expect(parameters).toHaveLength(3);
+        expect(parameters[1]).toMatchObject({
+            kind: SyntaxKind.REFERENCE,
+            identifier: "round_timer",
+        });
+    });
+
+    it("parses keyword unions at a single parameter position", () => {
+        const parser = parameterParserBuilder([
+            ParameterType.Object,
+            [KeywordParameter("low"), KeywordParameter("normal"), KeywordParameter("high"), KeywordParameter("blink")],
+        ]);
+
+        const { parameters, diagnostics } = parseParameters("the_hill high", parser);
+
+        expect(diagnostics.hasErrors()).toBe(false);
+        expect(parameters).toHaveLength(2);
+        expect(parameters[1]).toMatchObject({ kind: SyntaxKind.KEYWORD, value: "high" });
+    });
+
+    it("parses optional flag parameters when present", () => {
+        const parser = parameterParserBuilder([
+            ParameterType.Object,
+            OptionalParameter("no_statistics"),
+        ]);
+
+        const withFlag = parseParameters("the_hill no_statistics", parser);
+        expect(withFlag.diagnostics.hasErrors()).toBe(false);
+        expect(withFlag.parameters).toHaveLength(2);
+        expect(withFlag.parameters[1]).toMatchObject({ kind: SyntaxKind.KEYWORD, value: "no_statistics" });
+
+        const withoutFlag = parseParameters("the_hill", parser);
+        expect(withoutFlag.diagnostics.hasErrors()).toBe(false);
+        expect(withoutFlag.parameters).toHaveLength(1);
+    });
+
+    it("parses optional parameters with values", () => {
+        const parser = parameterParserBuilder([
+            ParameterType.Keyword,
+            KeywordParameter("at"),
+            ParameterType.Object,
+            OptionalParameter("set", ParameterType.Object),
+            OptionalParameter("never_garbage"),
+        ]);
+
+        const { parameters, diagnostics } = parseParameters(
+            "wall_device at spawn_point set created_object never_garbage",
+            parser,
+        );
+
+        expect(diagnostics.hasErrors()).toBe(false);
+        expect(parameters).toHaveLength(6);
+        expect(parameters[3]).toMatchObject({ kind: SyntaxKind.KEYWORD, value: "set" });
+        expect(parameters[5]).toMatchObject({ kind: SyntaxKind.KEYWORD, value: "never_garbage" });
+    });
+
+    it("parses empty signatures", () => {
+        const parser = parameterParserBuilder();
+        const diagnostics = new Diagnostics();
+        const version = MEGALO_VERSIONS["107-mcc"];
+        const tokens = new Lexer(version).lex("unused", diagnostics);
+        const ctx = new ParserContext(tokens, version, diagnostics, new SymbolBinder(version, diagnostics));
+
+        expect(parser(ctx, BUILT_IN_LOCATION)).toEqual([]);
+        expect(diagnostics.hasErrors()).toBe(false);
+    });
+
+    it("parses math operations as operator or keyword tokens", () => {
+        const parser = parameterParserBuilder([ParameterType.MathOperation, ParameterType.Number]);
+
+        const keyword = parseParameters("set_to 1", parser);
+        expect(keyword.diagnostics.hasErrors()).toBe(false);
+        expect(keyword.parameters[0]).toMatchObject({ kind: SyntaxKind.KEYWORD, value: "set_to" });
+
+        const operator = parseParameters("+= 1", parser);
+        expect(operator.diagnostics.hasErrors()).toBe(false);
+        expect(operator.parameters[0]).toMatchObject({ kind: SyntaxKind.KEYWORD, value: "+=" });
     });
 });

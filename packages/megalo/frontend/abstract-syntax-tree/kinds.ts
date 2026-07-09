@@ -12,6 +12,12 @@ export const enum SyntaxKind {
     KEYWORD = 5,
     PARAMETER = 6,
     FLOATING_POINT = 7,
+    MEMBER_REFERENCE = 8,
+    CONDITION = 9,
+    ACTION = 10,
+    BEGIN = 11,
+    TEMPORARY = 12,
+    FOR_EACH = 13,
 }
 
 export type ASTNode<K extends SyntaxKind> = {
@@ -35,6 +41,17 @@ export type ASTFloatingPointNode = ASTNode<SyntaxKind.FLOATING_POINT> & {
 export type ASTReferenceNode = ASTNode<SyntaxKind.REFERENCE> & {
     identifier: string;
     symbolId: SymbolId;
+};
+
+export type ASTMemberPartNode = {
+    value: string;
+    location: SourceCodeLocation;
+};
+
+export type ASTMemberReferenceNode = ASTNode<SyntaxKind.MEMBER_REFERENCE> & {
+    root: string;
+    rootSymbolId?: SymbolId;
+    members: ASTMemberPartNode[];
 };
 
 export const isAstErrorNode = (node: ASTErrorNode | { value: string; location: SourceCodeLocation }): node is ASTErrorNode =>

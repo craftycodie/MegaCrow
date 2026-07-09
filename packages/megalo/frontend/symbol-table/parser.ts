@@ -1,8 +1,9 @@
 import { MegaloVersion } from "../../version";
-import { Diagnostics, SourceCodeLocation } from "../diagnostics";
+import { Diagnostics, SourceCodeLocation, SourceLocationType } from "../diagnostics";
 import { FrontendError } from "../error";
 import { SymbolId, SymbolBinder, SymbolTableEntry } from ".";
 import { addBuiltInConstants, addBuiltInGameOptions, addBuiltInVariables } from "./built-in";
+import { addBuiltInScopeVariables, ParserScope, ParserScopeKind } from "./scope";
 
 /**
  * SymbolParser is used by the parser to refer to variables in scope.
@@ -19,6 +20,7 @@ export class ParserSymbolContext {
     private readonly declaredHudWidgets: Map<string, SymbolId> = new Map();
     private readonly declaredLoadouts: Map<string, SymbolId> = new Map();
     private readonly declaredLoadoutPalettes: Map<string, SymbolId> = new Map();
+    private readonly declaredRequisitionPalettes: Map<string, SymbolId> = new Map();
     private readonly symbolBinder: SymbolBinder;
 
     public constructor(megaloVersion: MegaloVersion, diagnostics: Diagnostics, symbolTable: SymbolBinder) {
@@ -158,6 +160,28 @@ export class ParserSymbolContext {
         return id;
     }
 
+    public addRequisitionPaletteToScope(name: string, declaration: SourceCodeLocation): SymbolId {
+        const id = this.symbolBinder.addRequisitionPalette({
+            name,
+            declaration,
+        });
+        this.declaredRequisitionPalettes.set(name, id);
+        return id;
+    }
+
+    public lookupRequisitionPalette(name: string): SymbolId | undefined {
+        return this.declaredRequisitionPalettes.get(name);
+    }
+
+    public addRequisitionPaletteReference(name: string, reference: SourceCodeLocation): SymbolId | undefined {
+        const id = this.declaredRequisitionPalettes.get(name);
+        if (id !== undefined) {
+            this.symbolBinder.addReference(id, reference);
+        }
+
+        return id;
+    }
+
     public addSymbolReference(symbolName: string, reference: SourceCodeLocation): SymbolId | undefined {
         const id = this.lookupSymbol(symbolName);
         if (id !== undefined) {
@@ -181,7 +205,20 @@ export class ParserSymbolContext {
         return this.declaredStrings.get(name);
     }
 
+    public pushScope(scope: ParserScope = { kind: ParserScopeKind.Block }): void {
+        this.symbolScopes.push(new Map());
+        addBuiltInScopeVariables(this.megaloVersion, this, scope);
+    }
+
     public popScope(): void {
+        if (this.symbolScopes.length <= 1) {
+            throw new FrontendError("Cannot pop global scope.", {
+                type: SourceLocationType.SOURCE_CODE,
+                start: { offset: 0, line: 1, column: 1 },
+                end: { offset: 0, line: 1, column: 1 },
+            });
+        }
+
         this.symbolScopes.pop();
     }
 }

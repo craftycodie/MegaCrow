@@ -8,13 +8,15 @@ import { ParserContext } from "../context";
 import { isEndToken, locationSpan, parseIdentifier } from "./game_options/shared";
 import { isAstErrorNode } from "../kinds";
 
-type RequisitionPaletteNameNode = { value: string; location: SourceCodeLocation };
+type RequisitionPaletteIdentifierNode = { value: string; location: SourceCodeLocation };
+
+type RequisitionPaletteNameNode = (RequisitionPaletteIdentifierNode & { symbolId: number }) | ASTErrorNode;
 
 type RequisitionPaletteItemNameNode =
     | (ASTNode<SyntaxKind.QUOTED_STRING> & { value: string })
     | ASTErrorNode;
 
-export type RequisitionPaletteBaselineNode = RequisitionPaletteNameNode | ASTErrorNode;
+export type RequisitionPaletteBaselineNode = RequisitionPaletteIdentifierNode | ASTErrorNode;
 
 export type RequisitionPaletteItemStateNode = ASTKeywordParameterNode | ASTErrorNode;
 
@@ -25,7 +27,7 @@ export type RequisitionPaletteItemNode = {
 };
 
 export type RequisitionPaletteElementNode = ASTElementBase<ElementKind.REQUISITION_PALETTE> & {
-    name: RequisitionPaletteNameNode | ASTErrorNode;
+    name: RequisitionPaletteNameNode;
     baseline?: RequisitionPaletteBaselineNode;
     items: RequisitionPaletteItemNode[];
 };
@@ -55,9 +57,11 @@ const parsePaletteName = (
         return name;
     }
 
+    const symbolId = ctx.symbolParser.addRequisitionPaletteToScope(name.value, name.location);
     return {
         value: name.value,
         location: name.location,
+        symbolId,
     };
 };
 

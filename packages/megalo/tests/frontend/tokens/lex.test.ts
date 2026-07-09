@@ -165,4 +165,34 @@ end`;
       TokenKind.Identifier,
     ]);
   });
+
+  it("tokenizes comparison and math operators", () => {
+    expect(values("== != <= >=")).toEqual(["==", "!=", "<=", ">="]);
+    expect(kinds("== != <= >=")).toEqual([
+      TokenKind.Operator,
+      TokenKind.Operator,
+      TokenKind.Operator,
+      TokenKind.Operator,
+    ]);
+  });
+
+  it("tokenizes compound math assignment operators", () => {
+    expect(values("+= -= *= /= = %= &= |= ^= ~= << >>")).toEqual([
+      "+=", "-=", "*=", "/=", "=", "%=", "&=", "|=", "^=", "~=", "<<", ">>",
+    ]);
+    expect(kinds("+= -= *= /= = %= &= |= ^= ~= << >>")).toEqual(
+      Array(12).fill(TokenKind.Operator),
+    );
+  });
+
+  it("keeps signed numeric literals intact when lexing math operators", () => {
+    expect(kinds("-5 +3")).toEqual([TokenKind.Integer, TokenKind.Integer]);
+    expect(values("action set health -= 1")).toEqual([
+      "action",
+      "set",
+      "health",
+      "-=",
+      "1",
+    ]);
+  });
 });

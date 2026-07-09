@@ -127,17 +127,25 @@ end
     expect(element.items).toHaveLength(0);
   });
 
-  it("reports unresolved loadout references", () => {
+  it("parses unresolved loadout references leniently", () => {
     const source = `loadout_palette slayer_loadouts_t1
 \titem loadout_scout
 end
 `;
 
-    const { diagnostics } = parse(source);
+    const { ast, diagnostics } = parse(source);
 
-    expect(diagnostics.hasErrors()).toBe(true);
-    expect(diagnostics.getErrors()[0]?.message).toContain("loadout");
-    expect(diagnostics.getErrors()[0]?.message).toContain("loadout_scout");
+    expect(diagnostics.hasErrors()).toBe(false);
+
+    const element = ast.elements.find((entry) => entry.elementKind === ElementKind.LOADOUT_PALETTE);
+    if (element?.elementKind !== ElementKind.LOADOUT_PALETTE) {
+      return;
+    }
+
+    expect(element.items[0]).toMatchObject({
+      kind: SyntaxKind.KEYWORD,
+      value: "loadout_scout",
+    });
   });
 
   it("reports missing end before eof", () => {

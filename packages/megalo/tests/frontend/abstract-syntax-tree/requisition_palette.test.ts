@@ -2,8 +2,14 @@ import { describe, expect, it } from "vitest";
 import { ElementKind } from "../../../frontend/abstract-syntax-tree/elements";
 import { Parser, SyntaxKind } from "../../../frontend/abstract-syntax-tree";
 import { Diagnostics } from "../../../frontend/diagnostics";
+import { SymbolKind, type SymbolTableRequisitionPaletteEntry } from "../../../frontend/symbol-table";
 import { Lexer } from "../../../frontend/tokens";
 import { MEGALO_VERSIONS } from "../../../version";
+
+const requisitionPaletteSymbols = (symbolTable: readonly { kind: SymbolKind; name: string }[]) =>
+  symbolTable.filter(
+    (entry): entry is SymbolTableRequisitionPaletteEntry => entry.kind === SymbolKind.RequisitionPalette,
+  );
 
 const parse = (source: string) => {
   const diagnostics = new Diagnostics();
@@ -37,10 +43,17 @@ requisition_palette unsc_palette_gold
 end
 `;
 
-    const { ast, diagnostics } = parse(source);
+    const { ast, symbolTable, diagnostics } = parse(source);
 
     expect(diagnostics.hasErrors()).toBe(false);
     expect(ast.failed).toBe(false);
+
+    expect(requisitionPaletteSymbols(symbolTable).map((entry) => entry.name)).toEqual([
+      "covy_palette_gold",
+      "covy_palette_silver",
+      "covy_palette_bronze",
+      "unsc_palette_gold",
+    ]);
 
     const palettes = ast.elements.filter(
       (element) => element.elementKind === ElementKind.REQUISITION_PALETTE,
@@ -52,7 +65,7 @@ end
       return;
     }
 
-    expect(gold.name).toMatchObject({ value: "covy_palette_gold" });
+    expect(gold.name).toMatchObject({ value: "covy_palette_gold", symbolId: expect.any(Number) });
     expect(gold.baseline).toMatchObject({ value: "elite" });
     expect(gold.items).toHaveLength(0);
 

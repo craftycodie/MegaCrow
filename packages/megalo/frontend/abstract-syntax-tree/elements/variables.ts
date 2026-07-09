@@ -12,7 +12,7 @@ import {
     variableTypeFromName,
     type VariableScopeName,
     type VariableTypeName,
-} from "../language-configuration/variables";
+} from "../language-configuration/omni/variables";
 import { type NumericInitialValue, parseNumericInitialValue } from "./constants";
 
 type VariableEntryNodeNetwork = { value: string; location: SourceCodeLocation };

@@ -87,6 +87,26 @@ export const diagnosticMessages = {
         return translate("unknown_engine_data_property", { got });
     },
 
+    unknownCondition(got: string): string {
+        return `Unknown condition '${got}'.`;
+    },
+
+    unknownAction(got: string): string {
+        return `Unknown action '${got}'.`;
+    },
+
+    unknownTriggerStatement(got: string): string {
+        return `Unknown trigger statement '${got}'.`;
+    },
+
+    expectedTemporaryStorage(got: string): string {
+        return expectedOneOf(["'number'", "'object'", "'team'", "'player'"], got);
+    },
+
+    expectedTemporaryInitial(): string {
+        return "Expected temporary variable initial value.";
+    },
+
     expectedLoadoutPaletteItemOrEnd(got: string): string {
         return translate("expected_parameter_type", { expected: "item or end", got });
     },

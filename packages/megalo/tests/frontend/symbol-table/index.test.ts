@@ -8,7 +8,7 @@ import {
   type SymbolTableStringEntry,
 } from "../../../frontend/symbol-table";
 import { TEAM_DESIGNATORS } from "../../../frontend/abstract-syntax-tree/language-configuration/omni/teams";
-import { ParserSymbolContext } from "../../../frontend/symbol-table/parser";
+import { ParserSymbolContext } from "../../../frontend/abstract-syntax-tree/symbol-context";
 import { ParserScopeKind } from "../../../frontend/symbol-table/scope";
 import { MEGALO_VERSIONS } from "../../../version";
 

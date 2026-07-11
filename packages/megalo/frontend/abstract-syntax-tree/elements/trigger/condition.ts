@@ -5,6 +5,10 @@ import { diagnosticMessages } from "../../../diagnostics/messages";
 import { Token, TokenKind } from "../../../tokens";
 import { ParserContext } from "../../context";
 import {
+    DISPOSITION_KEYWORDS,
+    KILLER_TYPE_KEYWORDS,
+} from "../../language-configuration/omni/conditions";
+import {
     ASTConditionOperandNode,
     ConditionOperandParser,
     conditionOperandsParser,
@@ -111,20 +115,6 @@ export const parseCondition = (
         location: locationSpan(conditionToken.location, endLocation),
     };
 };
-
-const KILLER_TYPE_KEYWORDS = [    "any",
-    "none",
-    "guardian",
-    "enemy",
-    "betrayal",
-    "suicide",
-] as const;
-
-const DISPOSITION_KEYWORDS = [
-    "neutral",
-    "friendly",
-    "enemy",
-] as const;
 
 const parseIfConditionOperands = (
     ctx: ParserContext,

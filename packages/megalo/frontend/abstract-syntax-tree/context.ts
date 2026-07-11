@@ -2,7 +2,7 @@ import { MegaloVersion } from "../../version";
 import { Diagnostics, SourceCodeLocation, SourceLocationType } from "../diagnostics";
 import { diagnosticMessages } from "../diagnostics/messages";
 import { SymbolBinder } from "../symbol-table";
-import { ParserSymbolContext as ParserSymbolContext } from "../symbol-table/parser";
+import { ParserSymbolContext as ParserSymbolContext } from "./symbol-context";
 import { Token, TokenKind, Tokens } from "../tokens";
 import { LoadoutParserRepository } from "./elements/loadout";
 import { LoadoutPaletteParserRepository } from "./elements/loadout_palette";

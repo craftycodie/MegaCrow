@@ -2,7 +2,7 @@ import { MegaloVersion } from "../../version";
 import { TRIGGER_EXECUTION_KINDS, TriggerExecutionKind } from "../abstract-syntax-tree/language-configuration/omni/triggers";
 import { BUILT_IN_LOCATION } from "../diagnostics";
 import { VariableScope, VariableType } from ".";
-import { ParserSymbolContext } from "./parser";
+import { ParserSymbolContext } from "../abstract-syntax-tree/symbol-context";
 
 export const enum ParserScopeKind {
     Block,

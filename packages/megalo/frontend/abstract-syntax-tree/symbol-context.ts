@@ -1,12 +1,14 @@
 import { MegaloVersion } from "../../version";
 import { Diagnostics, SourceCodeLocation, SourceLocationType } from "../diagnostics";
 import { FrontendError } from "../error";
-import { SymbolId, SymbolBinder, SymbolKind, SymbolTableEntry } from ".";
-import { addBuiltInConstants, addBuiltInGameOptions, addBuiltInVariables } from "./built-in";
-import { addBuiltInScopeVariables, ParserScope, ParserScopeKind } from "./scope";
+import { SymbolId, SymbolBinder, SymbolKind, SymbolTableEntry } from "../symbol-table";
+import { addBuiltInConstants, addBuiltInGameOptions, addBuiltInVariables } from "../symbol-table/built-in";
+import { addBuiltInScopeVariables, ParserScope, ParserScopeKind } from "../symbol-table/scope";
 
 /**
  * SymbolParser is used by the parser to refer to variables in scope.
+ * We do a shallow Symbol Binder pass at parse to provide a subset of
+ * symbol resolution as required for context-aware parsing.
  */
 // Analysis lifecycle - we build a new one each analysis pass.
 export class ParserSymbolContext {

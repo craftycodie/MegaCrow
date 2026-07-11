@@ -312,7 +312,7 @@ export class ActionParserRepository {
             ...teamOrPlayerTargetSignatures().map((signature) => [
                 ...signature,
                 ParameterType.String,
-                ParameterType.String,
+                ParameterType.DynamicString,
             ]),
         ));
 
@@ -321,7 +321,7 @@ export class ActionParserRepository {
             ParameterType.Number,
         ]));
 
-        this.registerParser("print_variable", buildParameterParser([ParameterType.String]));
+        this.registerParser("print_variable", buildParameterParser([ParameterType.DynamicString]));
 
         this.registerParser("get_player_holding_object", buildParameterParser([
             ParameterType.Object,
@@ -447,12 +447,12 @@ export class ActionParserRepository {
 
         this.registerParser("hud_widget_set_text", buildParameterParser([
             ParameterType.HudWidget,
-            ParameterType.String,
+            ParameterType.DynamicString,
         ]));
 
         this.registerParser("hud_widget_set_value", buildParameterParser([
             ParameterType.HudWidget,
-            ParameterType.String,
+            ParameterType.DynamicString,
         ]));
 
         this.registerParser("hud_widget_set_meter", buildParameterParser(
@@ -481,7 +481,7 @@ export class ActionParserRepository {
 
         this.registerParser("navpoint_set_text", buildParameterParser([
             ParameterType.Object,
-            ParameterType.String,
+            ParameterType.DynamicString,
         ]));
 
         this.registerParser("object_get_shield", buildParameterParser([
@@ -496,18 +496,18 @@ export class ActionParserRepository {
 
         this.registerParser("player_set_objective", buildParameterParser([
             ParameterType.Player,
-            ParameterType.String,
+            ParameterType.DynamicString,
         ]));
 
         this.registerParser("player_set_objective_allegiance", buildParameterParser([
             ParameterType.Player,
-            ParameterType.String,
+            ParameterType.DynamicString,
             ParameterType.Number,
         ]));
 
         this.registerParser("player_set_objective_allegiance_icon", buildParameterParser([
             ParameterType.Player,
-            ParameterType.String,
+            ParameterType.DynamicString,
             ParameterType.Number,
         ]));
 
@@ -632,7 +632,7 @@ export class ActionParserRepository {
 
         this.registerParser("saved_film_insert_marker", buildParameterParser([
             ParameterType.Number,
-            ParameterType.Keyword,
+            ParameterType.DynamicString,
         ]));
 
         this.registerParser("respawn_zone_enable", buildParameterParser([

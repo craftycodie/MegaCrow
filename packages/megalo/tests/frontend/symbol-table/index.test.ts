@@ -30,6 +30,7 @@ describe("SymbolBinder", () => {
     const id = binder.addString({
       name: "slayer_title",
       language: "english",
+      content: "Slayer",
       declaration,
     });
 
@@ -46,6 +47,7 @@ describe("SymbolBinder", () => {
 
     const stringEntry = entry as SymbolTableStringEntry;
     expect(stringEntry.languageDeclarations.get("english")).toEqual(declaration);
+    expect(stringEntry.languageContents.get("english")).toBe("Slayer");
   });
 
   it("addString merges language declarations for the same symbol name", () => {
@@ -57,11 +59,13 @@ describe("SymbolBinder", () => {
     const englishId = binder.addString({
       name: "msg_welcome",
       language: "english",
+      content: "Welcome %p",
       declaration: englishDeclaration,
     });
     const frenchId = binder.addString({
       name: "msg_welcome",
       language: "french",
+      content: "Bienvenue %p",
       declaration: frenchDeclaration,
     });
 
@@ -73,6 +77,8 @@ describe("SymbolBinder", () => {
     const stringEntry = binder.getSymbolTable()[0] as SymbolTableStringEntry;
     expect(stringEntry.languageDeclarations.get("english")).toEqual(englishDeclaration);
     expect(stringEntry.languageDeclarations.get("french")).toEqual(frenchDeclaration);
+    expect(stringEntry.languageContents.get("english")).toBe("Welcome %p");
+    expect(stringEntry.languageContents.get("french")).toBe("Bienvenue %p");
   });
 
   it("addString reports duplicate declarations for the same language", () => {
@@ -84,11 +90,13 @@ describe("SymbolBinder", () => {
     binder.addString({
       name: "msg_welcome",
       language: "english",
+      content: "Welcome",
       declaration: firstDeclaration,
     });
     const duplicateId = binder.addString({
       name: "msg_welcome",
       language: "english",
+      content: "Welcome again",
       declaration: duplicateDeclaration,
     });
 
@@ -99,6 +107,7 @@ describe("SymbolBinder", () => {
 
     const stringEntry = binder.getSymbolTable()[0] as SymbolTableStringEntry;
     expect(stringEntry.languageDeclarations.get("english")).toEqual(firstDeclaration);
+    expect(stringEntry.languageContents.get("english")).toBe("Welcome");
     expect(stringEntry.languageDeclarations.size).toBe(1);
   });
 
@@ -151,6 +160,7 @@ describe("SymbolBinder", () => {
     const id = binder.addString({
       name: "msg_welcome",
       language: "english",
+      content: "Welcome",
       declaration,
     });
     binder.addReference(id!, reference);
@@ -173,6 +183,34 @@ describe("SymbolBinder", () => {
         name,
       });
     }
+  });
+
+  it("lookupStringContent prefers english then falls back to the first language", () => {
+    const diagnostics = new Diagnostics();
+    const binder = new SymbolBinder(version, diagnostics);
+    const parser = new ParserSymbolContext(version, diagnostics, binder);
+
+    parser.addStringToScope({
+      name: "msg_only_french",
+      language: "french",
+      content: "Bonjour %p",
+      declaration: loc(1),
+    });
+    expect(parser.lookupStringContent("msg_only_french")).toBe("Bonjour %p");
+
+    parser.addStringToScope({
+      name: "msg_welcome",
+      language: "french",
+      content: "Bienvenue %p",
+      declaration: loc(2),
+    });
+    parser.addStringToScope({
+      name: "msg_welcome",
+      language: "english",
+      content: "Welcome %p",
+      declaration: loc(3),
+    });
+    expect(parser.lookupStringContent("msg_welcome")).toBe("Welcome %p");
   });
 
   it("pushScope and popScope isolate variable lookups", () => {

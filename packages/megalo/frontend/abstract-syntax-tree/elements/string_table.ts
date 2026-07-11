@@ -61,12 +61,6 @@ export const stringTableParser = (ctx: ParserContext, elementToken: Token): Stri
                 value: symbolToken.value,
                 location: symbolToken.location,
             };
-
-            ctx.symbolParser.addStringToScope({
-                name: symbolToken.value,
-                declaration: symbolToken.location,
-                language: language.value,
-            });
         } else {
             ctx.diagnostics.addError(
                 diagnosticMessages.expectedTokenKind(TokenKind.Identifier, symbolToken.kind, symbolToken.value),
@@ -95,6 +89,15 @@ export const stringTableParser = (ctx: ParserContext, elementToken: Token): Stri
                 kind: SyntaxKind.INVALID,
                 location: valueToken.location,
             };
+        }
+
+        if (symbolToken.kind === TokenKind.Identifier) {
+            ctx.symbolParser.addStringToScope({
+                name: symbolToken.value,
+                declaration: symbolToken.location,
+                language: language.value,
+                content: valueToken.kind === TokenKind.QuotedString ? valueToken.value : "",
+            });
         }
 
         entries.push({

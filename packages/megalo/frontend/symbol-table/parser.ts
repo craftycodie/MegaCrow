@@ -1,7 +1,7 @@
 import { MegaloVersion } from "../../version";
 import { Diagnostics, SourceCodeLocation, SourceLocationType } from "../diagnostics";
 import { FrontendError } from "../error";
-import { SymbolId, SymbolBinder, SymbolTableEntry } from ".";
+import { SymbolId, SymbolBinder, SymbolKind, SymbolTableEntry } from ".";
 import { addBuiltInConstants, addBuiltInGameOptions, addBuiltInVariables } from "./built-in";
 import { addBuiltInScopeVariables, ParserScope, ParserScopeKind } from "./scope";
 
@@ -148,6 +148,30 @@ export class ParserSymbolContext {
 
     public lookupString(name: string): SymbolId | undefined {
         return this.declaredStrings.get(name);
+    }
+
+    /** Prefer english content; otherwise the first declared language's text. */
+    public lookupStringContent(name: string): string | undefined {
+        const id = this.declaredStrings.get(name);
+        if (id === undefined) {
+            return undefined;
+        }
+
+        const entry = this.symbolBinder.getSymbolEntry(id);
+        if (entry === undefined || entry.kind !== SymbolKind.String) {
+            return undefined;
+        }
+
+        const english = entry.languageContents.get("english");
+        if (english !== undefined) {
+            return english;
+        }
+
+        for (const content of entry.languageContents.values()) {
+            return content;
+        }
+
+        return undefined;
     }
 
     public pushScope(scope: ParserScope = { kind: ParserScopeKind.Block }): void {

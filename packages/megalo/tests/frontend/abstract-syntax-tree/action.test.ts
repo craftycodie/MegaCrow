@@ -44,6 +44,8 @@ const parseActionParameters = (source: string, actionName: string) => {
     });
     ctx.symbolParser.addStringToScope({
         name: "you_are_vip",
+        language: "english",
+        content: "You are the VIP",
         declaration: BUILT_IN_LOCATION,
     });
 
@@ -164,6 +166,82 @@ describe("ActionParserRepository", () => {
 
         expect(diagnostics.hasErrors()).toBe(false);
         expect(parameters[1]).toMatchObject({ kind: SyntaxKind.KEYWORD, value: "-=" });
+    });
+
+    it("parses player_set_objective with a dynamic string literal and number replacement", () => {
+        const diagnostics = new Diagnostics();
+        const version = MEGALO_VERSIONS["107-mcc"];
+        const tokens = new Lexer(version).lex(
+            "current_player \"+%n\" score_to_win_round",
+            diagnostics,
+        );
+        const symbolBinder = new SymbolBinder(version, diagnostics);
+        const ctx = new ParserContext(tokens, version, diagnostics, symbolBinder);
+
+        ctx.symbolParser.addVariableToScope({
+            name: "current_player",
+            type: VariableType.Player,
+            declaration: BUILT_IN_LOCATION,
+            scope: VariableScope.Global,
+        });
+        ctx.symbolParser.addGameOptionToScope({
+            name: "score_to_win_round",
+            type: VariableType.Number,
+            declaration: BUILT_IN_LOCATION,
+        });
+
+        const parser = ctx.actionParserRepository.getParser("player_set_objective");
+        const parameters = parser!(ctx, tokens[0]!.location);
+
+        expect(diagnostics.hasErrors()).toBe(false);
+        expect(parameters).toHaveLength(2);
+        expect(parameters[1]).toMatchObject({
+            kind: SyntaxKind.DYNAMIC_STRING,
+            string: { kind: SyntaxKind.QUOTED_STRING, value: "+%n" },
+            replacements: [
+                expect.objectContaining({
+                    kind: SyntaxKind.REFERENCE,
+                    identifier: "score_to_win_round",
+                }),
+            ],
+        });
+        expect(ctx.hasMore()).toBe(false);
+    });
+
+    it("parses player_set_objective_allegiance with replacements before the icon index", () => {
+        const diagnostics = new Diagnostics();
+        const version = MEGALO_VERSIONS["107-mcc"];
+        const tokens = new Lexer(version).lex(
+            "current_player \"+%n\" score_to_win_round 3",
+            diagnostics,
+        );
+        const symbolBinder = new SymbolBinder(version, diagnostics);
+        const ctx = new ParserContext(tokens, version, diagnostics, symbolBinder);
+
+        ctx.symbolParser.addVariableToScope({
+            name: "current_player",
+            type: VariableType.Player,
+            declaration: BUILT_IN_LOCATION,
+            scope: VariableScope.Global,
+        });
+        ctx.symbolParser.addGameOptionToScope({
+            name: "score_to_win_round",
+            type: VariableType.Number,
+            declaration: BUILT_IN_LOCATION,
+        });
+
+        const parser = ctx.actionParserRepository.getParser("player_set_objective_allegiance");
+        const parameters = parser!(ctx, tokens[0]!.location);
+
+        expect(diagnostics.hasErrors()).toBe(false);
+        expect(parameters).toHaveLength(3);
+        expect(parameters[1]).toMatchObject({
+            kind: SyntaxKind.DYNAMIC_STRING,
+            replacements: [
+                expect.objectContaining({ identifier: "score_to_win_round" }),
+            ],
+        });
+        expect(parameters[2]).toMatchObject({ kind: SyntaxKind.INTEGER, value: 3 });
     });
 
     it("registers empty actions", () => {

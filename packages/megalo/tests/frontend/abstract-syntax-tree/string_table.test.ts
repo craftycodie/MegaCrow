@@ -68,6 +68,10 @@ end
     expect(symbols.every((entry) => entry.languageDeclarations.has("english"))).toBe(
       true,
     );
+    expect(symbols[0]?.languageContents.get("english")).toBe("Slayer");
+    expect(symbols[1]?.languageContents.get("english")).toBe(
+      "Score points by killing players on the opposing team.",
+    );
   });
 
   it("accepts any identifier as language", () => {

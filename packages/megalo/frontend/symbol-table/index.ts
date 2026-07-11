@@ -60,6 +60,7 @@ export type SymbolTableConstantEntry = SymbolTableEntryBase & {
 export type SymbolTableStringEntry = SymbolTableEntryBase & {
     kind: SymbolKind.String;
     languageDeclarations: Map<string, SourceLocation>;
+    languageContents: Map<string, string>;
 }
 
 export type SymbolTableHudWidgetEntry = SymbolTableEntryBase & {
@@ -109,7 +110,11 @@ export class SymbolBinder {
         this.diagnostics = diagnostics;
     }
 
-    public addString(entry: Pick<SymbolTableStringEntry, "name"> & { language: string, declaration: SourceCodeLocation }): SymbolId | undefined {
+    public addString(entry: Pick<SymbolTableStringEntry, "name"> & {
+        language: string;
+        content: string;
+        declaration: SourceCodeLocation;
+    }): SymbolId | undefined {
         const existingString = this.table.find(
             (symbol): symbol is SymbolTableStringEntry =>
                 symbol.kind === SymbolKind.String && symbol.name === entry.name,
@@ -125,6 +130,7 @@ export class SymbolBinder {
 
         if (existingString) {
             existingString.languageDeclarations.set(entry.language, entry.declaration);
+            existingString.languageContents.set(entry.language, entry.content);
             return existingString.id;
         }
 
@@ -135,6 +141,7 @@ export class SymbolBinder {
             name: entry.name,
             kind: SymbolKind.String,
             languageDeclarations: new Map([[entry.language, entry.declaration]]),
+            languageContents: new Map([[entry.language, entry.content]]),
         });
         return id;
     }

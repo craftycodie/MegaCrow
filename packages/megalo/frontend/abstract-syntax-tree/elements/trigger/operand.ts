@@ -54,7 +54,7 @@ const matchesVariableType = (ctx: ParserContext, symbolId: number, type: Paramet
         case ParameterType.Player:
             return entry.type === VariableType.Player;
         case ParameterType.Object:
-            return entry.type === VariableType.Object;
+            return entry.type === VariableType.Object || entry.type === VariableType.Player;
         default:
             return false;
     }

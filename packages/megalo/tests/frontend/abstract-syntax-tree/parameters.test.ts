@@ -303,4 +303,138 @@ describe("parameterParserBuilder", () => {
             member: { value: "vip" },
         });
     });
+
+    it("parses dynamic string literals with typed replacements", () => {
+        const parser = parameterParserBuilder([ParameterType.DynamicString]);
+
+        const { parameters, diagnostics } = parseParameters(
+            "\"%p scored!\" current_player",
+            parser,
+        );
+
+        expect(diagnostics.hasErrors()).toBe(false);
+        expect(parameters).toHaveLength(1);
+        expect(parameters[0]).toMatchObject({
+            kind: SyntaxKind.DYNAMIC_STRING,
+            string: { kind: SyntaxKind.QUOTED_STRING, value: "%p scored!" },
+            replacements: [
+                expect.objectContaining({
+                    kind: SyntaxKind.REFERENCE,
+                    identifier: "current_player",
+                }),
+            ],
+        });
+    });
+
+    it("parses dynamic string references using english content for placeholders", () => {
+        const parser = parameterParserBuilder([ParameterType.DynamicString]);
+        const diagnostics = new Diagnostics();
+        const version = MEGALO_VERSIONS["107-mcc"];
+        const tokens = new Lexer(version).lex("obj_score score_to_win_round", diagnostics);
+        const symbolBinder = new SymbolBinder(version, diagnostics);
+        const ctx = new ParserContext(tokens, version, diagnostics, symbolBinder);
+
+        ctx.symbolParser.addStringToScope({
+            name: "obj_score",
+            language: "english",
+            content: "+%n",
+            declaration: BUILT_IN_LOCATION,
+        });
+        ctx.symbolParser.addGameOptionToScope({
+            name: "score_to_win_round",
+            type: VariableType.Number,
+            declaration: BUILT_IN_LOCATION,
+        });
+
+        const parameters = parser(ctx, tokens[0]!.location);
+
+        expect(diagnostics.hasErrors()).toBe(false);
+        expect(parameters[0]).toMatchObject({
+            kind: SyntaxKind.DYNAMIC_STRING,
+            string: { kind: SyntaxKind.REFERENCE, identifier: "obj_score" },
+            replacements: [
+                expect.objectContaining({
+                    kind: SyntaxKind.REFERENCE,
+                    identifier: "score_to_win_round",
+                }),
+            ],
+        });
+    });
+
+    it("ignores unknown percent sequences and parses multiple known placeholders", () => {
+        const parser = parameterParserBuilder([ParameterType.DynamicString]);
+
+        const { parameters, diagnostics } = parseParameters(
+            "\"%% %n %s %x\" meter_value round_timer",
+            parser,
+        );
+
+        expect(diagnostics.hasErrors()).toBe(false);
+        expect(parameters[0]).toMatchObject({
+            kind: SyntaxKind.DYNAMIC_STRING,
+            replacements: [
+                expect.objectContaining({ identifier: "meter_value" }),
+                expect.objectContaining({ identifier: "round_timer" }),
+            ],
+        });
+    });
+
+    it("parses more than two known placeholders without a parse diagnostic", () => {
+        const parser = parameterParserBuilder([ParameterType.DynamicString]);
+
+        const { parameters, diagnostics } = parseParameters(
+            "\"%n %n %n\" 1 2 3",
+            parser,
+        );
+
+        expect(diagnostics.hasErrors()).toBe(false);
+        expect(parameters[0]).toMatchObject({
+            kind: SyntaxKind.DYNAMIC_STRING,
+            replacements: [
+                expect.objectContaining({ kind: SyntaxKind.INTEGER, value: 1 }),
+                expect.objectContaining({ kind: SyntaxKind.INTEGER, value: 2 }),
+                expect.objectContaining({ kind: SyntaxKind.INTEGER, value: 3 }),
+            ],
+        });
+    });
+
+    it("leniently treats unresolved dynamic string refs as having zero replacements", () => {
+        const parser = parameterParserBuilder([ParameterType.DynamicString]);
+        const diagnostics = new Diagnostics();
+        const version = MEGALO_VERSIONS["107-mcc"];
+        const tokens = new Lexer(version).lex("missing_string leftover", diagnostics);
+        const symbolBinder = new SymbolBinder(version, diagnostics);
+        const ctx = new ParserContext(tokens, version, diagnostics, symbolBinder);
+
+        const parameters = parser(ctx, tokens[0]!.location);
+
+        expect(diagnostics.hasErrors()).toBe(false);
+        expect(parameters).toHaveLength(1);
+        expect(parameters[0]).toMatchObject({
+            kind: SyntaxKind.DYNAMIC_STRING,
+            string: { kind: SyntaxKind.INVALID },
+            replacements: [],
+        });
+        expect(ctx.peekToken()?.value).toBe("leftover");
+    });
+
+    it("accepts a player reference where an object parameter is expected", () => {
+        const parser = parameterParserBuilder([ParameterType.Object, ParameterType.Object]);
+
+        const { parameters, diagnostics } = parseParameters(
+            "current_player the_hill",
+            parser,
+        );
+
+        expect(diagnostics.hasErrors()).toBe(false);
+        expect(parameters).toHaveLength(2);
+        expect(parameters[0]).toMatchObject({
+            kind: SyntaxKind.REFERENCE,
+            identifier: "current_player",
+        });
+        expect(parameters[1]).toMatchObject({
+            kind: SyntaxKind.REFERENCE,
+            identifier: "the_hill",
+        });
+    });
 });

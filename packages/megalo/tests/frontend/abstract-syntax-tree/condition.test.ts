@@ -132,6 +132,23 @@ describe("parseCondition", () => {
         expect(condition.name.value).toBe("game_is_forge");
         expect(condition.operands).toEqual([]);
     });
+
+    it("accepts a player reference where an object operand is expected", () => {
+        const { condition, diagnostics } = parseConditionLine(
+            "condition object_in_area current_player the_hill",
+        );
+
+        expect(diagnostics.hasErrors()).toBe(false);
+        expect(condition.name.value).toBe("object_in_area");
+        expect(condition.operands[0]).toMatchObject({
+            kind: SyntaxKind.REFERENCE,
+            identifier: "current_player",
+        });
+        expect(condition.operands[1]).toMatchObject({
+            kind: SyntaxKind.REFERENCE,
+            identifier: "the_hill",
+        });
+    });
 });
 
 describe("comparison operator lexing", () => {

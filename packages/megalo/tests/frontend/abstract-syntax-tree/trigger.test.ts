@@ -34,6 +34,8 @@ const setupContext = (source: string) => {
     });
     ctx.symbolParser.addStringToScope({
         name: "test_string",
+        language: "english",
+        content: "test",
         declaration: BUILT_IN_LOCATION,
     });
 
@@ -87,6 +89,16 @@ describe("triggerParser", () => {
         expect(element.statements[1]).toMatchObject({
             kind: SyntaxKind.ACTION,
             name: { value: "print_variable" },
+            parameters: [
+                expect.objectContaining({
+                    kind: SyntaxKind.DYNAMIC_STRING,
+                    string: expect.objectContaining({
+                        kind: SyntaxKind.REFERENCE,
+                        identifier: "test_string",
+                    }),
+                    replacements: [],
+                }),
+            ],
         });
         expect(element.statements[2]).toMatchObject({
             kind: SyntaxKind.BEGIN,

@@ -9,6 +9,7 @@ export const enum ParameterType {
     Keyword,
     Number,
     String,
+    DynamicString,
     Timer,
     Team,
     Player,
@@ -55,11 +56,20 @@ export type ASTKeywordParameterNode = ASTNode<SyntaxKind.KEYWORD> & {
     value: string;
 };
 
+export type ASTDynamicStringNode = ASTNode<SyntaxKind.DYNAMIC_STRING> & {
+    string:
+        | (ASTNode<SyntaxKind.QUOTED_STRING> & { value: string })
+        | ASTReferenceNode
+        | ASTErrorNode;
+    replacements: ASTParameterNode[];
+};
+
 export type ASTParameterNode =
     | ASTKeywordParameterNode
     | ASTIntegerNode
     | ASTReferenceNode
     | ASTMemberReferenceNode
+    | ASTDynamicStringNode
     | ASTErrorNode;
 
 export type ParameterParser = (ctx: ParserContext, anchor: SourceCodeLocation) => ASTParameterNode[];
@@ -86,7 +96,8 @@ const matchesParameterType = (entry: SymbolTableEntry, type: ParameterType): boo
         case ParameterType.Player:
             return entry.kind === SymbolKind.Variable && entry.type === VariableType.Player;
         case ParameterType.Object:
-            return entry.kind === SymbolKind.Variable && entry.type === VariableType.Object;
+            return entry.kind === SymbolKind.Variable
+                && (entry.type === VariableType.Object || entry.type === VariableType.Player);
         case ParameterType.HudWidget:
             return entry.kind === SymbolKind.HudWidget;
         case ParameterType.Loadout:
@@ -108,6 +119,38 @@ const isVariableParameterType = (type: ParameterType): boolean =>
     || type === ParameterType.Team
     || type === ParameterType.Player
     || type === ParameterType.Object;
+
+const DYNAMIC_STRING_PLACEHOLDERS: Readonly<Record<string, ParameterType>> = {
+    n: ParameterType.Number,
+    p: ParameterType.Player,
+    t: ParameterType.Team,
+    o: ParameterType.Object,
+    s: ParameterType.Timer,
+};
+
+/** Scan format text for known `%` placeholders; unknown `%X` and trailing `%` are ignored. */
+export const scanDynamicStringPlaceholders = (text: string): ParameterType[] => {
+    const placeholders: ParameterType[] = [];
+
+    for (let i = 0; i < text.length; i++) {
+        if (text[i] !== "%") {
+            continue;
+        }
+
+        const next = text[i + 1];
+        if (next === undefined) {
+            break;
+        }
+
+        i += 1;
+        const type = DYNAMIC_STRING_PLACEHOLDERS[next];
+        if (type !== undefined) {
+            placeholders.push(type);
+        }
+    }
+
+    return placeholders;
+};
 
 const locationSpan = (start: SourceCodeLocation, end: SourceCodeLocation): SourceCodeLocation => ({
     type: SourceLocationType.SOURCE_CODE,
@@ -409,10 +452,149 @@ const parseParameter = (
     }
 };
 
+const tryParseDynamicString = (
+    ctx: ParserContext,
+): ASTDynamicStringNode | undefined => {
+    const token = ctx.peekToken();
+    if (
+        token?.kind !== TokenKind.QuotedString
+        && token?.kind !== TokenKind.Identifier
+    ) {
+        return undefined;
+    }
+
+    let stringNode: ASTDynamicStringNode["string"];
+    let text: string | undefined;
+    let stringLocation: SourceCodeLocation;
+
+    if (token.kind === TokenKind.QuotedString) {
+        const literalToken = ctx.getToken();
+        stringNode = {
+            kind: SyntaxKind.QUOTED_STRING,
+            value: literalToken.value,
+            location: literalToken.location,
+        };
+        text = literalToken.value;
+        stringLocation = literalToken.location;
+    } else {
+        const symbolId = ctx.symbolParser.lookupString(token.value);
+        if (symbolId === undefined) {
+            return undefined;
+        }
+
+        const referenceToken = ctx.getToken();
+        stringNode = {
+            kind: SyntaxKind.REFERENCE,
+            identifier: referenceToken.value,
+            symbolId,
+            location: referenceToken.location,
+        };
+        text = ctx.symbolParser.lookupStringContent(referenceToken.value);
+        stringLocation = referenceToken.location;
+    }
+
+    const placeholders = text === undefined ? [] : scanDynamicStringPlaceholders(text);
+    const replacements: ASTParameterNode[] = [];
+
+    for (const placeholder of placeholders) {
+        const parameter = parseParameter(ctx, placeholder);
+        if (parameter === undefined) {
+            return undefined;
+        }
+
+        replacements.push(parameter);
+    }
+
+    const lastLocation = replacements.at(-1)?.location ?? stringLocation;
+    return {
+        kind: SyntaxKind.DYNAMIC_STRING,
+        string: stringNode,
+        replacements,
+        location: locationSpan(stringLocation, lastLocation),
+    };
+};
+
+const parseDynamicString = (
+    ctx: ParserContext,
+    anchor: SourceCodeLocation,
+): ASTDynamicStringNode => {
+    const token = ctx.peekToken();
+    if (
+        token?.kind !== TokenKind.QuotedString
+        && token?.kind !== TokenKind.Identifier
+    ) {
+        const invalid = consumeLenientParameter(ctx, anchor);
+        return {
+            kind: SyntaxKind.DYNAMIC_STRING,
+            string: {
+                kind: SyntaxKind.INVALID,
+                location: invalid.location,
+            },
+            replacements: [],
+            location: invalid.location,
+        };
+    }
+
+    let stringNode: ASTDynamicStringNode["string"];
+    let text: string | undefined;
+    let stringLocation: SourceCodeLocation;
+
+    if (token.kind === TokenKind.QuotedString) {
+        const literalToken = ctx.getToken();
+        stringNode = {
+            kind: SyntaxKind.QUOTED_STRING,
+            value: literalToken.value,
+            location: literalToken.location,
+        };
+        text = literalToken.value;
+        stringLocation = literalToken.location;
+    } else {
+        const symbolId = ctx.symbolParser.lookupString(token.value);
+        const referenceToken = ctx.getToken();
+        if (symbolId === undefined) {
+            stringNode = {
+                kind: SyntaxKind.INVALID,
+                location: referenceToken.location,
+            };
+            text = undefined;
+            stringLocation = referenceToken.location;
+        } else {
+            stringNode = {
+                kind: SyntaxKind.REFERENCE,
+                identifier: referenceToken.value,
+                symbolId,
+                location: referenceToken.location,
+            };
+            text = ctx.symbolParser.lookupStringContent(referenceToken.value);
+            stringLocation = referenceToken.location;
+        }
+    }
+
+    const placeholders = text === undefined ? [] : scanDynamicStringPlaceholders(text);
+    const replacements: ASTParameterNode[] = [];
+
+    for (const placeholder of placeholders) {
+        replacements.push(parseParameter(ctx, placeholder) ?? consumeLenientParameter(ctx, anchor));
+    }
+
+    const lastLocation = replacements.at(-1)?.location ?? stringLocation;
+    return {
+        kind: SyntaxKind.DYNAMIC_STRING,
+        string: stringNode,
+        replacements,
+        location: locationSpan(stringLocation, lastLocation),
+    };
+};
+
 const tryParseSlot = (
     ctx: ParserContext,
     slot: ParameterSlot,
 ): ASTParameterNode[] | undefined => {
+    if (slot === ParameterType.DynamicString) {
+        const node = tryParseDynamicString(ctx);
+        return node === undefined ? undefined : [node];
+    }
+
     if (isOptionalParameter(slot)) {
         const token = ctx.peekToken();
         if (token?.kind !== TokenKind.Identifier || token.value !== slot.name) {
@@ -463,6 +645,10 @@ const parseSlot = (
     slot: ParameterSlot,
     anchor: SourceCodeLocation,
 ): ASTParameterNode[] => {
+    if (slot === ParameterType.DynamicString) {
+        return [parseDynamicString(ctx, anchor)];
+    }
+
     if (isOptionalParameter(slot)) {
         const token = ctx.peekToken();
         if (token?.kind !== TokenKind.Identifier || token.value !== slot.name) {

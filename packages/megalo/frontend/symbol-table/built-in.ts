@@ -17,11 +17,11 @@ export const addBuiltInConstants = (megaloVersion: MegaloVersion, symbolParser: 
 };
 
 export const addBuiltInVariables = (megaloVersion: MegaloVersion, symbolParser: ParserSymbolContext): void => {
-    const addBuiltInVariable = (name: string) => {
+    const addBuiltInVariable = (name: string, type: VariableType = VariableType.Number) => {
         symbolParser.addVariableToScope({
             name,
             declaration: BUILT_IN_LOCATION,
-            type: VariableType.Number,
+            type,
             scope: VariableScope.Global,
         });
     };
@@ -47,8 +47,11 @@ export const addBuiltInVariables = (megaloVersion: MegaloVersion, symbolParser: 
     });
 
     // Halo: Reach
-    addBuiltInVariable("round_index")
-    addBuiltInVariable("symmetric_gametype")
+    addBuiltInVariable("round_index");
+    addBuiltInVariable("symmetric_gametype");
+    addBuiltInVariable("round_timer", VariableType.Timer);
+    addBuiltInVariable("sudden_death_timer", VariableType.Timer);
+    addBuiltInVariable("grace_period_timer", VariableType.Timer);
 };
 
 export const addBuiltInGameOptions = (megaloVersion: MegaloVersion, symbolParser: ParserSymbolContext): void => {

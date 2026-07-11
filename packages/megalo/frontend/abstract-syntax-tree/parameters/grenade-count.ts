@@ -9,6 +9,7 @@ export const grenadeCountParser: ParameterParser = (ctx: ParserContext, anchor: 
     const parameters: ASTParameterNode[] = [];
 
     if (countToken.kind === TokenKind.Integer) {
+        // "2 frag" is a grenade-count preset (enum-like), not a numeric parameter + type.
         parameters.push({
             kind: SyntaxKind.KEYWORD,
             value: countToken.value,

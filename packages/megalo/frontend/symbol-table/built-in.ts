@@ -1,6 +1,7 @@
-import { SymbolBinder, VariableScope, VariableType } from ".";
+import { VariableScope, VariableType } from ".";
 import { MegaloVersion } from "../../version";
-import { BUILT_IN_LOCATION, SourceLocationType } from "../diagnostics";
+import { TEAM_DESIGNATORS } from "../abstract-syntax-tree/language-configuration/omni/teams";
+import { BUILT_IN_LOCATION } from "../diagnostics";
 import { ParserSymbolContext } from "./parser";
 
 export const addBuiltInConstants = (megaloVersion: MegaloVersion, symbolParser: ParserSymbolContext): void => {
@@ -52,6 +53,12 @@ export const addBuiltInVariables = (megaloVersion: MegaloVersion, symbolParser: 
     addBuiltInVariable("round_timer", VariableType.Timer);
     addBuiltInVariable("sudden_death_timer", VariableType.Timer);
     addBuiltInVariable("grace_period_timer", VariableType.Timer);
+
+    // Team designators — always-available Team refs (see language/references#team-designators).
+    // `none` is registered above as the shared empty sentinel.
+    for (const designator of TEAM_DESIGNATORS) {
+        addBuiltInVariable(designator, VariableType.Team);
+    }
 };
 
 export const addBuiltInGameOptions = (megaloVersion: MegaloVersion, symbolParser: ParserSymbolContext): void => {

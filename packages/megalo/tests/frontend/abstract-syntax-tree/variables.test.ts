@@ -3,7 +3,7 @@ import { ElementKind } from "../../../frontend/abstract-syntax-tree/elements";
 import { Parser, SyntaxKind } from "../../../frontend/abstract-syntax-tree";
 import { Diagnostics } from "../../../frontend/diagnostics";
 import { Lexer } from "../../../frontend/tokens";
-import { SymbolKind, type SymbolTableVariableEntry } from "../../../frontend/symbol-table";
+import { SymbolKind, VariableScope, type SymbolTableVariableEntry } from "../../../frontend/symbol-table";
 import { MEGALO_VERSIONS } from "../../../version";
 
 const parse = (source: string) => {
@@ -75,9 +75,45 @@ end
     });
 
     const variables = variableSymbols(symbolTable);
-    expect(variables.find((entry) => entry.name === "defenders")?.scope).toBe(1);
+    expect(
+      variables.find((entry) => entry.name === "defenders" && entry.scope === VariableScope.Team),
+    ).toBeDefined();
     expect(variables.find((entry) => entry.name === "sd_vo")).toBeDefined();
     expect(variables.find((entry) => entry.name === "defending_team")).toBeDefined();
+  });
+
+  it("resolves team designators as initial values without a same-named variable", () => {
+    const source = `variables global
+\tnetworked team defending_team defenders
+\tnetworked team attacking_team attackers
+end
+`;
+
+    const { ast, symbolTable, diagnostics } = parse(source);
+
+    expect(diagnostics.hasErrors()).toBe(false);
+
+    const element = ast.elements[0]!;
+    expect(element.elementKind).toBe(ElementKind.VARIABLES);
+    if (element.elementKind !== ElementKind.VARIABLES) {
+      return;
+    }
+
+    const defendersId = variableSymbols(symbolTable).find(
+      (entry) => entry.name === "defenders" && entry.scope === VariableScope.Global,
+    )?.id;
+    const attackersId = variableSymbols(symbolTable).find(
+      (entry) => entry.name === "attackers" && entry.scope === VariableScope.Global,
+    )?.id;
+
+    expect(element.entries[0]).toMatchObject({
+      name: { value: "defending_team" },
+      initial: { kind: SyntaxKind.REFERENCE, identifier: "defenders", symbolId: defendersId },
+    });
+    expect(element.entries[1]).toMatchObject({
+      name: { value: "attacking_team" },
+      initial: { kind: SyntaxKind.REFERENCE, identifier: "attackers", symbolId: attackersId },
+    });
   });
 
   it("parses scoped variable blocks", () => {

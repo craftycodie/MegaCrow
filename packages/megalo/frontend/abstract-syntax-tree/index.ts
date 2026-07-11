@@ -3,7 +3,7 @@ import { Diagnostics } from "../diagnostics";
 import { diagnosticMessages } from "../diagnostics/messages";
 import { SymbolBinder, SymbolTable } from "../symbol-table";
 import { TokenKind, Tokens } from "../tokens"
-import { ASTCommentNode, commentParser } from "./comment";
+import { ASTCommentNode, collectComments } from "./comment";
 import { ParserContext } from "./context";
 import { ASTElementNode, ElementParserRepository } from "./elements";
 export { SyntaxKind, isAstErrorNode, type ASTErrorNode, type ASTFloatingPointNode, type ASTIntegerNode, type ASTNode, type ASTReferenceNode } from "./kinds";
@@ -31,16 +31,13 @@ export class Parser {
             comments: [],
             elements: [],
         };
-
-        // Pass 1. Collect comments.
-        // This makes parsing elements which contain comments easier.
-        // Comment parse is done without the ParserContext because its not necessary.
-        for (const token of tokens) {
-            if (token.kind === TokenKind.Comment) {
-                ast.comments.push(commentParser(token));
-            }
-        }
         
+
+
+        // Pass 1. Collect comments
+        // This allows us to skip comments when parsing elements.
+        ast.comments = collectComments(tokens);
+
         // Pass 2. Parse elements.
         // (everything else)
         const tokensWithoutComments = tokens.filter(token => token.kind !== TokenKind.Comment);

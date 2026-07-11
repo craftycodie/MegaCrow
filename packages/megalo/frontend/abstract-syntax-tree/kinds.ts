@@ -10,7 +10,7 @@ export const enum SyntaxKind {
     INTEGER = 3,
     REFERENCE = 4,
     KEYWORD = 5,
-    PARAMETER = 6,
+    DYNAMIC_STRING = 6,
     FLOATING_POINT = 7,
     MEMBER_REFERENCE = 8,
     CONDITION = 9,
@@ -18,7 +18,6 @@ export const enum SyntaxKind {
     BEGIN = 11,
     TEMPORARY = 12,
     FOR_EACH = 13,
-    DYNAMIC_STRING = 14,
 }
 
 export type ASTNode<K extends SyntaxKind> = {

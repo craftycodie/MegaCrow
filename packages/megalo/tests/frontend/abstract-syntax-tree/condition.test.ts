@@ -52,7 +52,7 @@ const parseConditionLine = (source: string) => {
     ctx.reset(conditionIndex + 1);
 
     const condition = parseCondition(ctx, conditionToken);
-    return { condition, diagnostics, tokens };
+    return { condition, diagnostics, tokens, ctx };
 };
 
 describe("parseCondition", () => {
@@ -89,6 +89,22 @@ describe("parseCondition", () => {
             kind: SyntaxKind.MEMBER_REFERENCE,
             root: "current_player",
             member: { value: "heard_game_start" },
+        });
+    });
+
+    it("binds team designator roots on member references", () => {
+        const { condition, diagnostics, ctx } = parseConditionLine(
+            "condition if current_player equal_to attackers.vip",
+        );
+
+        expect(diagnostics.hasErrors()).toBe(false);
+        const attackersId = ctx.symbolParser.lookupSymbol("attackers");
+        expect(attackersId).toBeDefined();
+        expect(condition.operands[2]).toMatchObject({
+            kind: SyntaxKind.MEMBER_REFERENCE,
+            root: "attackers",
+            rootSymbolId: attackersId,
+            member: { value: "vip" },
         });
     });
 

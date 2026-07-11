@@ -7,6 +7,7 @@ import {
   VariableType,
   type SymbolTableStringEntry,
 } from "../../../frontend/symbol-table";
+import { TEAM_DESIGNATORS } from "../../../frontend/abstract-syntax-tree/language-configuration/omni/teams";
 import { ParserSymbolContext } from "../../../frontend/symbol-table/parser";
 import { ParserScopeKind } from "../../../frontend/symbol-table/scope";
 import { MEGALO_VERSIONS } from "../../../version";
@@ -181,6 +182,23 @@ describe("SymbolBinder", () => {
         kind: SymbolKind.Variable,
         type: VariableType.Timer,
         name,
+      });
+    }
+  });
+
+  it("registers team designators as built-in Team variables", () => {
+    const diagnostics = new Diagnostics();
+    const binder = new SymbolBinder(version, diagnostics);
+    const parser = new ParserSymbolContext(version, diagnostics, binder);
+
+    for (const name of TEAM_DESIGNATORS) {
+      const id = parser.lookupSymbol(name);
+      expect(id).toBeDefined();
+      expect(parser.getSymbolEntry(id!)).toMatchObject({
+        kind: SymbolKind.Variable,
+        type: VariableType.Team,
+        name,
+        scope: VariableScope.Global,
       });
     }
   });

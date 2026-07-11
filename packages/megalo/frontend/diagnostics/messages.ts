@@ -6,7 +6,7 @@ const expectedOneOf = (alternatives: readonly string[], got: string): string =>
 
 export const diagnosticMessages = {
     expectedElement(value: string): string {
-        return translate("expected_element", { value });
+        return translate("unrecognized_element", { value });
     },
 
     expectedTokenKind(expected: TokenKind, kind: TokenKind, value: string): string {
@@ -96,7 +96,7 @@ export const diagnosticMessages = {
     },
 
     unknownTriggerStatement(got: string): string {
-        return `Unknown trigger statement '${got}'.`;
+        return translate("unrecognized_element", { value: got });
     },
 
     expectedTemporaryStorage(got: string): string {

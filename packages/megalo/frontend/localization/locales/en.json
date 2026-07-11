@@ -1,5 +1,5 @@
 {
-  "expected_element": "Expected an element, got {{value}}",
+  "unrecognized_element": "Unrecognized element '{{value}}'.",
   "expected_token_kind": "Expected token of type {{expected}}, got one of type {{kind}}: {{token}}",
   "expected_end_before_eof": "Expected 'end' before end of file",
   "expected_one_of": "Expected {{expected}} but got '{{got}}'",

@@ -1,5 +1,5 @@
 {
-  "expected_element": "要素が必要ですが、{{value}} が見つかりました",
+  "unrecognized_element": "認識できない要素 '{{value}}'。",
   "expected_token_kind": "{{expected}} 型のトークンが必要ですが、{{kind}} 型のトークン {{token}} が見つかりました",
   "expected_end_before_eof": "ファイル末尾の前に 'end' が必要です",
   "expected_one_of": "{{expected}} が必要ですが、'{{got}}' が見つかりました",

@@ -12,6 +12,7 @@ import {
 } from "../../frontend/localization";
 import type { AnalyzeRequest, AnalyzeResponse } from "./analyze.types";
 import AnalyzeWorker from "./analyze.worker.ts?worker";
+import { createSourceEditor } from "./source-editor";
 
 const LOCALE_STORAGE_KEY = "megalo-debugger-locale";
 
@@ -47,7 +48,7 @@ app.innerHTML = `
       <div class="panes">
         <section class="pane">
           <div class="pane-header">Source</div>
-          <textarea class="source-editor" spellcheck="false"></textarea>
+          <div class="source-editor" data-role="source-editor"></div>
         </section>
         <section class="pane">
           <div class="pane-header">
@@ -80,12 +81,12 @@ app.innerHTML = `
         Diagnostics
         <span class="pane-header-meta" data-role="diagnostics-count"></span>
       </div>
-      <pre class="diagnostics-list" data-role="diagnostics"></pre>
+      <div class="diagnostics-list" data-role="diagnostics"></div>
     </section>
   </div>
 `;
 
-const sourceEditor = app.querySelector<HTMLTextAreaElement>(".source-editor");
+const sourceEditorHost = app.querySelector<HTMLElement>('[data-role="source-editor"]');
 const tokensView = app.querySelector<HTMLElement>('[data-role="tokens"]');
 const astView = app.querySelector<HTMLElement>('[data-role="ast"]');
 const astTime = app.querySelector<HTMLElement>('[data-role="ast-time"]');
@@ -102,7 +103,7 @@ const diagnosticsCount = app.querySelector<HTMLElement>(
 const localeToggle = app.querySelector<HTMLElement>('[data-role="locale-toggle"]');
 
 if (
-  !sourceEditor ||
+  !sourceEditorHost ||
   !tokensView ||
   !astView ||
   !irView ||
@@ -120,8 +121,7 @@ if (
 }
 
 const localeButtons = localeToggle.querySelectorAll<HTMLButtonElement>("[data-locale]");
-
-sourceEditor.value = DEFAULT_SOURCE;
+const sourceEditor = createSourceEditor(sourceEditorHost, DEFAULT_SOURCE);
 irView.textContent = NYI;
 
 const severityLabel = (severity: DiagnosticSeverity): string =>
@@ -162,25 +162,36 @@ const formatDiagnosticsSummary = (diagnostics: Diagnostic[]): string => {
   return parts.join(", ");
 };
 
-const formatDiagnosticsText = (diagnostics: Diagnostic[]): string => {
+const renderDiagnostics = (diagnostics: Diagnostic[]): void => {
   const items = sortDiagnostics(diagnostics);
+  diagnosticsView.replaceChildren();
+
   if (items.length === 0) {
-    return "No diagnostics.";
+    const empty = document.createElement("div");
+    empty.className = "diagnostics-empty";
+    empty.textContent = "No diagnostics.";
+    diagnosticsView.append(empty);
+    return;
   }
 
   const visible = items.slice(0, MAX_DISPLAYED_DIAGNOSTICS);
-  const lines = visible.map(
-    (diagnostic) =>
-      `${severityLabel(diagnostic.severity).padEnd(7)} ${formatDiagnosticLocation(diagnostic).padEnd(8)} ${diagnostic.message}`,
-  );
-
-  if (items.length > MAX_DISPLAYED_DIAGNOSTICS) {
-    lines.push(
-      `... ${items.length - MAX_DISPLAYED_DIAGNOSTICS} more diagnostic${items.length - MAX_DISPLAYED_DIAGNOSTICS === 1 ? "" : "s"}`,
-    );
+  for (const diagnostic of visible) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `diagnostics-item severity-${severityLabel(diagnostic.severity).toLowerCase()}`;
+    button.textContent = `${severityLabel(diagnostic.severity).padEnd(7)} ${formatDiagnosticLocation(diagnostic).padEnd(8)} ${diagnostic.message}`;
+    button.addEventListener("click", () => {
+      sourceEditor.revealDiagnostic(diagnostic);
+    });
+    diagnosticsView.append(button);
   }
 
-  return lines.join("\n");
+  if (items.length > MAX_DISPLAYED_DIAGNOSTICS) {
+    const more = document.createElement("div");
+    more.className = "diagnostics-more";
+    more.textContent = `... ${items.length - MAX_DISPLAYED_DIAGNOSTICS} more diagnostic${items.length - MAX_DISPLAYED_DIAGNOSTICS === 1 ? "" : "s"}`;
+    diagnosticsView.append(more);
+  }
 };
 
 const formatDuration = (milliseconds: number): string => {
@@ -232,8 +243,8 @@ let cachedSource: string | null = null;
 let cachedTokensText: { value: string | null } = { value: null };
 let cachedAstText: { value: string | null } = { value: null };
 let cachedSymbolTableText: { value: string | null } = { value: null };
-let cachedDiagnosticsText: { value: string | null } = { value: null };
 let cachedDiagnosticsSummary: { value: string | null } = { value: null };
+let cachedDiagnosticsSignature: string | null = null;
 
 let updateGeneration = 0;
 let parseDebounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -276,6 +287,14 @@ const markSourceEditorActive = (): void => {
     }
   }, SOURCE_SETTLE_MS);
 };
+
+const diagnosticsSignature = (diagnostics: Diagnostic[]): string =>
+  diagnostics
+    .map(
+      (diagnostic) =>
+        `${diagnostic.severity}:${diagnostic.location.start.offset}:${diagnostic.location.end.offset}:${diagnostic.message}`,
+    )
+    .join("\n");
 
 const flushDom = (): void => {
   const result = latestResult;
@@ -332,8 +351,12 @@ const flushDom = (): void => {
         return;
       }
 
-      const diagnosticsText = formatDiagnosticsText(result.diagnostics);
-      setTextIfChanged(diagnosticsView, diagnosticsText, cachedDiagnosticsText);
+      const signature = diagnosticsSignature(result.diagnostics);
+      if (cachedDiagnosticsSignature !== signature) {
+        renderDiagnostics(result.diagnostics);
+        sourceEditor.setDiagnostics(result.diagnostics);
+        cachedDiagnosticsSignature = signature;
+      }
 
       const diagnosticsSummary = formatDiagnosticsSummary(result.diagnostics);
       if (cachedDiagnosticsSummary.value !== diagnosticsSummary) {
@@ -384,7 +407,7 @@ analyzeWorker.onmessage = (event: MessageEvent<AnalyzeResponse>) => {
 
 const runUpdate = (options: UpdateOptions = {}): void => {
   const generation = ++updateGeneration;
-  const source = sourceEditor.value;
+  const source = sourceEditor.getValue();
   pendingOptions = options;
   pendingSourceChanged = source !== cachedSource;
   cachedSource = source;
@@ -444,16 +467,12 @@ for (const button of localeButtons) {
   });
 }
 
-sourceEditor.addEventListener("input", () => {
+sourceEditor.onDidChangeContent(() => {
   markSourceEditorActive();
   scheduleUpdate();
 });
 
-sourceEditor.addEventListener("keydown", () => {
-  markSourceEditorActive();
-});
-
-sourceEditor.addEventListener("mousedown", () => {
+sourceEditor.onDidInteract(() => {
   markSourceEditorActive();
 });
 

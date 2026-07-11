@@ -143,7 +143,13 @@ body,
   color: #6b7280;
 }
 
-.source-editor,
+.source-editor {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background: #1e1e1e;
+}
+
 .output-view {
   flex: 1;
   min-height: 0;
@@ -157,10 +163,6 @@ body,
   font-size: 13px;
   line-height: 1.5;
   outline: none;
-}
-
-.source-editor {
-  contain: strict;
 }
 
 .app.is-editing-source .output-view,
@@ -200,21 +202,50 @@ body,
   flex: 1;
   min-height: 0;
   margin: 0;
-  padding: 12px;
+  padding: 8px 0;
   border: none;
   overflow: auto;
-  white-space: pre-wrap;
-  word-break: break-word;
   background: transparent;
   color: #e8eaed;
   font-family: Consolas, "Courier New", monospace;
   font-size: 13px;
   line-height: 1.5;
-  contain: strict;
-  content-visibility: auto;
 }
 
-.diagnostics-empty {
+.diagnostics-item {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 4px 12px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  white-space: pre-wrap;
+  word-break: break-word;
+  cursor: pointer;
+}
+
+.diagnostics-item:hover {
+  background: #2a2c31;
+}
+
+.diagnostics-item.severity-error {
+  color: #f48771;
+}
+
+.diagnostics-item.severity-warning {
+  color: #cca700;
+}
+
+.diagnostics-item.severity-info {
+  color: #75beff;
+}
+
+.diagnostics-empty,
+.diagnostics-more {
+  padding: 4px 12px;
   color: #6b7280;
   font-style: italic;
 }

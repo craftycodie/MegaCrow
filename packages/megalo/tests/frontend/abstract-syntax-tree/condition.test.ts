@@ -88,7 +88,7 @@ describe("parseCondition", () => {
         expect(condition.operands[0]).toMatchObject({
             kind: SyntaxKind.MEMBER_REFERENCE,
             root: "current_player",
-            members: [{ value: "heard_game_start" }],
+            member: { value: "heard_game_start" },
         });
     });
 
@@ -114,7 +114,7 @@ describe("parseCondition", () => {
         expect(condition.operands[0]).toMatchObject({
             kind: SyntaxKind.MEMBER_REFERENCE,
             root: "current_player",
-            members: [{ value: "game_start_vo" }],
+            member: { value: "game_start_vo" },
         });
     });
 

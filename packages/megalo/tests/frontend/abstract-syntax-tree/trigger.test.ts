@@ -119,7 +119,7 @@ describe("triggerParser", () => {
         const { diagnostics } = parseTriggerElement("\tfoo bar");
 
         expect(diagnostics.hasErrors()).toBe(true);
-        expect(diagnostics.getErrors()[0]?.message).toContain("Unknown trigger statement 'foo'");
+        expect(diagnostics.getErrors()[0]?.message).toContain("Unrecognized element 'foo'");
     });
 
     it("restores scope after parsing a trigger", () => {
@@ -176,7 +176,7 @@ describe("triggerParser", () => {
             initial: {
                 kind: SyntaxKind.MEMBER_REFERENCE,
                 root: "current_player",
-                members: [{ value: "team" }],
+                member: { value: "team" },
             },
         });
     });
@@ -288,6 +288,28 @@ describe("triggerParser", () => {
         );
 
         expect(diagnostics.hasErrors()).toBe(false);
+    });
+
+    it("consumes play_sound parameters so the sound name is not treated as a statement", () => {
+        const { element, diagnostics } = parseTriggerElement(
+            "\taction play_sound player current_player vip",
+        );
+
+        expect(diagnostics.hasErrors()).toBe(false);
+        expect(element.statements).toHaveLength(1);
+
+        const statement = element.statements[0]!;
+        expect(statement.kind).toBe(SyntaxKind.ACTION);
+        if (statement.kind !== SyntaxKind.ACTION) {
+            return;
+        }
+
+        expect(statement.name.value).toBe("play_sound");
+        expect(statement.parameters).toHaveLength(3);
+        expect(statement.parameters[2]).toMatchObject({
+            kind: SyntaxKind.KEYWORD,
+            value: "vip",
+        });
     });
 });
 

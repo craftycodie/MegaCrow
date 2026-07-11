@@ -159,6 +159,22 @@ describe("SymbolBinder", () => {
     expect(stringEntry.references).toEqual([reference]);
   });
 
+  it("registers built-in timers in the global scope", () => {
+    const diagnostics = new Diagnostics();
+    const binder = new SymbolBinder(version, diagnostics);
+    const parser = new ParserSymbolContext(version, diagnostics, binder);
+
+    for (const name of ["round_timer", "sudden_death_timer", "grace_period_timer"] as const) {
+      const id = parser.lookupSymbol(name);
+      expect(id).toBeDefined();
+      expect(parser.getSymbolEntry(id!)).toMatchObject({
+        kind: SymbolKind.Variable,
+        type: VariableType.Timer,
+        name,
+      });
+    }
+  });
+
   it("pushScope and popScope isolate variable lookups", () => {
     const diagnostics = new Diagnostics();
     const binder = new SymbolBinder(version, diagnostics);

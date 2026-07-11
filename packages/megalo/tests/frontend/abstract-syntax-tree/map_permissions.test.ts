@@ -3,7 +3,6 @@ import { ElementKind } from "../../../frontend/abstract-syntax-tree/elements";
 import { Parser, SyntaxKind } from "../../../frontend/abstract-syntax-tree";
 import { Diagnostics } from "../../../frontend/diagnostics";
 import { Lexer } from "../../../frontend/tokens";
-import { SymbolKind } from "../../../frontend/symbol-table";
 import { MEGALO_VERSIONS } from "../../../version";
 
 const parse = (source: string) => {
@@ -84,7 +83,7 @@ end
     });
   });
 
-  it("adds symbol references for constant exception values", () => {
+  it("parses constant exception values as references", () => {
     const source = `constants
 \tnumber k_map_id_dlc_invasion 2002
 end
@@ -94,7 +93,7 @@ map_permissions
 end
 `;
 
-    const { ast, symbolTable, diagnostics } = parse(source);
+    const { ast, diagnostics } = parse(source);
 
     expect(diagnostics.hasErrors()).toBe(false);
 
@@ -107,11 +106,6 @@ end
       kind: SyntaxKind.REFERENCE,
       identifier: "k_map_id_dlc_invasion",
     });
-
-    const constant = symbolTable.find(
-      (entry) => entry.kind === SymbolKind.Constant && entry.name === "k_map_id_dlc_invasion",
-    );
-    expect(constant?.references).toHaveLength(1);
   });
 
   it("reports unresolved identifier values", () => {

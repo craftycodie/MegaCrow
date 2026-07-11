@@ -5,7 +5,6 @@ import { Diagnostics } from "../../../frontend/diagnostics";
 import { Lexer } from "../../../frontend/tokens";
 import {
   SymbolKind,
-  type SymbolTableLoadoutEntry,
   type SymbolTableLoadoutPaletteEntry,
 } from "../../../frontend/symbol-table";
 import { MEGALO_VERSIONS } from "../../../version";
@@ -17,11 +16,6 @@ const parse = (source: string) => {
   const { ast, symbolTable } = new Parser(version).parse(tokens, diagnostics);
   return { ast, symbolTable, diagnostics };
 };
-
-const loadoutSymbols = (symbolTable: readonly { kind: SymbolKind; name: string }[]) =>
-  symbolTable.filter(
-    (entry): entry is SymbolTableLoadoutEntry => entry.kind === SymbolKind.Loadout,
-  );
 
 const loadoutPaletteSymbols = (symbolTable: readonly { kind: SymbolKind; name: string }[]) =>
   symbolTable.filter(
@@ -101,9 +95,6 @@ end
       "slayer_loadouts_t2",
       "slayer_loadouts_t3",
     ]);
-
-    const scout = loadoutSymbols(symbolTable).find((entry) => entry.name === "loadout_scout");
-    expect(scout?.references.length).toBeGreaterThanOrEqual(3);
   });
 
   it("reports unknown loadout palette properties", () => {

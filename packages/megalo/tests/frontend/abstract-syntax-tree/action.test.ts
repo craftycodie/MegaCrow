@@ -96,6 +96,19 @@ describe("ActionParserRepository", () => {
         expect(parameters.some((p) => p.kind === SyntaxKind.KEYWORD && p.value === "immediate")).toBe(true);
     });
 
+    it("parses play_sound player target when the sound string is unresolved", () => {
+        const { parameters, diagnostics } = parseActionParameters(
+            "player current_player vip",
+            "play_sound",
+        );
+
+        expect(diagnostics.hasErrors()).toBe(false);
+        expect(parameters).toHaveLength(3);
+        expect(parameters[0]).toMatchObject({ kind: SyntaxKind.KEYWORD, value: "player" });
+        expect(parameters[1]).toMatchObject({ kind: SyntaxKind.REFERENCE, identifier: "current_player" });
+        expect(parameters[2]).toMatchObject({ kind: SyntaxKind.KEYWORD, value: "vip" });
+    });
+
     it("parses set_loadout_palette with a loadout palette reference", () => {
         const diagnostics = new Diagnostics();
         const version = MEGALO_VERSIONS["107-mcc"];

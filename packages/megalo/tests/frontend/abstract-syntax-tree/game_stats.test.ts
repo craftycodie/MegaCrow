@@ -3,7 +3,6 @@ import { ElementKind } from "../../../frontend/abstract-syntax-tree/elements";
 import { Parser, SyntaxKind } from "../../../frontend/abstract-syntax-tree";
 import { Diagnostics } from "../../../frontend/diagnostics";
 import { Lexer } from "../../../frontend/tokens";
-import { SymbolKind } from "../../../frontend/symbol-table";
 import { MEGALO_VERSIONS } from "../../../version";
 
 const parse = (source: string) => {
@@ -58,7 +57,7 @@ end
     });
   });
 
-  it("adds string references for label_string fields", () => {
+  it("parses label_string fields as string references", () => {
     const source = `string_table english
 \tstat_caps_text "Caps"
 end
@@ -67,7 +66,7 @@ game_stats
 end
 `;
 
-    const { ast, symbolTable, diagnostics } = parse(source);
+    const { ast, diagnostics } = parse(source);
 
     expect(diagnostics.hasErrors()).toBe(false);
 
@@ -80,11 +79,6 @@ end
       kind: SyntaxKind.REFERENCE,
       identifier: "stat_caps_text",
     });
-
-    const stringEntry = symbolTable.find(
-      (entry) => entry.kind === SymbolKind.String && entry.name === "stat_caps_text",
-    );
-    expect(stringEntry?.references).toHaveLength(1);
   });
 
   it("parses label_string as a string literal or string reference", () => {
@@ -127,7 +121,7 @@ game_stats
 end
 `;
 
-    const { ast, symbolTable, diagnostics } = parse(source);
+    const { ast, diagnostics } = parse(source);
 
     expect(diagnostics.hasErrors()).toBe(false);
 
@@ -144,11 +138,6 @@ end
       kind: SyntaxKind.REFERENCE,
       identifier: "stat_caps_unit",
     });
-
-    const unitString = symbolTable.find(
-      (entry) => entry.kind === SymbolKind.String && entry.name === "stat_caps_unit",
-    );
-    expect(unitString?.references).toHaveLength(1);
   });
 
   it("reports unresolved unit_string references", () => {

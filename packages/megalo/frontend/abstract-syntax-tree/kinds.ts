@@ -43,15 +43,10 @@ export type ASTReferenceNode = ASTNode<SyntaxKind.REFERENCE> & {
     symbolId: SymbolId;
 };
 
-export type ASTMemberPartNode = {
-    value: string;
-    location: SourceCodeLocation;
-};
-
 export type ASTMemberReferenceNode = ASTNode<SyntaxKind.MEMBER_REFERENCE> & {
     root: string;
     rootSymbolId?: SymbolId;
-    members: ASTMemberPartNode[];
+    member: { value: string; location: SourceCodeLocation };
 };
 
 export const isAstErrorNode = (node: ASTErrorNode | { value: string; location: SourceCodeLocation }): node is ASTErrorNode =>

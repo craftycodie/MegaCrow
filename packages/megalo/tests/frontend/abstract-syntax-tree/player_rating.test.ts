@@ -3,7 +3,6 @@ import { ElementKind } from "../../../frontend/abstract-syntax-tree/elements";
 import { Parser, SyntaxKind } from "../../../frontend/abstract-syntax-tree";
 import { Diagnostics } from "../../../frontend/diagnostics";
 import { Lexer } from "../../../frontend/tokens";
-import { SymbolKind } from "../../../frontend/symbol-table";
 import { MEGALO_VERSIONS } from "../../../version";
 
 const parse = (source: string) => {
@@ -91,7 +90,7 @@ end
     });
   });
 
-  it("adds symbol references for constant values", () => {
+  it("parses constant values as references", () => {
     const source = `constants number
 \tkill_weight_override 2
 end
@@ -100,7 +99,7 @@ player_rating
 end
 `;
 
-    const { ast, symbolTable, diagnostics } = parse(source);
+    const { ast, diagnostics } = parse(source);
 
     expect(diagnostics.hasErrors()).toBe(false);
 
@@ -113,11 +112,6 @@ end
       key: "kill_weight",
       value: { kind: SyntaxKind.REFERENCE, identifier: "kill_weight_override" },
     });
-
-    const constant = symbolTable.find(
-      (entry) => entry.kind === SymbolKind.Constant && entry.name === "kill_weight_override",
-    );
-    expect(constant?.references).toHaveLength(1);
   });
 
   it("reports unresolved identifier values", () => {

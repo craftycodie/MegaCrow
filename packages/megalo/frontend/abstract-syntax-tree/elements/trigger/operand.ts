@@ -1,4 +1,4 @@
-import { ASTKeywordParameterNode } from "../../parameters";
+import { ASTKeywordParameterNode, ParameterType, parseMemberReference } from "../../parameters";
 import {
     ASTErrorNode,
     ASTIntegerNode,
@@ -7,12 +7,11 @@ import {
     ASTReferenceNode,
     SyntaxKind,
 } from "../../kinds";
-import { SourceCodeLocation, SourceLocationType } from "../../../diagnostics";
+import { SourceCodeLocation } from "../../../diagnostics";
 import { diagnosticMessages } from "../../../diagnostics/messages";
 import { SymbolKind, VariableType } from "../../../symbol-table";
 import { TokenKind } from "../../../tokens";
 import { ParserContext } from "../../context";
-import { ParameterType } from "../../parameters";
 
 export type ASTConditionOperandNode =
     | ASTIntegerNode
@@ -39,12 +38,6 @@ export const isComparisonOperatorName = (value: string): value is ComparisonOper
 export const isComparisonToken = (kind: TokenKind, value: string): boolean =>
     kind === TokenKind.Operator || (kind === TokenKind.Identifier && isComparisonOperatorName(value));
 
-const locationSpan = (start: SourceCodeLocation, end: SourceCodeLocation): SourceCodeLocation => ({
-    type: SourceLocationType.SOURCE_CODE,
-    start: start.start,
-    end: end.end,
-});
-
 const matchesVariableType = (ctx: ParserContext, symbolId: number, type: ParameterType): boolean => {
     const entry = ctx.symbolParser.getSymbolEntry(symbolId);
     if (entry === undefined || entry.kind !== SymbolKind.Variable) {
@@ -65,41 +58,6 @@ const matchesVariableType = (ctx: ParserContext, symbolId: number, type: Paramet
         default:
             return false;
     }
-};
-
-const parseMemberSuffix = (
-    ctx: ParserContext,
-    rootToken: { value: string; location: SourceCodeLocation },
-    rootSymbolId: number | undefined,
-): ASTMemberReferenceNode => {
-    const members: ASTMemberReferenceNode["members"] = [];
-    let endLocation = rootToken.location;
-
-    while (ctx.peekToken()?.kind === TokenKind.MemberVariableSeparator) {
-        ctx.getToken();
-        const memberToken = ctx.getToken();
-        if (memberToken.kind !== TokenKind.Identifier) {
-            ctx.diagnostics.addError(
-                diagnosticMessages.expectedTokenKind(TokenKind.Identifier, memberToken.kind, memberToken.value),
-                memberToken.location,
-            );
-            break;
-        }
-
-        members.push({
-            value: memberToken.value,
-            location: memberToken.location,
-        });
-        endLocation = memberToken.location;
-    }
-
-    return {
-        kind: SyntaxKind.MEMBER_REFERENCE,
-        root: rootToken.value,
-        rootSymbolId,
-        members,
-        location: locationSpan(rootToken.location, endLocation),
-    };
 };
 
 const lookupNumericSymbol = (ctx: ParserContext, name: string): number | undefined => {
@@ -153,12 +111,7 @@ export const parseIfOperand = (
         ?? ctx.symbolParser.lookupSymbol(rootToken.value);
 
     if (ctx.peekToken()?.kind === TokenKind.MemberVariableSeparator) {
-        const memberNode = parseMemberSuffix(
-            ctx,
-            rootToken,
-            symbolId,
-        );
-        return memberNode;
+        return parseMemberReference(ctx, rootToken, symbolId);
     }
 
     if (symbolId !== undefined) {
@@ -209,8 +162,7 @@ export const parseTypedOperand = (
     const symbolId = ctx.symbolParser.lookupSymbol(rootToken.value);
 
     if (ctx.peekToken()?.kind === TokenKind.MemberVariableSeparator) {
-        const memberNode = parseMemberSuffix(ctx, rootToken, symbolId);
-        return memberNode;
+        return parseMemberReference(ctx, rootToken, symbolId);
     }
 
     if (symbolId === undefined || !matchesVariableType(ctx, symbolId, type)) {

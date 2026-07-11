@@ -54,6 +54,24 @@ const parseParameters = (source: string, parser: ReturnType<typeof parameterPars
         declaration: BUILT_IN_LOCATION,
         scope: VariableScope.Global,
     });
+    ctx.symbolParser.addVariableToScope({
+        name: "current_team",
+        type: VariableType.Team,
+        declaration: BUILT_IN_LOCATION,
+        scope: VariableScope.Global,
+    });
+    ctx.symbolParser.addVariableToScope({
+        name: "vip",
+        type: VariableType.Player,
+        declaration: BUILT_IN_LOCATION,
+        scope: VariableScope.Team,
+    });
+    ctx.symbolParser.addVariableToScope({
+        name: "current_player",
+        type: VariableType.Player,
+        declaration: BUILT_IN_LOCATION,
+        scope: VariableScope.Global,
+    });
 
     const anchor = tokens[0]!.location;
     const parameters = parser(ctx, anchor);
@@ -134,6 +152,34 @@ describe("parameterParserBuilder", () => {
         });
     });
 
+    it("lenient fallback selects the best matching signature, not the first", () => {
+        const parser = parameterParserBuilder(
+            [KeywordParameter("everyone"), OptionalParameter("immediate"), ParameterType.String],
+            [KeywordParameter("player"), ParameterType.Player, OptionalParameter("immediate"), ParameterType.String],
+            [KeywordParameter("team"), ParameterType.Team, OptionalParameter("immediate"), ParameterType.String],
+        );
+
+        const diagnostics = new Diagnostics();
+        const version = MEGALO_VERSIONS["107-mcc"];
+        const tokens = new Lexer(version).lex("player current_player vip", diagnostics);
+        const symbolBinder = new SymbolBinder(version, diagnostics);
+        const ctx = new ParserContext(tokens, version, diagnostics, symbolBinder);
+        ctx.symbolParser.addVariableToScope({
+            name: "current_player",
+            type: VariableType.Player,
+            declaration: BUILT_IN_LOCATION,
+            scope: VariableScope.Global,
+        });
+
+        const parameters = parser(ctx, tokens[0]!.location);
+
+        expect(diagnostics.hasErrors()).toBe(false);
+        expect(parameters).toHaveLength(3);
+        expect(parameters[0]).toMatchObject({ kind: SyntaxKind.KEYWORD, value: "player" });
+        expect(parameters[2]).toMatchObject({ kind: SyntaxKind.KEYWORD, value: "vip" });
+        expect(ctx.hasMore()).toBe(false);
+    });
+
     it("parses keyword unions at a single parameter position", () => {
         const parser = parameterParserBuilder([
             ParameterType.Object,
@@ -204,5 +250,57 @@ describe("parameterParserBuilder", () => {
         const operator = parseParameters("+= 1", parser);
         expect(operator.diagnostics.hasErrors()).toBe(false);
         expect(operator.parameters[0]).toMatchObject({ kind: SyntaxKind.KEYWORD, value: "+=" });
+    });
+
+    it("parses member variable references as a single parameter", () => {
+        const parser = parameterParserBuilder([ParameterType.Player, ParameterType.Player]);
+
+        const { parameters, diagnostics } = parseParameters(
+            "current_team.vip current_player",
+            parser,
+        );
+
+        expect(diagnostics.hasErrors()).toBe(false);
+        expect(parameters).toHaveLength(2);
+        expect(parameters[0]).toMatchObject({
+            kind: SyntaxKind.MEMBER_REFERENCE,
+            root: "current_team",
+            member: { value: "vip" },
+        });
+        expect(parameters[1]).toMatchObject({
+            kind: SyntaxKind.REFERENCE,
+            identifier: "current_player",
+        });
+    });
+
+    it("parses a single member reference level", () => {
+        const parser = parameterParserBuilder([ParameterType.Number]);
+
+        const { parameters, diagnostics } = parseParameters("current_player.score", parser);
+
+        expect(diagnostics.hasErrors()).toBe(false);
+        expect(parameters).toHaveLength(1);
+        expect(parameters[0]).toMatchObject({
+            kind: SyntaxKind.MEMBER_REFERENCE,
+            root: "current_player",
+            member: { value: "score" },
+        });
+    });
+
+    it("leniently consumes member references when the root is unresolved", () => {
+        const parser = parameterParserBuilder([ParameterType.Object, ParameterType.Player]);
+
+        const { parameters, diagnostics } = parseParameters(
+            "the_hill unknown_team.vip",
+            parser,
+        );
+
+        expect(diagnostics.hasErrors()).toBe(false);
+        expect(parameters).toHaveLength(2);
+        expect(parameters[1]).toMatchObject({
+            kind: SyntaxKind.MEMBER_REFERENCE,
+            root: "unknown_team",
+            member: { value: "vip" },
+        });
     });
 });

@@ -3,6 +3,10 @@ import { diagnosticMessages } from "../../../diagnostics/messages";
 import { SymbolKind } from "../../../symbol-table";
 import { Token, TokenKind } from "../../../tokens";
 import { ParserContext } from "../../context";
+import {
+    isBuiltInNonNumericOverrideOption,
+    isPlayerTraitsOverrideOption,
+} from "../../language-configuration/omni/game_options";
 import { parseNumericInitialValue } from "../constants";
 import {
     isEndToken,
@@ -10,22 +14,7 @@ import {
     parseIdentifier,
 } from "./shared";
 import { parsePlayerTraitOptions } from "./player_traits";
-import { GameOptionEntryKind, type GameOptionModifiers, type OverrideEntryNode, type OverrideNameNode, type OverrideSimpleValueNode } from "./types";
-
-const PLAYER_TRAITS_OVERRIDE_OPTIONS = new Set([
-    "base_player_traits",
-    "respawn_traits",
-    "red_powerup_traits",
-    "blue_powerup_traits",
-    "yellow_powerup_traits",
-]);
-
-const BUILT_IN_NON_NUMERIC_OVERRIDE_OPTIONS = new Set([
-    ...PLAYER_TRAITS_OVERRIDE_OPTIONS,
-    "weapon_set",
-    "vehicle_set",
-    "loadout_palette",
-]);
+import { GameOptionEntryKind, OverrideValueKind, type GameOptionModifiers, type OverrideEntryNode, type OverrideNameNode, type OverrideSimpleValueNode } from "./types";
 
 const parseOverrideName = (
     ctx: ParserContext,
@@ -49,13 +38,12 @@ const parseOverrideName = (
             return {
                 kind: SyntaxKind.REFERENCE,
                 identifier: nameToken.value,
-                symbolId,
                 location: nameToken.location,
             };
         }
     }
 
-    if (BUILT_IN_NON_NUMERIC_OVERRIDE_OPTIONS.has(nameToken.value)) {
+    if (isBuiltInNonNumericOverrideOption(nameToken.value)) {
         return {
             kind: SyntaxKind.KEYWORD,
             value: nameToken.value,
@@ -75,7 +63,7 @@ const parseOverrideName = (
 
 const isNestedPlayerTraitsOverride = (nameToken: Token, peek: Token | undefined): boolean =>
     nameToken.kind === TokenKind.Identifier &&
-    PLAYER_TRAITS_OVERRIDE_OPTIONS.has(nameToken.value) &&
+    isPlayerTraitsOverrideOption(nameToken.value) &&
     peek !== undefined &&
     peek.location.start.line !== nameToken.location.start.line;
 
@@ -95,7 +83,6 @@ const parseOverrideSimpleValue = (
             return {
                 kind: SyntaxKind.REFERENCE,
                 identifier: valueToken.value,
-                symbolId,
                 location: valueToken.location,
             };
         }
@@ -132,14 +119,14 @@ export const overrideParser = (
         const tier = parseIdentifier(ctx, nameToken);
         const palette = parseIdentifier(ctx, nameToken);
         value = {
-            kind: "loadout_palette",
+            kind: OverrideValueKind.LOADOUT_PALETTE,
             tier,
             palette,
         };
     } else if (isNestedPlayerTraitsOverride(nameToken, peek)) {
         const body = parsePlayerTraitOptions(ctx, nameToken);
         value = {
-            kind: "nested",
+            kind: OverrideValueKind.NESTED,
             body,
         };
     } else if (
@@ -148,7 +135,7 @@ export const overrideParser = (
             (peek.kind === TokenKind.Identifier && peek.value !== "end"))
     ) {
         value = {
-            kind: "simple",
+            kind: OverrideValueKind.SIMPLE,
             value: parseOverrideSimpleValue(ctx, nameToken),
         };
     } else if (isEndToken(peek)) {
@@ -170,9 +157,9 @@ export const overrideParser = (
     const valueLocation =
         value.kind === SyntaxKind.INVALID
             ? value.location
-            : value.kind === "simple"
+            : value.kind === OverrideValueKind.SIMPLE
               ? value.value.location
-              : value.kind === "loadout_palette"
+              : value.kind === OverrideValueKind.LOADOUT_PALETTE
                 ? isAstErrorNode(value.palette)
                     ? value.palette.location
                     : value.palette.location

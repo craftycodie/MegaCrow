@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ElementKind, GameOptionEntryKind } from "../../../frontend/abstract-syntax-tree/elements";
+import { ElementKind, GameOptionEntryKind, OverrideValueKind } from "../../../frontend/abstract-syntax-tree/elements";
 import { Parser, SyntaxKind } from "../../../frontend/abstract-syntax-tree";
 import { Diagnostics } from "../../../frontend/diagnostics";
 import { Lexer } from "../../../frontend/tokens";
@@ -44,7 +44,7 @@ end
       modifiers: { lock: false, hide: false },
       name: { identifier: "score_to_win_round" },
       value: {
-        kind: "simple",
+        kind: OverrideValueKind.SIMPLE,
         value: { kind: SyntaxKind.INTEGER, value: 25 },
       },
     });
@@ -53,7 +53,7 @@ end
       modifiers: { lock: false, hide: false },
       name: { identifier: "teams_enabled" },
       value: {
-        kind: "simple",
+        kind: OverrideValueKind.SIMPLE,
         value: { kind: SyntaxKind.REFERENCE, identifier: "true" },
       },
     });
@@ -225,7 +225,7 @@ end
       value: "base_player_traits",
     });
     expect(element.entries[0]?.value).toMatchObject({
-      kind: "nested",
+      kind: OverrideValueKind.NESTED,
       body: {
         options: [
           {
@@ -262,7 +262,7 @@ end
       value: "weapon_set",
     });
     expect(element.entries[0]?.value).toMatchObject({
-      kind: "simple",
+      kind: OverrideValueKind.SIMPLE,
       value: { kind: SyntaxKind.REFERENCE, identifier: "none" },
     });
     expect(element.entries[1]?.name).toMatchObject({
@@ -270,7 +270,7 @@ end
       value: "vehicle_set",
     });
     expect(element.entries[1]?.value).toMatchObject({
-      kind: "simple",
+      kind: OverrideValueKind.SIMPLE,
       value: { kind: SyntaxKind.KEYWORD, value: "no_vehicles" },
     });
   });

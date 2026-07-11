@@ -1,6 +1,6 @@
 import { ASTElementBase, ElementKind } from ".";
 import { MegaloVersion } from "../../../version";
-import { SourceCodeLocation, SourceLocationType } from "../../diagnostics";
+import { SourceCodeLocation } from "../../diagnostics";
 import { diagnosticMessages } from "../../diagnostics/messages";
 import { Token, TokenKind } from "../../tokens";
 import { ParserContext } from "../context";
@@ -13,6 +13,7 @@ import {
     parameterParserBuilder as buildParameterParser,
 } from "../parameters";
 import { grenadeCountParser } from "../parameters/grenade-count";
+import { locationSpan } from "./game_options/shared";
 
 export type LoadoutItemNode = {
     identifier: string;
@@ -20,7 +21,7 @@ export type LoadoutItemNode = {
 };
 
 export type LoadoutElementNode = ASTElementBase<ElementKind.LOADOUT> & {
-    name: { value: string; location: SourceCodeLocation; symbolId: number } | ASTErrorNode;
+    name: { value: string; location: SourceCodeLocation } | ASTErrorNode;
     items: LoadoutItemNode[];
 };
 
@@ -45,12 +46,6 @@ const parseIdentifier = (
         location: anchor.location,
     };
 };
-
-const locationSpan = (start: SourceCodeLocation, end: SourceCodeLocation): SourceCodeLocation => ({
-    type: SourceLocationType.SOURCE_CODE,
-    start: start.start,
-    end: end.end,
-});
 
 export class LoadoutParserRepository {
     private readonly parsers = new Map<string, ParameterParser>();
@@ -80,11 +75,10 @@ export const loadoutParser = (ctx: ParserContext, elementToken: Token): LoadoutE
     const nameToken = ctx.getToken();
     let name: LoadoutElementNode["name"];
     if (nameToken.kind === TokenKind.Identifier) {
-        const symbolId = ctx.symbolParser.addLoadoutToScope(nameToken.value, nameToken.location);
+        ctx.symbolParser.addLoadoutToScope(nameToken.value, nameToken.location);
         name = {
             value: nameToken.value,
             location: nameToken.location,
-            symbolId,
         };
     } else {
         ctx.diagnostics.addError(
@@ -110,6 +104,7 @@ export const loadoutParser = (ctx: ParserContext, elementToken: Token): LoadoutE
             return {
                 kind: SyntaxKind.ELEMENT,
                 elementKind: ElementKind.LOADOUT,
+                keywordLocation: elementToken.location,
                 name,
                 items,
                 location: locationSpan(elementToken.location, itemIdentifier.location),
@@ -134,6 +129,7 @@ export const loadoutParser = (ctx: ParserContext, elementToken: Token): LoadoutE
     return {
         kind: SyntaxKind.ELEMENT,
         elementKind: ElementKind.LOADOUT,
+        keywordLocation: elementToken.location,
         name,
         items,
         location: elementToken.location,

@@ -91,7 +91,6 @@ const parseMapPermissionsValue = (
             kind: SyntaxKind.REFERENCE,
             location: valueToken.location,
             identifier: valueToken.value,
-            symbolId,
         };
     }
 
@@ -122,6 +121,7 @@ export const mapPermissionsParser = (
             return {
                 kind: SyntaxKind.ELEMENT,
                 elementKind: ElementKind.MAP_PERMISSIONS,
+                keywordLocation: elementToken.location,
                 entries,
                 location: locationSpan(elementToken.location, endToken.location),
             };
@@ -143,6 +143,7 @@ export const mapPermissionsParser = (
     return {
         kind: SyntaxKind.ELEMENT,
         elementKind: ElementKind.MAP_PERMISSIONS,
+        keywordLocation: elementToken.location,
         entries,
         location: elementToken.location,
     };

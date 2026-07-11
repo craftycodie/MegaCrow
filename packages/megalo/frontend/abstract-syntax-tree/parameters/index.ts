@@ -162,7 +162,6 @@ const locationSpan = (start: SourceCodeLocation, end: SourceCodeLocation): Sourc
 export const parseMemberReference = (
     ctx: ParserContext,
     rootToken: { value: string; location: SourceCodeLocation },
-    rootSymbolId?: SymbolId,
 ): ASTMemberReferenceNode => {
     ctx.getToken(); // MemberVariableSeparator
     const memberToken = ctx.getToken();
@@ -174,7 +173,6 @@ export const parseMemberReference = (
         return {
             kind: SyntaxKind.MEMBER_REFERENCE,
             root: rootToken.value,
-            rootSymbolId,
             member: { value: "", location: memberToken.location },
             location: locationSpan(rootToken.location, memberToken.location),
         };
@@ -183,7 +181,6 @@ export const parseMemberReference = (
     return {
         kind: SyntaxKind.MEMBER_REFERENCE,
         root: rootToken.value,
-        rootSymbolId,
         member: {
             value: memberToken.value,
             location: memberToken.location,
@@ -211,11 +208,7 @@ const consumeLenientParameter = (
         && ctx.peekToken(1)?.kind === TokenKind.MemberVariableSeparator
     ) {
         const rootToken = ctx.getToken();
-        return parseMemberReference(
-            ctx,
-            rootToken,
-            ctx.symbolParser.lookupSymbol(rootToken.value),
-        );
+        return parseMemberReference(ctx, rootToken);
     }
 
     const consumed = ctx.getToken();
@@ -237,7 +230,6 @@ const consumeLenientParameter = (
             return {
                 kind: SyntaxKind.REFERENCE,
                 identifier: consumed.value,
-                symbolId,
                 location: consumed.location,
             };
         }
@@ -276,11 +268,7 @@ const parseVariableParameter = (
 
     if (ctx.peekToken(1)?.kind === TokenKind.MemberVariableSeparator) {
         const rootToken = ctx.getToken();
-        return parseMemberReference(
-            ctx,
-            rootToken,
-            ctx.symbolParser.lookupSymbol(rootToken.value),
-        );
+        return parseMemberReference(ctx, rootToken);
     }
 
     const symbolId = ctx.symbolParser.lookupSymbol(token.value);
@@ -297,7 +285,6 @@ const parseVariableParameter = (
     return {
         kind: SyntaxKind.REFERENCE,
         identifier: referenceToken.value,
-        symbolId,
         location: referenceToken.location,
     };
 };
@@ -366,7 +353,6 @@ const parseParameter = (
             return {
                 kind: SyntaxKind.REFERENCE,
                 identifier: referenceToken.value,
-                symbolId,
                 location: referenceToken.location,
             };
         }
@@ -385,7 +371,6 @@ const parseParameter = (
             return {
                 kind: SyntaxKind.REFERENCE,
                 identifier: referenceToken.value,
-                symbolId,
                 location: referenceToken.location,
             };
         }
@@ -404,7 +389,6 @@ const parseParameter = (
             return {
                 kind: SyntaxKind.REFERENCE,
                 identifier: referenceToken.value,
-                symbolId,
                 location: referenceToken.location,
             };
         }
@@ -423,7 +407,6 @@ const parseParameter = (
             return {
                 kind: SyntaxKind.REFERENCE,
                 identifier: referenceToken.value,
-                symbolId,
                 location: referenceToken.location,
             };
         }
@@ -442,7 +425,6 @@ const parseParameter = (
             return {
                 kind: SyntaxKind.REFERENCE,
                 identifier: referenceToken.value,
-                symbolId,
                 location: referenceToken.location,
             };
         }
@@ -486,7 +468,6 @@ const tryParseDynamicString = (
         stringNode = {
             kind: SyntaxKind.REFERENCE,
             identifier: referenceToken.value,
-            symbolId,
             location: referenceToken.location,
         };
         text = ctx.symbolParser.lookupStringContent(referenceToken.value);
@@ -562,7 +543,6 @@ const parseDynamicString = (
             stringNode = {
                 kind: SyntaxKind.REFERENCE,
                 identifier: referenceToken.value,
-                symbolId,
                 location: referenceToken.location,
             };
             text = ctx.symbolParser.lookupStringContent(referenceToken.value);

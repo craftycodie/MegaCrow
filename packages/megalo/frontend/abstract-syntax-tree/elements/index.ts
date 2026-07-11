@@ -1,11 +1,12 @@
 import { ASTNode, SyntaxKind } from "..";
 import { MegaloVersion } from "../../../version";
+import { SourceCodeLocation } from "../../diagnostics";
 import { Token } from "../../tokens";
 import { ParserContext } from "../context";
 
 import { ConstantsElementNode, constantsParser } from "./constants";
 import { GameOptionsElementNode, gameOptionsParser } from "./game_options";
-export { GameOptionEntryKind } from "./game_options";
+export { GameOptionEntryKind, OverrideValueKind } from "./game_options";
 import { HudWidgetsElementNode, hudWidgetsParser } from "./hud_widgets";
 import { LoadoutElementNode, loadoutParser } from "./loadout";
 import { LoadoutPaletteElementNode, loadoutPaletteParser } from "./loadout_palette";
@@ -51,7 +52,11 @@ export const enum ElementKind {
 }
 
 // used by elements
-export type ASTElementBase<K extends ElementKind> = ASTNode<SyntaxKind.ELEMENT> & { elementKind: K };
+export type ASTElementBase<K extends ElementKind> = ASTNode<SyntaxKind.ELEMENT> & {
+    elementKind: K;
+    /** Keyword token only — preferred for many diagnostics. */
+    keywordLocation: SourceCodeLocation;
+};
 // only used here to enforce ASTElementNode discrim union members implement ASTElementBase
 type ASTElementNodeWithBase<T extends ASTElementBase<any>> = T;
 

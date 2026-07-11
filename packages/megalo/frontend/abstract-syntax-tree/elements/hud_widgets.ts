@@ -4,11 +4,11 @@ import { SourceCodeLocation, SourceLocationType } from "../../diagnostics";
 import { diagnosticMessages } from "../../diagnostics/messages";
 import { Token, TokenKind } from "../../tokens";
 import { ParserContext } from "../context";
+import { locationSpan } from "./game_options/shared";
 
 type HudWidgetEntryNodeName = {
     value: string;
     location: SourceCodeLocation;
-    symbolId: number;
 };
 
 type HudWidgetEntryNodePosition = {
@@ -30,11 +30,10 @@ const parseHudWidgetEntry = (ctx: ParserContext): HudWidgetEntryNode => {
     const nameToken = ctx.getToken();
     let name: HudWidgetEntryNode["name"];
     if (nameToken.kind === TokenKind.Identifier) {
-        const symbolId = ctx.symbolParser.addHudWidgetToScope(nameToken.value, nameToken.location);
+        ctx.symbolParser.addHudWidgetToScope(nameToken.value, nameToken.location);
         name = {
             value: nameToken.value,
             location: nameToken.location,
-            symbolId,
         };
     } else {
         ctx.diagnostics.addError(
@@ -83,10 +82,14 @@ export const hudWidgetsParser = (ctx: ParserContext, elementToken: Token): HudWi
         entries.push(parseHudWidgetEntry(ctx));
     });
 
+    const endToken = ctx.peekToken(-1);
+    const endLocation = endToken?.location ?? entries.at(-1)?.location ?? elementToken.location;
+
     return {
         kind: SyntaxKind.ELEMENT,
         elementKind: ElementKind.HUD_WIDGETS,
-        location: elementToken.location,
+        keywordLocation: elementToken.location,
+        location: locationSpan(elementToken.location, endLocation),
         entries,
     };
 };

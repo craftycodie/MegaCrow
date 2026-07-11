@@ -10,7 +10,7 @@ import { isAstErrorNode } from "../kinds";
 
 type RequisitionPaletteIdentifierNode = { value: string; location: SourceCodeLocation };
 
-type RequisitionPaletteNameNode = (RequisitionPaletteIdentifierNode & { symbolId: number }) | ASTErrorNode;
+type RequisitionPaletteNameNode = RequisitionPaletteIdentifierNode | ASTErrorNode;
 
 type RequisitionPaletteItemNameNode =
     | (ASTNode<SyntaxKind.QUOTED_STRING> & { value: string })
@@ -57,11 +57,10 @@ const parsePaletteName = (
         return name;
     }
 
-    const symbolId = ctx.symbolParser.addRequisitionPaletteToScope(name.value, name.location);
+    ctx.symbolParser.addRequisitionPaletteToScope(name.value, name.location);
     return {
         value: name.value,
         location: name.location,
-        symbolId,
     };
 };
 
@@ -169,6 +168,7 @@ export const requisitionPaletteParser = (
             return {
                 kind: SyntaxKind.ELEMENT,
                 elementKind: ElementKind.REQUISITION_PALETTE,
+                keywordLocation: elementToken.location,
                 name,
                 baseline,
                 items,
@@ -201,6 +201,7 @@ export const requisitionPaletteParser = (
     return {
         kind: SyntaxKind.ELEMENT,
         elementKind: ElementKind.REQUISITION_PALETTE,
+        keywordLocation: elementToken.location,
         name,
         baseline,
         items,

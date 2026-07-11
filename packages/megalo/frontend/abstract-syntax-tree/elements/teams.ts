@@ -114,6 +114,7 @@ export const teamsParser = (ctx: ParserContext, elementToken: Token): TeamsEleme
             return {
                 kind: SyntaxKind.ELEMENT,
                 elementKind: ElementKind.TEAMS,
+                keywordLocation: elementToken.location,
                 properties,
                 teams,
                 location: locationSpan(elementToken.location, endToken.location),
@@ -150,6 +151,7 @@ export const teamsParser = (ctx: ParserContext, elementToken: Token): TeamsEleme
     return {
         kind: SyntaxKind.ELEMENT,
         elementKind: ElementKind.TEAMS,
+        keywordLocation: elementToken.location,
         properties,
         teams,
         location: elementToken.location,

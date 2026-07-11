@@ -143,7 +143,6 @@ const parseUnitString = (
         return {
             kind: SyntaxKind.REFERENCE,
             identifier: unitToken.value,
-            symbolId,
             location: unitToken.location,
         };
     }
@@ -222,6 +221,7 @@ export const gameStatsParser = (
             return {
                 kind: SyntaxKind.ELEMENT,
                 elementKind: ElementKind.GAME_STATS,
+                keywordLocation: elementToken.location,
                 entries,
                 location: locationSpan(elementToken.location, endToken.location),
             };
@@ -234,6 +234,7 @@ export const gameStatsParser = (
     return {
         kind: SyntaxKind.ELEMENT,
         elementKind: ElementKind.GAME_STATS,
+        keywordLocation: elementToken.location,
         entries,
         location: elementToken.location,
     };

@@ -61,6 +61,7 @@ export const engineDataParser = (
             return {
                 kind: SyntaxKind.ELEMENT,
                 elementKind: ElementKind.ENGINE_DATA,
+                keywordLocation: elementToken.location,
                 properties,
                 location: locationSpan(elementToken.location, endToken.location),
             };
@@ -90,6 +91,7 @@ export const engineDataParser = (
     return {
         kind: SyntaxKind.ELEMENT,
         elementKind: ElementKind.ENGINE_DATA,
+        keywordLocation: elementToken.location,
         properties,
         location: elementToken.location,
     };

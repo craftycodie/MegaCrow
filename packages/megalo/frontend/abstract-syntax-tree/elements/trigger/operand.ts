@@ -111,14 +111,13 @@ export const parseIfOperand = (
         ?? ctx.symbolParser.lookupSymbol(rootToken.value);
 
     if (ctx.peekToken()?.kind === TokenKind.MemberVariableSeparator) {
-        return parseMemberReference(ctx, rootToken, symbolId);
+        return parseMemberReference(ctx, rootToken);
     }
 
     if (symbolId !== undefined) {
         const referenceNode: ASTReferenceNode = {
             kind: SyntaxKind.REFERENCE,
             identifier: rootToken.value,
-            symbolId,
             location: rootToken.location,
         };
         return referenceNode;
@@ -162,7 +161,7 @@ export const parseTypedOperand = (
     const symbolId = ctx.symbolParser.lookupSymbol(rootToken.value);
 
     if (ctx.peekToken()?.kind === TokenKind.MemberVariableSeparator) {
-        return parseMemberReference(ctx, rootToken, symbolId);
+        return parseMemberReference(ctx, rootToken);
     }
 
     if (symbolId === undefined || !matchesVariableType(ctx, symbolId, type)) {
@@ -179,7 +178,6 @@ export const parseTypedOperand = (
     const referenceNode: ASTReferenceNode = {
         kind: SyntaxKind.REFERENCE,
         identifier: rootToken.value,
-        symbolId,
         location: rootToken.location,
     };
     return referenceNode;

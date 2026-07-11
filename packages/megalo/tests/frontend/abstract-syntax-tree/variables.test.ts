@@ -106,13 +106,16 @@ end
       (entry) => entry.name === "attackers" && entry.scope === VariableScope.Global,
     )?.id;
 
+    expect(defendersId).toBeDefined();
+    expect(attackersId).toBeDefined();
+
     expect(element.entries[0]).toMatchObject({
       name: { value: "defending_team" },
-      initial: { kind: SyntaxKind.REFERENCE, identifier: "defenders", symbolId: defendersId },
+      initial: { kind: SyntaxKind.REFERENCE, identifier: "defenders" },
     });
     expect(element.entries[1]).toMatchObject({
       name: { value: "attacking_team" },
-      initial: { kind: SyntaxKind.REFERENCE, identifier: "attackers", symbolId: attackersId },
+      initial: { kind: SyntaxKind.REFERENCE, identifier: "attackers" },
     });
   });
 

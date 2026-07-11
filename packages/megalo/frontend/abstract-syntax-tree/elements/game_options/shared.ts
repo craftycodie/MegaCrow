@@ -58,7 +58,6 @@ export const parseGameOptionReference = (ctx: ParserContext, nameToken: Token): 
     return {
         kind: SyntaxKind.REFERENCE,
         identifier: nameToken.value,
-        symbolId,
         location: nameToken.location,
     };
 };

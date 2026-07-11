@@ -1,6 +1,6 @@
 import { ASTElementBase, ElementKind } from ".";
 import { MegaloVersion } from "../../../version";
-import { SourceCodeLocation, SourceLocationType } from "../../diagnostics";
+import { SourceCodeLocation } from "../../diagnostics";
 import { diagnosticMessages } from "../../diagnostics/messages";
 import { Token, TokenKind } from "../../tokens";
 import { ParserContext } from "../context";
@@ -11,9 +11,10 @@ import {
     ParameterType,
     parameterParserBuilder as buildParameterParser,
 } from "../parameters";
+import { locationSpan } from "./game_options/shared";
 
 export type LoadoutPaletteElementNode = ASTElementBase<ElementKind.LOADOUT_PALETTE> & {
-    name: { value: string; location: SourceCodeLocation; symbolId: number } | ASTErrorNode;
+    name: { value: string; location: SourceCodeLocation } | ASTErrorNode;
     items: ASTParameterNode[];
 };
 
@@ -38,12 +39,6 @@ const parseIdentifier = (
         location: anchor.location,
     };
 };
-
-const locationSpan = (start: SourceCodeLocation, end: SourceCodeLocation): SourceCodeLocation => ({
-    type: SourceLocationType.SOURCE_CODE,
-    start: start.start,
-    end: end.end,
-});
 
 export class LoadoutPaletteParserRepository {
     private readonly parsers = new Map<string, ParameterParser>();
@@ -72,11 +67,10 @@ export const loadoutPaletteParser = (
     const nameToken = ctx.getToken();
     let name: LoadoutPaletteElementNode["name"];
     if (nameToken.kind === TokenKind.Identifier) {
-        const symbolId = ctx.symbolParser.addLoadoutPaletteToScope(nameToken.value, nameToken.location);
+        ctx.symbolParser.addLoadoutPaletteToScope(nameToken.value, nameToken.location);
         name = {
             value: nameToken.value,
             location: nameToken.location,
-            symbolId,
         };
     } else {
         ctx.diagnostics.addError(
@@ -102,6 +96,7 @@ export const loadoutPaletteParser = (
             return {
                 kind: SyntaxKind.ELEMENT,
                 elementKind: ElementKind.LOADOUT_PALETTE,
+                keywordLocation: elementToken.location,
                 name,
                 items,
                 location: locationSpan(elementToken.location, itemIdentifier.location),
@@ -123,6 +118,7 @@ export const loadoutPaletteParser = (
     return {
         kind: SyntaxKind.ELEMENT,
         elementKind: ElementKind.LOADOUT_PALETTE,
+        keywordLocation: elementToken.location,
         name,
         items,
         location: elementToken.location,

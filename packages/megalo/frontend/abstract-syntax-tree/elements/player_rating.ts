@@ -75,7 +75,6 @@ const parsePlayerRatingValue = (
             kind: SyntaxKind.REFERENCE,
             location: valueToken.location,
             identifier: valueToken.value,
-            symbolId,
         };
     }
 
@@ -106,6 +105,7 @@ export const playerRatingParser = (
             return {
                 kind: SyntaxKind.ELEMENT,
                 elementKind: ElementKind.PLAYER_RATING,
+                keywordLocation: elementToken.location,
                 fields,
                 location: locationSpan(elementToken.location, endToken.location),
             };
@@ -127,6 +127,7 @@ export const playerRatingParser = (
     return {
         kind: SyntaxKind.ELEMENT,
         elementKind: ElementKind.PLAYER_RATING,
+        keywordLocation: elementToken.location,
         fields,
         location: elementToken.location,
     };

@@ -14,6 +14,7 @@ import {
     type VariableTypeName,
 } from "../language-configuration/omni/variables";
 import { type NumericInitialValue, parseNumericInitialValue } from "./constants";
+import { locationSpan } from "./game_options/shared";
 
 type VariableEntryNodeNetwork = { value: string; location: SourceCodeLocation };
 type VariableEntryNodeType = { value: VariableTypeName; location: SourceCodeLocation };
@@ -58,7 +59,6 @@ const parseIdentifierInitialValue = (
             kind: SyntaxKind.REFERENCE,
             location: valueToken.location,
             identifier: valueToken.value,
-            symbolId,
         };
     }
 
@@ -221,12 +221,14 @@ export const variablesParser = (ctx: ParserContext, elementToken: Token): Variab
     const hasValidScope = !isAstErrorNode(scope) && isVariableScopeName(scope.value);
     const variableScope = hasValidScope ? variableScopeFromName(scope.value) : undefined;
     let foundEnd = false;
+    let endLocation: SourceCodeLocation = elementToken.location;
 
     while (ctx.hasMore()) {
         const token = ctx.peekToken()!;
         if (token.kind === TokenKind.Identifier && token.value === "end") {
-            ctx.getToken();
+            const endToken = ctx.getToken();
             foundEnd = true;
+            endLocation = endToken.location;
             break;
         }
 
@@ -237,16 +239,17 @@ export const variablesParser = (ctx: ParserContext, elementToken: Token): Variab
     }
 
     if (!foundEnd) {
-        const location: SourceCodeLocation =
+        endLocation =
             entries.at(-1)?.location ??
             (!isAstErrorNode(scope) ? scope.location : elementToken.location);
-        ctx.diagnostics.addError(diagnosticMessages.expectedEndBeforeEof(), location);
+        ctx.diagnostics.addError(diagnosticMessages.expectedEndBeforeEof(), endLocation);
     }
 
     return {
         kind: SyntaxKind.ELEMENT,
         elementKind: ElementKind.VARIABLES,
-        location: elementToken.location,
+        keywordLocation: elementToken.location,
+        location: locationSpan(elementToken.location, endLocation),
         scope,
         entries,
     };

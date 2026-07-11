@@ -232,6 +232,7 @@ export const triggerParser = (
             return {
                 kind: SyntaxKind.ELEMENT,
                 elementKind: ElementKind.TRIGGER,
+                keywordLocation: elementToken.location,
                 name,
                 statements,
                 location: locationSpan(elementToken.location, endLocation),
@@ -242,6 +243,7 @@ export const triggerParser = (
         return {
             kind: SyntaxKind.ELEMENT,
             elementKind: ElementKind.TRIGGER,
+            keywordLocation: elementToken.location,
             name,
             statements,
             location: locationSpan(elementToken.location, consumedEnd.location),

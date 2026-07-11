@@ -3,6 +3,7 @@ import { ASTErrorNode, ASTNode, SyntaxKind } from "..";
 import { diagnosticMessages } from "../../diagnostics/messages";
 import { Token, TokenKind } from "../../tokens";
 import { ParserContext } from "../context";
+import { locationSpan } from "./game_options/shared";
 
 type IncludeElementNodeFile = ASTNode<SyntaxKind.QUOTED_STRING> & { value: string };
 
@@ -35,7 +36,8 @@ export const includeParser = (ctx: ParserContext, elementToken: Token): IncludeE
     return {
         kind: SyntaxKind.ELEMENT,
         elementKind: ElementKind.INCLUDE,
-        location: elementToken.location,
+        keywordLocation: elementToken.location,
+        location: locationSpan(elementToken.location, pathToken.location),
         file,
     };
 }

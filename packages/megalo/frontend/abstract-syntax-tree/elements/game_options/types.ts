@@ -15,6 +15,12 @@ export const enum GameOptionEntryKind {
     PLAYER_TRAITS = 3,
 }
 
+export const enum OverrideValueKind {
+    SIMPLE,
+    LOADOUT_PALETTE,
+    NESTED,
+}
+
 export type GameOptionModifiers = {
     lock: boolean;
     hide: boolean;
@@ -30,7 +36,7 @@ export type UserDefinedOptionValueNode = {
 export type UserDefinedOptionNode = {
     kind: GameOptionEntryKind.OPTION | GameOptionEntryKind.RANGED_OPTION;
     modifiers: GameOptionModifiers;
-    name: { value: string; location: SourceCodeLocation; symbolId: number } | ASTErrorNode;
+    name: { value: string; location: SourceCodeLocation } | ASTErrorNode;
     displayName: ASTStringLiteralOrReference;
     description: ASTStringLiteralOrReference;
     defaultValue: NumericInitialValue;
@@ -39,18 +45,18 @@ export type UserDefinedOptionNode = {
 };
 
 export type OverrideSimpleValueNode = {
-    kind: "simple";
+    kind: OverrideValueKind.SIMPLE;
     value: NumericInitialValue | ASTKeywordParameterNode;
 };
 
 export type OverrideLoadoutPaletteNode = {
-    kind: "loadout_palette";
+    kind: OverrideValueKind.LOADOUT_PALETTE;
     tier: { value: string; location: SourceCodeLocation } | ASTErrorNode;
     palette: { value: string; location: SourceCodeLocation } | ASTErrorNode;
 };
 
 export type OverrideNestedBodyNode = {
-    kind: "nested";
+    kind: OverrideValueKind.NESTED;
     body: {
         options: PlayerTraitOptionNode[];
         location: SourceCodeLocation;

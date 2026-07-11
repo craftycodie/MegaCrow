@@ -76,7 +76,6 @@ end
     expect(element.entries[2]?.value).toMatchObject({
       kind: SyntaxKind.REFERENCE,
       identifier: "true",
-      symbolId: 0,
     });
   });
 
@@ -105,7 +104,6 @@ end
     expect(element.entries[2]?.value).toMatchObject({
       kind: SyntaxKind.REFERENCE,
       identifier: "k_special_death_type_melee",
-      symbolId: melee!.id,
     });
   });
 

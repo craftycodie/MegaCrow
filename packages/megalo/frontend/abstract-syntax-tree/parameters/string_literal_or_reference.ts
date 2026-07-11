@@ -47,7 +47,6 @@ export const parseStringLiteralOrReference = (
             return {
                 kind: SyntaxKind.REFERENCE,
                 identifier: token.value,
-                symbolId,
                 location: token.location,
             };
         }

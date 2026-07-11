@@ -1,5 +1,4 @@
 import { SourceCodeLocation } from "../diagnostics";
-import { SymbolId } from "../symbol-table";
 
 // A numeric const enum is used for efficiency.
 export const enum SyntaxKind {
@@ -10,7 +9,6 @@ export const enum SyntaxKind {
     INTEGER = 3,
     REFERENCE = 4,
     KEYWORD = 5,
-    DYNAMIC_STRING = 6,
     FLOATING_POINT = 7,
     MEMBER_REFERENCE = 8,
     CONDITION = 9,
@@ -18,6 +16,7 @@ export const enum SyntaxKind {
     BEGIN = 11,
     TEMPORARY = 12,
     FOR_EACH = 13,
+    DYNAMIC_STRING = 14,
 }
 
 export type ASTNode<K extends SyntaxKind> = {
@@ -40,12 +39,10 @@ export type ASTFloatingPointNode = ASTNode<SyntaxKind.FLOATING_POINT> & {
 
 export type ASTReferenceNode = ASTNode<SyntaxKind.REFERENCE> & {
     identifier: string;
-    symbolId: SymbolId;
 };
 
 export type ASTMemberReferenceNode = ASTNode<SyntaxKind.MEMBER_REFERENCE> & {
     root: string;
-    rootSymbolId?: SymbolId;
     member: { value: string; location: SourceCodeLocation };
 };
 

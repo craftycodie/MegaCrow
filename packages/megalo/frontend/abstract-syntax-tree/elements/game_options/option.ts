@@ -49,7 +49,7 @@ export const parseUserDefinedOption = (
     const nameToken = ctx.getToken();
     let name: UserDefinedOptionNode["name"];
     if (nameToken.kind === TokenKind.Identifier) {
-        const symbolId = ctx.symbolParser.addGameOptionToScope({
+        ctx.symbolParser.addGameOptionToScope({
             name: nameToken.value,
             declaration: nameToken.location,
             type: VariableType.Number,
@@ -57,7 +57,6 @@ export const parseUserDefinedOption = (
         name = {
             value: nameToken.value,
             location: nameToken.location,
-            symbolId,
         };
     } else {
         ctx.diagnostics.addError(

@@ -65,7 +65,7 @@ end
       return;
     }
 
-    expect(gold.name).toMatchObject({ value: "covy_palette_gold", symbolId: expect.any(Number) });
+    expect(gold.name).toMatchObject({ value: "covy_palette_gold" });
     expect(gold.baseline).toMatchObject({ value: "elite" });
     expect(gold.items).toHaveLength(0);
 

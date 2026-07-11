@@ -98,12 +98,10 @@ describe("parseCondition", () => {
         );
 
         expect(diagnostics.hasErrors()).toBe(false);
-        const attackersId = ctx.symbolParser.lookupSymbol("attackers");
-        expect(attackersId).toBeDefined();
+        expect(ctx.symbolParser.lookupSymbol("attackers")).toBeDefined();
         expect(condition.operands[2]).toMatchObject({
             kind: SyntaxKind.MEMBER_REFERENCE,
             root: "attackers",
-            rootSymbolId: attackersId,
             member: { value: "vip" },
         });
     });

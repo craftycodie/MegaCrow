@@ -96,6 +96,7 @@ export const mapObjectParser = (
             return {
                 kind: SyntaxKind.ELEMENT,
                 elementKind: ElementKind.MAP_OBJECT,
+                keywordLocation: elementToken.location,
                 filterName,
                 properties,
                 location: locationSpan(elementToken.location, endToken.location),
@@ -124,6 +125,7 @@ export const mapObjectParser = (
     return {
         kind: SyntaxKind.ELEMENT,
         elementKind: ElementKind.MAP_OBJECT,
+        keywordLocation: elementToken.location,
         filterName,
         properties,
         location: elementToken.location,

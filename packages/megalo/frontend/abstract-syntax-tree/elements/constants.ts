@@ -4,6 +4,7 @@ import { SourceCodeLocation, SourceLocationType } from "../../diagnostics";
 import { diagnosticMessages } from "../../diagnostics/messages";
 import { Token, TokenKind } from "../../tokens";
 import { ParserContext } from "../context";
+import { locationSpan } from "./game_options/shared";
 
 type ConstantEntryNodeType = { value: "number"; location: SourceCodeLocation };
 type ConstantEntryNodeName = { value: string; location: SourceCodeLocation };
@@ -69,7 +70,6 @@ export const parseNumericInitialValue = (
             kind: SyntaxKind.REFERENCE,
             location: valueToken.location,
             identifier: valueToken.value,
-            symbolId,
         };
     }
 
@@ -154,12 +154,14 @@ const parseConstantEntry = (ctx: ParserContext): ConstantEntryNode => {
 export const constantsParser = (ctx: ParserContext, elementToken: Token): ConstantsElementNode => {
     const entries: ConstantEntryNode[] = [];
     let foundEnd = false;
+    let endLocation: SourceCodeLocation = elementToken.location;
 
     while (ctx.hasMore()) {
         const token = ctx.peekToken()!;
         if (token.kind === TokenKind.Identifier && token.value === "end") {
-            ctx.getToken();
+            const endToken = ctx.getToken();
             foundEnd = true;
+            endLocation = endToken.location;
             break;
         }
 
@@ -167,14 +169,15 @@ export const constantsParser = (ctx: ParserContext, elementToken: Token): Consta
     }
 
     if (!foundEnd) {
-        const location: SourceCodeLocation = entries.at(-1)?.location ?? elementToken.location;
-        ctx.diagnostics.addError(diagnosticMessages.expectedEndBeforeEof(), location);
+        endLocation = entries.at(-1)?.location ?? elementToken.location;
+        ctx.diagnostics.addError(diagnosticMessages.expectedEndBeforeEof(), endLocation);
     }
 
     return {
         kind: SyntaxKind.ELEMENT,
         elementKind: ElementKind.CONSTANTS,
-        location: elementToken.location,
+        keywordLocation: elementToken.location,
+        location: locationSpan(elementToken.location, endLocation),
         entries,
     };
 };

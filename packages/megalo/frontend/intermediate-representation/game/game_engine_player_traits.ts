@@ -1,13 +1,15 @@
+import { ValueWithLocation } from "..";
+
 export type PlayerTraitShieldVitality = Partial<{
-    damageResistancePercentage: number;
-    bodyMultiplierPercentage: number;
-    bodyRechargeRatePercentage: number;
-    shieldMultiplierPercentage: number;
-    shieldRechargeRatePercentage: number;
-    headshotImmunity: boolean;
-    vampirismPercentage: number;
-    assasinationImmunity: boolean;
-    deathless: boolean;
+    damageResistancePercentage: ValueWithLocation<number>;
+    bodyMultiplierPercentage: ValueWithLocation<number>;
+    bodyRechargeRatePercentage: ValueWithLocation<number>;
+    shieldMultiplierPercentage: ValueWithLocation<number>;
+    shieldRechargeRatePercentage: ValueWithLocation<number>;
+    headshotImmunity: ValueWithLocation<boolean>;
+    vampirismPercentage: ValueWithLocation<number>;
+    assasinationImmunity: ValueWithLocation<boolean>;
+    deathless: ValueWithLocation<boolean>;
 }>;
 
 export enum GrenadeCountSetting {
@@ -35,18 +37,18 @@ export enum InfiniteAmmoSetting {
 }
 
 export type PlayerTraitWeapons = Partial<{
-    damageModifierPercentageSetting: number;
-    meleeDamageModifierPercentageSetting: number;
-    initialPrimaryWeaponAbsoluteIndex: number; // object_lists/weapons.txt
-    initialSecondaryWeaponAbsoluteIndex: number; // object_lists/weapons.txt
-    initialGrenadeCount: GrenadeCountSetting;
-    rechargingGrenades: boolean;
+    damageModifierPercentageSetting: ValueWithLocation<number>;
+    meleeDamageModifierPercentageSetting: ValueWithLocation<number>;
+    initialPrimaryWeaponAbsoluteIndex: ValueWithLocation<number>; // object_lists/weapons.txt
+    initialSecondaryWeaponAbsoluteIndex: ValueWithLocation<number>; // object_lists/weapons.txt
+    initialGrenadeCount: ValueWithLocation<GrenadeCountSetting>;
+    rechargingGrenades: ValueWithLocation<boolean>;
     infiniteAmmo: InfiniteAmmoSetting;
-    weaponPickup: boolean;
-    equipmentUsage: boolean;
-    dropEquipment: boolean;
-    infiniteEquipment: boolean;
-    initialEquipmentAbsoluteIndex: number; // object_lists/equipment.txt
+    weaponPickup: ValueWithLocation<boolean>;
+    equipmentUsage: ValueWithLocation<boolean>;
+    dropEquipment: ValueWithLocation<boolean>;
+    infiniteEquipment: ValueWithLocation<boolean>;
+    initialEquipmentAbsoluteIndex: ValueWithLocation<number>; // object_lists/equipment.txt
 }>;
 
 export enum VehicleUsage {
@@ -61,10 +63,10 @@ export enum VehicleUsage {
 }
 
 export type PlayerTraitMovement = Partial<{
-    speedPercentage: number;
-    gravityPercentage: number;
-    vehicleUsage: VehicleUsage;
-    jumpModifier: number; // % expressed as an integer
+    speedPercentage: ValueWithLocation<number>;
+    gravityPercentage: ValueWithLocation<number>;
+    vehicleUsage: ValueWithLocation<VehicleUsage>;
+    jumpModifier: ValueWithLocation<number>; // % expressed as an integer
 }>;
 
 export enum ActiveCamo {
@@ -98,10 +100,10 @@ export enum ForcedChangeColor {
 }
 
 export type PlayerTraitAppearance = Partial<{
-    activeCamo: ActiveCamo;
-    waypoint: WaypointVisibility;
-    gamertag: WaypointVisibility;
-    forcedChangeColor: ForcedChangeColor;
+    activeCamo: ValueWithLocation<ActiveCamo>;
+    waypoint: ValueWithLocation<WaypointVisibility>;
+    gamertag: ValueWithLocation<WaypointVisibility>;
+    forcedChangeColor: ValueWithLocation<ForcedChangeColor>;
 }>;
 
 export enum MotionTrackerMode {
@@ -112,14 +114,14 @@ export enum MotionTrackerMode {
 }
 
 export type PlayerTraitSensors = Partial<{
-    motionTrackerMode: MotionTrackerMode;
-    motionTrackerRange: number;
+    motionTrackerMode: ValueWithLocation<MotionTrackerMode>;
+    motionTrackerRange: ValueWithLocation<number>;
 }>;
 
 export type PlayerTraits = {
-    shieldVitality: PlayerTraitShieldVitality;
-    weapons: PlayerTraitWeapons;
-    movement: PlayerTraitMovement;
-    appearance: PlayerTraitAppearance;
-    sensors: PlayerTraitSensors;
+    shieldVitality: ValueWithLocation<PlayerTraitShieldVitality>;
+    weapons: ValueWithLocation<PlayerTraitWeapons>;
+    movement: ValueWithLocation<PlayerTraitMovement>;
+    appearance: ValueWithLocation<PlayerTraitAppearance>;
+    sensors: ValueWithLocation<PlayerTraitSensors>;
 }

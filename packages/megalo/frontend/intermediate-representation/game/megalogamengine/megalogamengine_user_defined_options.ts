@@ -1,29 +1,31 @@
+import { ValueWithLocation } from "../..";
 import { StringTableReference } from "../string_table";
 
 export type UserDefinedOptionValue = {
-    value: number;
-    name?: StringTableReference;
-    description?: StringTableReference;
+    value: ValueWithLocation<number>;
+    name?: ValueWithLocation<StringTableReference>;
+    description?: ValueWithLocation<StringTableReference>;
 }
 
 type UserDefinedOptionBase = {
-    name?: StringTableReference;
-    description?: StringTableReference;
-    locked?: boolean;
-    hidden?: boolean;
+    name?: ValueWithLocation<StringTableReference>;
+    description?: ValueWithLocation<StringTableReference>;
+    // on compiled gametypes, hide and lock are stored separately from options.
+    locked?: ValueWithLocation<boolean>;
+    hidden?: ValueWithLocation<boolean>;
 }
 
 export type RangedUserDefinedOption = UserDefinedOptionBase & {
-    defaultValue: UserDefinedOptionValue;
-    minValue: UserDefinedOptionValue;
-    maxValue: UserDefinedOptionValue;
-    currentValue: number;
+    defaultValue: ValueWithLocation<UserDefinedOptionValue>;
+    minValue: ValueWithLocation<UserDefinedOptionValue>;
+    maxValue: ValueWithLocation<UserDefinedOptionValue>;
+    currentValue: ValueWithLocation<number>;
 }
 
 export type NormalUserDefinedOption = UserDefinedOptionBase & {
-    values: UserDefinedOptionValue[];
-    defaultValueIndex: number;
-    currentValueIndex: number;
+    values: ValueWithLocation<UserDefinedOptionValue>[];
+    defaultValueIndex: ValueWithLocation<number>;
+    currentValueIndex: ValueWithLocation<number>;
 }
 
 export type UserDefinedOption = RangedUserDefinedOption | NormalUserDefinedOption;

@@ -1,3 +1,4 @@
+import { ValueWithLocation } from "../..";
 import { CustomTimerReference, ObjectReference, ObjectTypeReference, PlayerReference, TeamReference } from "./megalogamengine_references";
 import { VariantVariable } from "./megalogamengine_variant_variable";
 
@@ -32,17 +33,16 @@ export enum ConditionType {
 }
 
 export type ConditionIfParameters = {
-    left: VariantVariable;
-    right: VariantVariable;
-    comparison: NumericComparison;
+    left: ValueWithLocation<VariantVariable>;
+    right: ValueWithLocation<VariantVariable>;
+    comparison: ValueWithLocation<NumericComparison>;
 }
 
 export type ConditionObjectInAreaParameters = {
-    object: ObjectReference;
-    area: ObjectReference;
+    object: ValueWithLocation<ObjectReference>;
+    area: ValueWithLocation<ObjectReference>;
 }
 
-/** Bit indices for `e_player_death_killer_type`. */
 export enum PlayerDeathKillerType {
     Environment = 0,
     Suicide = 1,
@@ -60,8 +60,8 @@ export type PlayerDeathKillerTypeFlags = {
 };
 
 export type ConditionPlayerDiedParameters = {
-    player: PlayerReference;
-    killerType: PlayerDeathKillerTypeFlags;
+    player: ValueWithLocation<PlayerReference>;
+    killerType: ValueWithLocation<PlayerDeathKillerTypeFlags>;
 }
 
 export enum Disposition {
@@ -71,60 +71,60 @@ export enum Disposition {
 }
 
 export type ConditionTeamDispositionParameters = {
-    team1: TeamReference;
-    team2: TeamReference;
-    disposition: Disposition;
+    team1: ValueWithLocation<TeamReference>;
+    team2: ValueWithLocation<TeamReference>;
+    disposition: ValueWithLocation<Disposition>;
 }
 
 export type ConditionTimerExpiredParameters = {
-    timer: CustomTimerReference;
+    timer: ValueWithLocation<CustomTimerReference>;
 }
 
 export type ConditionObjectIsTypeParameters = {
-    object: ObjectReference;
-    objectType: ObjectTypeReference;
+    object: ValueWithLocation<ObjectReference>;
+    objectType: ValueWithLocation<ObjectTypeReference>;
 }
 
 export type ConditionTeamIsActiveParameters = {
-    team: TeamReference;
+    team: ValueWithLocation<TeamReference>;
 }
 
 export type ConditionObjectOutOfBoundsParameters = {
-    object: ObjectReference;
+    object: ValueWithLocation<ObjectReference>;
 }
 
 export type ConditionPlayerIsFireTeamLeaderParameters = {
-    player: PlayerReference;
+    player: ValueWithLocation<PlayerReference>;
 }
 
 export type ConditionPlayerAssistedWithKillParameters = {
-    player1: PlayerReference;
-    player2: PlayerReference;
+    player1: ValueWithLocation<PlayerReference>;
+    player2: ValueWithLocation<PlayerReference>;
 }
 
 export type ConditionObjectMatchesFilterParameters = {
-    object: ObjectReference;
-    filterIndex: number;
+    object: ValueWithLocation<ObjectReference>;
+    filterIndex: ValueWithLocation<number>;
 }
 
 export type ConditionPlayerIsActiveParameters = {
-    player: PlayerReference;
+    player: ValueWithLocation<PlayerReference>;
 }
 
 export type ConditionEquipmentIsActiveParameters = {
-    object: ObjectReference;
+    object: ValueWithLocation<ObjectReference>;
 }
 
 export type ConditionPlayerIsSpartanParameters = {
-    player: PlayerReference;
+    player: ValueWithLocation<PlayerReference>;
 }
 
 export type ConditionPlayerIsEliteParameters = {
-    player: PlayerReference;
+    player: ValueWithLocation<PlayerReference>;
 }
 
 export type ConditionPlayerIsEditorParameters = {
-    player: PlayerReference;
+    player: ValueWithLocation<PlayerReference>;
 }
 
 export type ConditionGameIsForgeParameters = never;
@@ -136,7 +136,7 @@ type ConditionBase = {
 }
 
 type ConditionParameters<T extends ConditionType, P> = {
-    type: T;
+    type: ValueWithLocation<T>;
     parameters: P;
 }
 

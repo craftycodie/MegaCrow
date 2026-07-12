@@ -1,3 +1,4 @@
+import { ValueWithLocation } from "../..";
 import { StringTableReference } from "../string_table";
 import { CustomTimerReference, CustomVariableReference, ObjectReference, PlayerReference, TeamReference } from "./megalogamengine_references";
 
@@ -42,6 +43,6 @@ export type ReplaceableToken =
     | CustomTimerReplaceableToken;
 
 export type DynamicString = {
-    stringIndex: StringTableReference;
-    tokens: ReplaceableToken[];
+    stringIndex: ValueWithLocation<StringTableReference>;
+    tokens: ValueWithLocation<ReplaceableToken>[];
 }

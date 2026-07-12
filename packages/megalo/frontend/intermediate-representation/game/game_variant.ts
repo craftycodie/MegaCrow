@@ -1,3 +1,4 @@
+import { ValueWithLocation } from "..";
 import { GameEngineBaseVariant } from "./game_engine_default";
 import { PlayerTraitOption } from "./game_engine_traits";
 import { Action } from "./megalogamengine/megalogamengine_actions";
@@ -15,40 +16,38 @@ import { StringTable } from "./string_table";
 // Based on c_game_engine_custom_variant
 // A lot of this is partial, as its applied as an override on the default game engine definition.
 export type GameEngineCustomVariant = {
-    encodingVersion: number;
-    buildNumber: number;
     baseVariant: GameEngineBaseVariant;
     playerTraits: PlayerTraitOption[];
     userDefinedOptions: UserDefinedOption[];
     scriptStrings: StringTable;
-    baseNameStringIndex: number;
+    baseNameStringIndex: ValueWithLocation<number>;
     localizedName: StringTable;
     localizedDescription: StringTable;
     localizedCategory: StringTable;
-    engineIcon: number;
-    engineCategory: number;
-    mapPermissions: MegaloGameEngineMapPermissions;
-    playerRatings: Partial<{
-        ratingScale: number;
-        killWeight: number;
-        assistWeight: number;
-        betrayalWeight: number;
-        deathWeight: number;
-        normalizeByMaxKills: boolean;
-        base: number;
-        range: number;
-        lossScalar: number;
-        customStat0: number;
-        customStat1: number;
-        customStat2: number;
-        customStat3: number;
-        expansion0: number;
-        expansion1: number;
-        showInScoreboard: boolean;
+    engineIcon: ValueWithLocation<number>;
+    engineCategory: ValueWithLocation<number>;
+    mapPermissions?: MegaloGameEngineMapPermissions;
+    playerRatings?: Partial<{
+        ratingScale: ValueWithLocation<number>;
+        killWeight: ValueWithLocation<number>;
+        assistWeight: ValueWithLocation<number>;
+        betrayalWeight: ValueWithLocation<number>;
+        deathWeight: ValueWithLocation<number>;
+        normalizeByMaxKills: ValueWithLocation<boolean>;
+        base: ValueWithLocation<number>;
+        range: ValueWithLocation<number>;
+        lossScalar: ValueWithLocation<number>;
+        customStat0: ValueWithLocation<number>;
+        customStat1: ValueWithLocation<number>;
+        customStat2: ValueWithLocation<number>;
+        customStat3: ValueWithLocation<number>;
+        expansion0: ValueWithLocation<number>;
+        expansion1: ValueWithLocation<number>;
+        showInScoreboard: ValueWithLocation<boolean>;
     }>;
-    scoreToWinRound: number;
-    fireTeamsEnabled: boolean;
-    symmetricGametype: boolean;
+    scoreToWinRound?: ValueWithLocation<number>;
+    fireTeamsEnabled?: ValueWithLocation<boolean>;
+    symmetricGametype?: ValueWithLocation<boolean>;
     baseVariantParametersLocked: BuiltInGameOptionFlags;
     baseVariantParametersHidden: BuiltInGameOptionFlags;
     // lock and hide flags are stored within userDefinedOptions on IR.
@@ -56,19 +55,19 @@ export type GameEngineCustomVariant = {
     // userDefinedOptionsHidden: GameVariantParameterFlags;
     gameEngine: CustomGameEngineDefinition;
     tu1Settings: Partial<{
-        alwaysSpilloverDamage: boolean;
-        armorLockStickiesRemain: boolean;
-        attachedDamageBypassShields: boolean;
-        activeCamoOverrideEnergyCurve: boolean;
-        swordGunClangKills: boolean;
-        magnumIsAutomatic: boolean;
-        precisionBloom: number;
-        activeCamoEnergyCurveMin: number;
-        activeCamoEnergyCurveMax: number;
-        armorLockDamageDrain: number;
-        armorLockDamageDrainLimit: number;
-        magnumDamage: number;
-        magnumFireDelay: number;
+        alwaysSpilloverDamage: ValueWithLocation<boolean>;
+        armorLockStickiesRemain: ValueWithLocation<boolean>;
+        attachedDamageBypassShields: ValueWithLocation<boolean>;
+        activeCamoOverrideEnergyCurve: ValueWithLocation<boolean>;
+        swordGunClangKills: ValueWithLocation<boolean>;
+        magnumIsAutomatic: ValueWithLocation<boolean>;
+        precisionBloom: ValueWithLocation<number>;
+        activeCamoEnergyCurveMin: ValueWithLocation<number>;
+        activeCamoEnergyCurveMax: ValueWithLocation<number>;
+        armorLockDamageDrain: ValueWithLocation<number>;
+        armorLockDamageDrainLimit: ValueWithLocation<number>;
+        magnumDamage: ValueWithLocation<number>;
+        magnumFireDelay: ValueWithLocation<number>;
     }>;
 };
 
@@ -81,7 +80,7 @@ export type CustomGameEngineDefinition = {
     playerVariableMetadata: VariableMetadata;
     objectVariableMetadata: VariableMetadata;
     teamVariableMetadata: VariableMetadata;
-    hudWidgets: HudWidgetPosition[];
+    hudWidgets: ValueWithLocation<HudWidgetPosition>[];
     initializationTriggerIndex: number;
     localInitializationTriggerIndex: number;
     hostMigrationTriggerIndex: number;

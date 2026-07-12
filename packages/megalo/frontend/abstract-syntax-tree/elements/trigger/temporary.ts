@@ -3,7 +3,7 @@ import { SourceCodeLocation, SourceLocationType } from "../../../diagnostics";
 import { diagnosticMessages } from "../../../diagnostics/messages";
 import { Token, TokenKind } from "../../../tokens";
 import { ParserContext } from "../../context";
-import { variableTypeFromName } from "../../language-configuration/omni/variables";
+import { variableTypeFromName } from "../../../language-configuration/omni/variables";
 import { VariableScope } from "../../../symbol-table";
 import { ASTConditionOperandNode, parseIfOperand } from "./operand";
 

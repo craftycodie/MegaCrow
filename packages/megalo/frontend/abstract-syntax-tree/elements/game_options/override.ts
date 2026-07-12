@@ -6,7 +6,7 @@ import { ParserContext } from "../../context";
 import {
     isBuiltInNonNumericOverrideOption,
     isPlayerTraitsOverrideOption,
-} from "../../language-configuration/omni/game_options";
+} from "../../../language-configuration/omni/game_options";
 import { parseNumericInitialValue } from "../constants";
 import {
     isEndToken,

@@ -1,6 +1,6 @@
 import { VariableScope, VariableType } from ".";
 import { MegaloVersion } from "../../version";
-import { TEAM_DESIGNATORS } from "../abstract-syntax-tree/language-configuration/omni/teams";
+import { TEAM_DESIGNATORS } from "../language-configuration/omni/teams";
 import { BUILT_IN_LOCATION } from "../diagnostics";
 import { ParserSymbolContext } from "../abstract-syntax-tree/symbol-context";
 

@@ -12,7 +12,7 @@ import {
     variableTypeFromName,
     type VariableScopeName,
     type VariableTypeName,
-} from "../language-configuration/omni/variables";
+} from "../../language-configuration/omni/variables";
 import { type NumericInitialValue, parseNumericInitialValue } from "./constants";
 import { locationSpan } from "./game_options/shared";
 

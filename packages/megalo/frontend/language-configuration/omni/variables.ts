@@ -1,4 +1,4 @@
-import { VariableScope, VariableType } from "../../../symbol-table";
+import { VariableScope, VariableType } from "../../symbol-table";
 
 // We need to be strict on variable type & scope at parse because
 // parsing actions needs the context of what type of variable a given parameter is

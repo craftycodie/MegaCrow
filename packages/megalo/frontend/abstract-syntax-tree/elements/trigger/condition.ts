@@ -7,7 +7,7 @@ import { ParserContext } from "../../context";
 import {
     DISPOSITION_KEYWORDS,
     KILLER_TYPE_KEYWORDS,
-} from "../../language-configuration/omni/conditions";
+} from "../../../language-configuration/omni/conditions";
 import {
     ASTConditionOperandNode,
     ConditionOperandParser,

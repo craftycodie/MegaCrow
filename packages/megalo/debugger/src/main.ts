@@ -32,6 +32,7 @@ app.innerHTML = `
   <div class="app">
     <header class="toolbar">
       <h1>Megalo Debugger</h1>
+      <a class="toolbar-link" href="/inspector">Inspector</a>
       <div
         class="locale-toggle"
         data-role="locale-toggle"
@@ -64,8 +65,10 @@ app.innerHTML = `
           <pre class="output-view" data-role="ast"></pre>
         </section>
         <section class="pane">
-          <div class="pane-header">IR</div>
-          <pre class="output-view placeholder" data-role="ir"></pre>
+          <div class="pane-header">IR
+            <span class="pane-header-meta" data-role="ir-time"></span>
+          </div>
+          <pre class="output-view" data-role="ir"></pre>
         </section>
       </div>
       <section class="pane pane-symbols">
@@ -91,6 +94,7 @@ const tokensView = app.querySelector<HTMLElement>('[data-role="tokens"]');
 const astView = app.querySelector<HTMLElement>('[data-role="ast"]');
 const astTime = app.querySelector<HTMLElement>('[data-role="ast-time"]');
 const irView = app.querySelector<HTMLElement>('[data-role="ir"]');
+const irTime = app.querySelector<HTMLElement>('[data-role="ir-time"]');
 const symbolsView = app.querySelector<HTMLElement>('[data-role="symbols"]');
 const symbolCount = app.querySelector<HTMLElement>('[data-role="symbol-count"]');
 const tokenCount = app.querySelector<HTMLElement>('[data-role="token-count"]');
@@ -107,6 +111,7 @@ if (
   !tokensView ||
   !astView ||
   !irView ||
+  !irTime ||
   !symbolsView ||
   !symbolCount ||
   !tokenCount ||
@@ -122,7 +127,6 @@ if (
 
 const localeButtons = localeToggle.querySelectorAll<HTMLButtonElement>("[data-locale]");
 const sourceEditor = createSourceEditor(sourceEditorHost, DEFAULT_SOURCE);
-irView.textContent = NYI;
 
 const severityLabel = (severity: DiagnosticSeverity): string =>
   DiagnosticSeverity[severity] ?? String(severity);
@@ -242,6 +246,7 @@ const analyzeWorker = new AnalyzeWorker();
 let cachedSource: string | null = null;
 let cachedTokensText: { value: string | null } = { value: null };
 let cachedAstText: { value: string | null } = { value: null };
+let cachedIrText: { value: string | null } = { value: null };
 let cachedSymbolTableText: { value: string | null } = { value: null };
 let cachedDiagnosticsSummary: { value: string | null } = { value: null };
 let cachedDiagnosticsSignature: string | null = null;
@@ -344,6 +349,16 @@ const flushDom = (): void => {
       if (!options.diagnosticsOnly || sourceChanged) {
         setTextIfChanged(symbolsView, result.symbolTableText, cachedSymbolTableText);
         symbolCount.textContent = `${result.symbolCount} symbol${result.symbolCount === 1 ? "" : "s"}`;
+      }
+    },
+    () => {
+      if (!latestResult || latestResult.id !== updateGeneration) {
+        return;
+      }
+
+      if (!options.diagnosticsOnly || sourceChanged) {
+        setTextIfChanged(irView, result.irText, cachedIrText);
+        irTime.textContent = formatDuration(result.lowerDuration);
       }
     },
     () => {

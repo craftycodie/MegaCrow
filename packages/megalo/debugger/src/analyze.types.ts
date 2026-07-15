@@ -16,5 +16,7 @@ export type AnalyzeResponse = {
   symbolCount: number;
   lexDuration: number;
   parseDuration: number;
+  lowerDuration: number;
+  irText: string;
   diagnostics: Diagnostic[];
 };

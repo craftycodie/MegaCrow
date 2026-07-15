@@ -24,15 +24,13 @@ export class Parser {
         this.elementParserRepository = new ElementParserRepository(megaloVersion);
     }
 
-    public parse = (tokens: Tokens, diagnostics: Diagnostics): {ast: AST, symbolTable: SymbolTable} => {
+    public parse = (tokens: Tokens, diagnostics: Diagnostics): AST => {
         // AST is managed by this function, so is not included in Parser Context.
         const ast: AST = {
             failed: false,
             comments: [],
             elements: [],
         };
-        
-
 
         // Pass 1. Collect comments
         // This allows us to skip comments when parsing elements.
@@ -73,8 +71,7 @@ export class Parser {
         }
 
         ast.failed = ctx.diagnostics.hasErrors();
-        const symbolTable = symbolBinder.getSymbolTable();
 
-        return {ast, symbolTable};
+        return ast;
     }
 }

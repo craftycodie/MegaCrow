@@ -6,7 +6,6 @@ import { MegaloSound } from "./megalogamengine_sounds";
 import { DynamicString } from "./megalogamengine_text";
 
 export enum ActionType {
-    None,
     SetScore,
     CreateObject,
     DeleteObject,
@@ -457,7 +456,7 @@ export type SetLoadoutPaletteParameters = {
     loadoutPaletteIndex: number;
 }
 
-export type PlayerGiveWeaponParameters = {
+export type PlayerGetWeaponParameters = {
     player: ValueWithLocation<PlayerReference>;
     primary: boolean;
     weapon: ValueWithLocation<ObjectReference>;
@@ -929,24 +928,37 @@ export type Action =
     | ActionParameters<ActionType.PlayerSetFireteamIndex, PlayerSetFireteamIndexParameters>
     | ActionParameters<ActionType.ObjectAdjustShield, ObjectAdjustShieldParameters>
     | ActionParameters<ActionType.ObjectAdjustHealth, ObjectAdjustHealthParameters>
+    | ActionParameters<ActionType.ObjectGetDistance, ObjectGetDistanceParameters>
     | ActionParameters<ActionType.ObjectAdjustMaximumShield, ObjectAdjustMaximumShieldParameters>
     | ActionParameters<ActionType.ObjectAdjustMaximumHealth, ObjectAdjustMaximumHealthParameters>
-    | ActionParameters<ActionType.ObjectGetDistance, ObjectGetDistanceParameters>
+    | ActionParameters<ActionType.PlayerSetRequisitionPalette, PlayerSetRequisitionPaletteParameters>
     | ActionParameters<ActionType.DeviceSetPower, DeviceSetPowerParameters>
     | ActionParameters<ActionType.DeviceGetPower, DeviceGetPowerParameters>
     | ActionParameters<ActionType.DeviceSetPosition, DeviceSetPositionParameters>
     | ActionParameters<ActionType.DeviceGetPosition, DeviceGetPositionParameters>
+    | ActionParameters<ActionType.AdjustGrenades, AdjustGrenadesParameters>
+    | ActionParameters<ActionType.SubmitIncident, SubmitIncidentParameters>
+    | ActionParameters<ActionType.SubmitIncidentWithCustomValue, SubmitIncidentWithCustomValueParameters>
+    | ActionParameters<ActionType.SetLoadoutPalette, SetLoadoutPaletteParameters>
     | ActionParameters<ActionType.DeviceSetPositionTrack, DeviceSetPositionTrackParameters>
     | ActionParameters<ActionType.DeviceAnimatePosition, DeviceAnimatePositionParameters>
     | ActionParameters<ActionType.DeviceSetPositionImmediate, DeviceSetPositionImmediateParameters>
     | ActionParameters<ActionType.SavedFilmInsertMarker, SavedFilmInsertMarkerParameters>
     | ActionParameters<ActionType.RespawnZoneEnable, RespawnZoneEnableParameters>
+    | ActionParameters<ActionType.PlayerGetWeapon, PlayerGetWeaponParameters>
     | ActionParameters<ActionType.PlayerGetEquipment, PlayerGetEquipmentParameters>
     | ActionParameters<ActionType.ObjectSetNeverGarbage, ObjectSetNeverGarbageParameters>
     | ActionParameters<ActionType.PlayerGetTargetObject, PlayerGetTargetObjectParameters>
+    | ActionParameters<ActionType.CreateTunnel, CreateTunnelParameters>
     | ActionParameters<ActionType.DebugForcePlayerViewCount, DebugForcePlayerViewCountParameters>
     | ActionParameters<ActionType.PlayerPickUpWeapon, PlayerPickUpWeaponParameters>
+    | ActionParameters<ActionType.PlayerSetCoopSpawning, PlayerSetCoopSpawningParameters>
+    | ActionParameters<ActionType.ObjectSetOrientation, ObjectSetOrientationParameters>
+    | ActionParameters<ActionType.ObjectFaceObject, ObjectFaceObjectParameters>
+    | ActionParameters<ActionType.BipedGiveWeapon, BipedGiveWeaponParameters>
+    | ActionParameters<ActionType.BipedDropWeapon, BipedDropWeaponParameters>
     | ActionParameters<ActionType.SetScenarioInterpolatorState, SetScenarioInterpolatorStateParameters>
+    | ActionParameters<ActionType.GetRandomObject, GetRandomObjectParameters>
     | ActionParameters<ActionType.GameGriefRecordCustomPenalty, GameGriefRecordCustomPenaltyParameters>
     | ActionParameters<ActionType.BoundarySetPlayerColor, BoundarySetPlayerColorParameters>
     | ActionParameters<ActionType.Begin, BeginParameters>

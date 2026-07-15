@@ -16,10 +16,12 @@ import {
   type SymbolTableVariableEntry,
 } from "../../frontend/symbol-table";
 import type { AnalyzeRequest, AnalyzeResponse } from "./analyze.types";
+import { Lowerer } from "../../frontend/intermediate-representation";
 
 const MEGALO_VERSION = MEGALO_VERSIONS["107-mcc"];
 const lexer = new Lexer(MEGALO_VERSION);
 const parser = new Parser(MEGALO_VERSION);
+const lowerer = new Lowerer(MEGALO_VERSION);
 
 const formatTokens = (tokens: Token[]): string =>
   JSON.stringify(
@@ -123,6 +125,12 @@ const serializeSymbolTableEntry = (entry: SymbolTableEntry): object => {
 const formatSymbolTable = (symbolTable: SymbolTable): string =>
   JSON.stringify(symbolTable.map(serializeSymbolTableEntry), null, 2);
 
+const jsonReplacer = (_key: string, value: unknown): unknown =>
+  typeof value === "bigint" ? value.toString() : value;
+
+const formatJson = (value: unknown): string =>
+  JSON.stringify(value, jsonReplacer, 2);
+
 self.onmessage = (event: MessageEvent<AnalyzeRequest>): void => {
   const { id, source, locale } = event.data;
 
@@ -135,18 +143,24 @@ self.onmessage = (event: MessageEvent<AnalyzeRequest>): void => {
   const lexDuration = performance.now() - lexStart;
 
   const parseStart = performance.now();
-  const { ast, symbolTable } = parser.parse(tokens, diagnostics);
+  const ast = parser.parse(tokens, diagnostics);
   const parseDuration = performance.now() - parseStart;
+
+  const lowerStart = performance.now();
+  const ir = lowerer.lower(ast);
+  const lowerDuration = performance.now() - lowerStart;
 
   const response: AnalyzeResponse = {
     id,
     tokensText: formatTokens(tokens),
-    astText: JSON.stringify(ast, null, 2),
-    symbolTableText: formatSymbolTable(symbolTable),
+    astText: formatJson(ast),
+    symbolTableText: "",
     tokenCount: tokens.length,
-    symbolCount: symbolTable.length,
+    symbolCount: 0,
     lexDuration,
     parseDuration,
+    lowerDuration,
+    irText: formatJson(ir),
     diagnostics: [...diagnostics.getErrors(), ...diagnostics.getWarnings()],
   };
 

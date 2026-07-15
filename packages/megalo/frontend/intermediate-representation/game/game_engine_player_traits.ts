@@ -119,9 +119,9 @@ export type PlayerTraitSensors = Partial<{
 }>;
 
 export type PlayerTraits = {
-    shieldVitality: ValueWithLocation<PlayerTraitShieldVitality>;
-    weapons: ValueWithLocation<PlayerTraitWeapons>;
-    movement: ValueWithLocation<PlayerTraitMovement>;
-    appearance: ValueWithLocation<PlayerTraitAppearance>;
-    sensors: ValueWithLocation<PlayerTraitSensors>;
+    shieldVitality: PlayerTraitShieldVitality;
+    weapons: PlayerTraitWeapons;
+    movement: PlayerTraitMovement;
+    appearance: PlayerTraitAppearance;
+    sensors: PlayerTraitSensors;
 }

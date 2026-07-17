@@ -1,8 +1,8 @@
-import { ASTParameterNode, ParameterParser } from ".";
-import { SourceCodeLocation } from "../../diagnostics";
-import { TokenKind } from "../../tokens";
-import { ParserContext } from "../context";
-import { SyntaxKind } from "../kinds";
+import { ASTParameterNode, ParameterParser } from "..";
+import { SourceCodeLocation } from "../../../diagnostics";
+import { TokenKind } from "../../../tokens";
+import { ParserContext } from "../../context";
+import { SyntaxKind } from "../../kinds";
 
 export const grenadeCountParser: ParameterParser = (ctx: ParserContext, anchor: SourceCodeLocation) => {
     const countToken = ctx.getToken();

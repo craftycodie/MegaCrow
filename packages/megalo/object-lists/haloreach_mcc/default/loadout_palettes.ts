@@ -1,0 +1,17 @@
+export default [
+    "unsc_bronze",
+    "unsc_silver",
+    "unsc_gold",
+    "covy_bronze",
+    "covy_silver",
+    "covy_gold",
+    "slayer_loadouts",
+    "unsc_firefight",
+    "covy_firefight",
+    "slayer_pro_loadouts",
+    "swat_loadouts",
+    "covy_slayer_loadouts",
+    "objective_loadouts",
+    "unsc_firefight_unchanged",
+    "covy_firefight_unchanged"
+] as const;

@@ -1,4 +1,13 @@
-import { ASTKeywordParameterNode, ParameterType, parseMemberReference } from "../../parameters";
+import {
+    ASTKeywordParameterNode,
+    ASTParameterNode,
+    ParameterType,
+    KeywordParameter,
+    ObjectListParameter,
+    parseMemberReference,
+    parseParameterValue,
+    tryParseParameterValue,
+} from "../../parameters";
 import {
     ASTErrorNode,
     ASTIntegerNode,
@@ -9,7 +18,7 @@ import {
 } from "../../kinds";
 import { SourceCodeLocation } from "../../../diagnostics";
 import { diagnosticMessages } from "../../../diagnostics/messages";
-import { SymbolKind, VariableType } from "../../../symbol-table";
+import { ObjectListType } from "../../../object-lists";
 import { TokenKind } from "../../../tokens";
 import { ParserContext } from "../../context";
 
@@ -19,6 +28,7 @@ export type ASTConditionOperandNode =
     | ASTReferenceNode
     | ASTMemberReferenceNode
     | (ASTNode<SyntaxKind.QUOTED_STRING> & { value: string })
+    | ASTParameterNode
     | ASTErrorNode;
 
 export const COMPARISON_OPERATOR_NAMES = [
@@ -38,61 +48,19 @@ export const isComparisonOperatorName = (value: string): value is ComparisonOper
 export const isComparisonToken = (kind: TokenKind, value: string): boolean =>
     kind === TokenKind.Operator || (kind === TokenKind.Identifier && isComparisonOperatorName(value));
 
-const matchesVariableType = (ctx: ParserContext, symbolId: number, type: ParameterType): boolean => {
-    const entry = ctx.symbolParser.getSymbolEntry(symbolId);
-    if (entry === undefined || entry.kind !== SymbolKind.Variable) {
-        return false;
-    }
-
-    switch (type) {
-        case ParameterType.Number:
-            return entry.type === VariableType.Number;
-        case ParameterType.Timer:
-            return entry.type === VariableType.Timer;
-        case ParameterType.Team:
-            return entry.type === VariableType.Team;
-        case ParameterType.Player:
-            return entry.type === VariableType.Player;
-        case ParameterType.Object:
-            return entry.type === VariableType.Object || entry.type === VariableType.Player;
-        default:
-            return false;
-    }
-};
-
-const lookupNumericSymbol = (ctx: ParserContext, name: string): number | undefined => {
-    const symbolId = ctx.symbolParser.lookupSymbol(name);
-    if (symbolId === undefined) {
-        return undefined;
-    }
-
-    const entry = ctx.symbolParser.getSymbolEntry(symbolId);
-    if (
-        entry === undefined
-        || (
-            entry.kind !== SymbolKind.Constant
-            && entry.kind !== SymbolKind.GameOption
-            && !(entry.kind === SymbolKind.Variable && entry.type === VariableType.Number)
-        )
-    ) {
-        return undefined;
-    }
-
-    return symbolId;
-};
-
+/**
+ * Loose left/right operand for `if` comparisons: number, any in-scope symbol, member ref, or keyword.
+ */
 export const parseIfOperand = (
     ctx: ParserContext,
     anchor: SourceCodeLocation,
 ): ASTConditionOperandNode => {
     const token = ctx.peekToken();
     if (token?.kind === TokenKind.Integer) {
-        const integerToken = ctx.getToken();
-        return {
-            kind: SyntaxKind.INTEGER,
-            value: Number.parseInt(integerToken.value, 10),
-            location: integerToken.location,
-        };
+        const node = tryParseParameterValue(ctx, ParameterType.Number);
+        if (node !== undefined) {
+            return node;
+        }
     }
 
     if (token?.kind !== TokenKind.Identifier) {
@@ -106,27 +74,29 @@ export const parseIfOperand = (
         };
     }
 
-    const rootToken = ctx.getToken();
-    const symbolId = lookupNumericSymbol(ctx, rootToken.value)
-        ?? ctx.symbolParser.lookupSymbol(rootToken.value);
-
-    if (ctx.peekToken()?.kind === TokenKind.MemberVariableSeparator) {
+    if (ctx.peekToken(1)?.kind === TokenKind.MemberVariableSeparator) {
+        const rootToken = ctx.getToken();
         return parseMemberReference(ctx, rootToken);
     }
 
-    if (symbolId !== undefined) {
-        const referenceNode: ASTReferenceNode = {
-            kind: SyntaxKind.REFERENCE,
-            identifier: rootToken.value,
-            location: rootToken.location,
-        };
-        return referenceNode;
+    const typed = tryParseParameterValue(
+        ctx,
+        ParameterType.Number,
+        ParameterType.Timer,
+        ParameterType.Team,
+        ParameterType.Player,
+        ParameterType.Object,
+    );
+    if (typed !== undefined) {
+        return typed;
     }
 
+    // Unresolved identifier -> keyword (e.g. comparison-adjacent tokens shouldn't appear here)
+    const keywordToken = ctx.getToken();
     return {
         kind: SyntaxKind.KEYWORD,
-        value: rootToken.value,
-        location: rootToken.location,
+        value: keywordToken.value,
+        location: keywordToken.location,
     };
 };
 
@@ -135,52 +105,29 @@ export const parseTypedOperand = (
     anchor: SourceCodeLocation,
     type: ParameterType,
 ): ASTConditionOperandNode => {
+    const node = tryParseParameterValue(ctx, type);
+    if (node !== undefined) {
+        return node;
+    }
+
     const token = ctx.peekToken();
+    ctx.diagnostics.addError(
+        diagnosticMessages.expectedParameterType(parameterTypeLabel(type), token?.value ?? ""),
+        token?.location ?? anchor,
+    );
 
-    if (type === ParameterType.Number && token?.kind === TokenKind.Integer) {
-        const integerToken = ctx.getToken();
-        return {
-            kind: SyntaxKind.INTEGER,
-            value: Number.parseInt(integerToken.value, 10),
-            location: integerToken.location,
-        };
-    }
-
-    if (token?.kind !== TokenKind.Identifier) {
-        ctx.diagnostics.addError(
-            diagnosticMessages.expectedParameterType(parameterTypeLabel(type), token?.value ?? ""),
-            token?.location ?? anchor,
-        );
+    if (token !== undefined) {
+        ctx.getToken();
         return {
             kind: SyntaxKind.INVALID,
-            location: anchor,
+            location: token.location,
         };
     }
 
-    const rootToken = ctx.getToken();
-    const symbolId = ctx.symbolParser.lookupSymbol(rootToken.value);
-
-    if (ctx.peekToken()?.kind === TokenKind.MemberVariableSeparator) {
-        return parseMemberReference(ctx, rootToken);
-    }
-
-    if (symbolId === undefined || !matchesVariableType(ctx, symbolId, type)) {
-        ctx.diagnostics.addError(
-            diagnosticMessages.expectedParameterType(parameterTypeLabel(type), rootToken.value),
-            rootToken.location,
-        );
-        return {
-            kind: SyntaxKind.INVALID,
-            location: rootToken.location,
-        };
-    }
-
-    const referenceNode: ASTReferenceNode = {
-        kind: SyntaxKind.REFERENCE,
-        identifier: rootToken.value,
-        location: rootToken.location,
+    return {
+        kind: SyntaxKind.INVALID,
+        location: anchor,
     };
-    return referenceNode;
 };
 
 export const parseKeywordOperand = (
@@ -188,31 +135,34 @@ export const parseKeywordOperand = (
     anchor: SourceCodeLocation,
     allowed?: readonly string[],
 ): ASTConditionOperandNode => {
-    const token = ctx.peekToken();
-    if (token?.kind !== TokenKind.Identifier) {
+    if (allowed !== undefined && allowed.length > 0) {
+        const node = tryParseParameterValue(
+            ctx,
+            ...allowed.map((value) => KeywordParameter(value)),
+        );
+        if (node !== undefined) {
+            return node;
+        }
+
+        const token = ctx.peekToken();
         ctx.diagnostics.addError(
-            diagnosticMessages.expectedParameterType("keyword", token?.value ?? ""),
+            diagnosticMessages.expectedParameterType(allowed.map((value) => `'${value}'`).join(" | "), token?.value ?? ""),
             token?.location ?? anchor,
         );
+        if (token !== undefined) {
+            ctx.getToken();
+            return {
+                kind: SyntaxKind.INVALID,
+                location: token.location,
+            };
+        }
         return {
             kind: SyntaxKind.INVALID,
             location: anchor,
         };
     }
 
-    const keywordToken = ctx.getToken();
-    if (allowed !== undefined && !allowed.includes(keywordToken.value)) {
-        ctx.diagnostics.addError(
-            diagnosticMessages.expectedParameterType(allowed.map((value) => `'${value}'`).join(" | "), keywordToken.value),
-            keywordToken.location,
-        );
-    }
-
-    return {
-        kind: SyntaxKind.KEYWORD,
-        value: keywordToken.value,
-        location: keywordToken.location,
-    };
+    return parseParameterValue(ctx, anchor, ParameterType.Keyword);
 };
 
 export const parseObjectOperand = (
@@ -260,3 +210,6 @@ export type ConditionOperandParser = (
 export const conditionOperandsParser = (
     ...parsers: ((ctx: ParserContext, anchor: SourceCodeLocation) => ASTConditionOperandNode)[]
 ): ConditionOperandParser => (ctx, anchor) => parsers.map((parser) => parser(ctx, anchor));
+
+/** Object list entry for object type names (objects.txt). */
+export const ObjectTypeListParameter = ObjectListParameter(ObjectListType.Objects);

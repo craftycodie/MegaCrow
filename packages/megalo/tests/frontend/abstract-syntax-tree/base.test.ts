@@ -9,7 +9,7 @@ const parse = (source: string) => {
   const diagnostics = new Diagnostics();
   const version = MEGALO_VERSIONS["107-mcc"];
   const tokens = new Lexer(version).lex(source, diagnostics);
-  const { ast } = new Parser(version).parse(tokens, diagnostics);
+  const ast = new Parser(version).parse(tokens, diagnostics);
   return { ast, diagnostics };
 };
 

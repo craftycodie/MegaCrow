@@ -6,10 +6,17 @@ export type SourcePosition = {
     column: number;
 }
 
+export const BUILT_IN_POSITION: SourcePosition = {
+    offset: -1,
+    line: -1,
+    column: -1,
+};
+
 export const enum SourceLocationType {
     SOURCE_CODE,
     INCLUDE,
     BUILT_IN,
+    OBJECT_LIST,
 }
 
 export const BUILT_IN_LOCATION: BuiltInLocation = {
@@ -33,7 +40,19 @@ export type BuiltInLocation = {
     type: SourceLocationType.BUILT_IN
 }
 
-export type SourceLocation = SourceCodeLocation | IncludeLocation | BuiltInLocation;
+/**
+ * Location of an entry in an external object list (weapons.txt, objects.txt, ...).
+ * `source.line` is the entry index; column is always 0; offset is -1.
+ */
+import type { ObjectListType } from "../object-lists";
+
+export type ObjectListLocation = {
+    type: SourceLocationType.OBJECT_LIST;
+    objectType: ObjectListType;
+    source: SourcePosition;
+}
+
+export type SourceLocation = SourceCodeLocation | IncludeLocation | BuiltInLocation | ObjectListLocation;
 
 export enum DiagnosticSeverity {
     Error,
@@ -44,18 +63,18 @@ export enum DiagnosticSeverity {
 export type Diagnostic = {
     message: string;
     severity: DiagnosticSeverity;
-    location: SourceCodeLocation;
+    location: SourceLocation;
 }
 
 export class Diagnostics {
     private warnings: Diagnostic[] = [];
     private errors: Diagnostic[] = [];
 
-    public addWarning(message: string, location: SourceCodeLocation): void {
+    public addWarning(message: string, location: SourceLocation): void {
         this.warnings.push({ message, severity: DiagnosticSeverity.Warning, location });
     }
 
-    public addError(message: string, location: SourceCodeLocation): void {
+    public addError(message: string, location: SourceLocation): void {
         this.errors.push({ message, severity: DiagnosticSeverity.Error, location });
     }
 

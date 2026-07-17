@@ -1,6 +1,7 @@
 import { MegaloVersion } from "../../version";
-import { Diagnostics, SourceCodeLocation, SourceLocation, SourceLocationType } from "../diagnostics";
+import { BUILT_IN_POSITION, Diagnostics, SourceCodeLocation, SourceLocation, SourceLocationType, SourcePosition } from "../diagnostics";
 import { diagnosticMessages } from "../diagnostics/messages";
+import { ObjectListType } from "../object-lists";
 
 export const enum SymbolKind {
     Constant,
@@ -11,6 +12,7 @@ export const enum SymbolKind {
     Loadout,
     LoadoutPalette,
     RequisitionPalette,
+    ObjectListItem,
 }
 
 // Modelled based on Bungie.Megalo.VariableType 
@@ -35,8 +37,38 @@ export type SymbolTableEntryBase = {
     id: SymbolId;
     name: string;
 
+    /**
+     * Lexical scope range.
+     * `start` is the declaration position (built-ins use `BUILT_IN_POSITION`).
+     * `end` is the exclusive end of visibility; open-ended symbols (globals, built-ins)
+     * keep `end` as `BUILT_IN_POSITION` until EOF.
+     */
+    range: SourceCodeLocation;
+
     references: SourceCodeLocation[],
 }
+
+const declarationRange = (declaration: SourceLocation): SourceCodeLocation => {
+    if (declaration.type === SourceLocationType.BUILT_IN) {
+        return {
+            type: SourceLocationType.SOURCE_CODE,
+            start: BUILT_IN_POSITION,
+            end: BUILT_IN_POSITION,
+        };
+    }
+    if (declaration.type === SourceLocationType.OBJECT_LIST) {
+        return {
+            type: SourceLocationType.SOURCE_CODE,
+            start: declaration.source,
+            end: BUILT_IN_POSITION,
+        };
+    }
+    return {
+        type: SourceLocationType.SOURCE_CODE,
+        start: declaration.start,
+        end: BUILT_IN_POSITION,
+    };
+};
 
 export type SymbolTableVariableEntry = SymbolTableEntryBase & {
     kind: SymbolKind.Variable;
@@ -83,6 +115,13 @@ export type SymbolTableRequisitionPaletteEntry = SymbolTableEntryBase & {
     declaration: SourceLocation;
 }
 
+export type SymbolTableObjectListItemEntry = SymbolTableEntryBase & {
+    kind: SymbolKind.ObjectListItem;
+    objectType: ObjectListType;
+    index: number;
+    declaration: SourceLocation;
+}
+
 export type SymbolTableEntry = 
       SymbolTableVariableEntry 
     | SymbolTableConstantEntry 
@@ -91,7 +130,8 @@ export type SymbolTableEntry =
     | SymbolTableHudWidgetEntry
     | SymbolTableLoadoutEntry
     | SymbolTableLoadoutPaletteEntry
-    | SymbolTableRequisitionPaletteEntry;
+    | SymbolTableRequisitionPaletteEntry
+    | SymbolTableObjectListItemEntry;
 
 export type SymbolTable = readonly SymbolTableEntry[];
 
@@ -113,7 +153,7 @@ export class SymbolBinder {
     public addString(entry: Pick<SymbolTableStringEntry, "name"> & {
         language: string;
         content: string;
-        declaration: SourceCodeLocation;
+        declaration: SourceLocation;
     }): SymbolId | undefined {
         const existingString = this.table.find(
             (symbol): symbol is SymbolTableStringEntry =>
@@ -121,10 +161,12 @@ export class SymbolBinder {
         );
 
         if (existingString?.languageDeclarations.has(entry.language)) {
-            this.diagnostics.addError(
-                diagnosticMessages.stringAlreadyDefined(entry.language, entry.name),
-                entry.declaration,
-            );
+            if (entry.declaration.type === SourceLocationType.SOURCE_CODE) {
+                this.diagnostics.addError(
+                    diagnosticMessages.stringAlreadyDefined(entry.language, entry.name),
+                    entry.declaration,
+                );
+            }
             return undefined;
         }
 
@@ -137,6 +179,7 @@ export class SymbolBinder {
         const id = this.table.length;
         this.table.push({
             id,
+            range: declarationRange(entry.declaration),
             references: [],
             name: entry.name,
             kind: SymbolKind.String,
@@ -150,6 +193,7 @@ export class SymbolBinder {
         const id = this.table.length;
         this.table.push({
             id,
+            range: declarationRange(entry.declaration),
             references: [],
             name: entry.name,
             kind: SymbolKind.Variable,
@@ -164,6 +208,7 @@ export class SymbolBinder {
         const id = this.table.length;
         this.table.push({
             id,
+            range: declarationRange(entry.declaration),
             references: [],
             name: entry.name,
             kind: SymbolKind.GameOption,
@@ -177,6 +222,7 @@ export class SymbolBinder {
         const id = this.table.length;
         this.table.push({
             id,
+            range: declarationRange(entry.declaration),
             references: [],
             name: entry.name,
             kind: SymbolKind.Constant,
@@ -190,6 +236,7 @@ export class SymbolBinder {
         const id = this.table.length;
         this.table.push({
             id,
+            range: declarationRange(entry.declaration),
             references: [],
             name: entry.name,
             kind: SymbolKind.HudWidget,
@@ -202,6 +249,7 @@ export class SymbolBinder {
         const id = this.table.length;
         this.table.push({
             id,
+            range: declarationRange(entry.declaration),
             references: [],
             name: entry.name,
             kind: SymbolKind.Loadout,
@@ -214,6 +262,7 @@ export class SymbolBinder {
         const id = this.table.length;
         this.table.push({
             id,
+            range: declarationRange(entry.declaration),
             references: [],
             name: entry.name,
             kind: SymbolKind.LoadoutPalette,
@@ -226,6 +275,7 @@ export class SymbolBinder {
         const id = this.table.length;
         this.table.push({
             id,
+            range: declarationRange(entry.declaration),
             references: [],
             name: entry.name,
             kind: SymbolKind.RequisitionPalette,
@@ -234,8 +284,33 @@ export class SymbolBinder {
         return id;
     }
 
+    public addObjectListItem(entry: Pick<SymbolTableObjectListItemEntry, "name" | "objectType" | "index" | "declaration">): SymbolId {
+        const id = this.table.length;
+        this.table.push({
+            id,
+            range: declarationRange(entry.declaration),
+            references: [],
+            name: entry.name,
+            kind: SymbolKind.ObjectListItem,
+            objectType: entry.objectType,
+            index: entry.index,
+            declaration: entry.declaration,
+        });
+        return id;
+    }
+
     public addReference(symbolId: SymbolId, reference: SourceCodeLocation): void {
         this.table[symbolId].references.push(reference);
+    }
+
+    public setScopeEnd(symbolId: SymbolId, position: SourcePosition): void {
+        const entry = this.table[symbolId];
+        if (entry !== undefined) {
+            entry.range = {
+                ...entry.range,
+                end: position,
+            };
+        }
     }
 
     public getSymbolEntry(symbolId: SymbolId): SymbolTableEntry | undefined {

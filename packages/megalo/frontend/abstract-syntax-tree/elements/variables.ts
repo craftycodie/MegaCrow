@@ -55,10 +55,12 @@ const parseIdentifierInitialValue = (
 
     const symbolId = ctx.symbolParser.lookupSymbol(valueToken.value);
     if (symbolId !== undefined) {
+        ctx.symbolParser.recordReference(symbolId, valueToken.location);
         return {
             kind: SyntaxKind.REFERENCE,
             location: valueToken.location,
             identifier: valueToken.value,
+            symbolId,
         };
     }
 

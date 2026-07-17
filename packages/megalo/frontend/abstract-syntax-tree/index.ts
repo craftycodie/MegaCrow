@@ -1,6 +1,7 @@
 import { MegaloVersion } from "../../version";
 import { Diagnostics } from "../diagnostics";
 import { diagnosticMessages } from "../diagnostics/messages";
+import { ObjectLists } from "../object-lists";
 import { SymbolBinder, SymbolTable } from "../symbol-table";
 import { TokenKind, Tokens } from "../tokens"
 import { ASTCommentNode, collectComments } from "./comment";
@@ -12,6 +13,7 @@ export type AST = {
     failed: boolean;
     comments: ASTCommentNode[];
     elements: ASTElementNode[];
+    symbolTable: SymbolTable;
 }
 
 // Parser is Frontend lifecycle - it is instanced per workspace.
@@ -24,12 +26,17 @@ export class Parser {
         this.elementParserRepository = new ElementParserRepository(megaloVersion);
     }
 
-    public parse = (tokens: Tokens, diagnostics: Diagnostics): AST => {
+    public parse = (
+        tokens: Tokens,
+        diagnostics: Diagnostics,
+        objectLists: ObjectLists = {},
+    ): AST => {
         // AST is managed by this function, so is not included in Parser Context.
         const ast: AST = {
             failed: false,
             comments: [],
             elements: [],
+            symbolTable: [],
         };
 
         // Pass 1. Collect comments
@@ -40,7 +47,13 @@ export class Parser {
         // (everything else)
         const tokensWithoutComments = tokens.filter(token => token.kind !== TokenKind.Comment);
         const symbolBinder = new SymbolBinder(this.megaloVersion, diagnostics);
-        const ctx = new ParserContext(tokensWithoutComments, this.megaloVersion, diagnostics, symbolBinder);
+        const ctx = new ParserContext(
+            tokensWithoutComments,
+            this.megaloVersion,
+            diagnostics,
+            symbolBinder,
+            objectLists,
+        );
 
         while (ctx.hasMore()) {
             const token = ctx.getToken();
@@ -70,6 +83,7 @@ export class Parser {
             }
         }
 
+        ast.symbolTable = symbolBinder.getSymbolTable();
         ast.failed = ctx.diagnostics.hasErrors();
 
         return ast;

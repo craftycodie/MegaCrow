@@ -43,20 +43,22 @@ export const parseStringLiteralOrReference = (
 
     if (token.kind === TokenKind.Identifier) {
         const symbolId = ctx.symbolParser.lookupString(token.value);
-        if (symbolId !== undefined) {
+        if (symbolId === undefined) {
+            ctx.diagnostics.addError(
+                diagnosticMessages.invalidStringIdentifier(token.value),
+                token.location,
+            );
             return {
-                kind: SyntaxKind.REFERENCE,
-                identifier: token.value,
+                kind: SyntaxKind.INVALID,
                 location: token.location,
             };
         }
 
-        ctx.diagnostics.addError(
-            diagnosticMessages.invalidStringIdentifier(token.value),
-            token.location,
-        );
+        ctx.symbolParser.recordReference(symbolId, token.location);
         return {
-            kind: SyntaxKind.INVALID,
+            kind: SyntaxKind.REFERENCE,
+            identifier: token.value,
+            symbolId,
             location: token.location,
         };
     }

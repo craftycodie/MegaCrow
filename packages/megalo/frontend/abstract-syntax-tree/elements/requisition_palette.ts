@@ -1,6 +1,7 @@
 import { ASTElementBase, ElementKind } from ".";
-import { ASTErrorNode, ASTNode, SyntaxKind } from "..";
-import { ASTKeywordParameterNode } from "../parameters";
+import { ASTErrorNode, ASTNode, ASTReferenceNode, SyntaxKind } from "..";
+import { ASTKeywordParameterNode, ObjectListParameter, ParameterType, tryParseParameterValue } from "../parameters";
+import { ObjectListType } from "../../object-lists";
 import { SourceCodeLocation, SourceLocationType } from "../../diagnostics";
 import { diagnosticMessages } from "../../diagnostics/messages";
 import { Token, TokenKind } from "../../tokens";
@@ -14,9 +15,10 @@ type RequisitionPaletteNameNode = RequisitionPaletteIdentifierNode | ASTErrorNod
 
 type RequisitionPaletteItemNameNode =
     | (ASTNode<SyntaxKind.QUOTED_STRING> & { value: string })
+    | ASTReferenceNode
     | ASTErrorNode;
 
-export type RequisitionPaletteBaselineNode = RequisitionPaletteIdentifierNode | ASTErrorNode;
+export type RequisitionPaletteBaselineNode = ASTKeywordParameterNode | ASTErrorNode;
 
 export type RequisitionPaletteItemStateNode = ASTKeywordParameterNode | ASTErrorNode;
 
@@ -64,19 +66,24 @@ const parsePaletteName = (
     };
 };
 
-const parseQuotedStringValue = (
+const parseItemName = (
     ctx: ParserContext,
     anchor: Token,
 ): RequisitionPaletteItemNameNode => {
-    const token = ctx.getToken();
-    if (token.kind === TokenKind.QuotedString) {
-        return {
-            kind: SyntaxKind.QUOTED_STRING,
-            value: token.value,
-            location: token.location,
-        };
+    const objectListNode = tryParseParameterValue(
+        ctx,
+        ObjectListParameter(ObjectListType.Objects),
+    );
+    if (objectListNode !== undefined && objectListNode.kind === SyntaxKind.REFERENCE) {
+        return objectListNode;
     }
 
+    const quoted = tryParseParameterValue(ctx, ParameterType.QuotedString);
+    if (quoted !== undefined && quoted.kind === SyntaxKind.QUOTED_STRING) {
+        return quoted;
+    }
+
+    const token = ctx.getToken();
     ctx.diagnostics.addError(
         diagnosticMessages.expectedTokenKind(TokenKind.QuotedString, token.kind, token.value),
         token.location,
@@ -112,21 +119,24 @@ const parseItemState = (
 
 const parseBaseline = (
     ctx: ParserContext,
-    elementToken: Token,
-    baselineKeyword: { value: string; location: SourceCodeLocation },
+    anchor: Token,
 ): RequisitionPaletteBaselineNode => {
-    const value = parseIdentifier(ctx, elementToken);
-    if (isAstErrorNode(value)) {
-        return value;
+    const token = ctx.getToken();
+    if (token.kind === TokenKind.Identifier) {
+        return {
+            kind: SyntaxKind.KEYWORD,
+            value: token.value,
+            location: token.location,
+        };
     }
 
+    ctx.diagnostics.addError(
+        diagnosticMessages.expectedTokenKind(TokenKind.Identifier, token.kind, token.value),
+        token.location,
+    );
     return {
-        value: value.value,
-        location: {
-            type: SourceLocationType.SOURCE_CODE,
-            start: baselineKeyword.location.start,
-            end: value.location.end,
-        },
+        kind: SyntaxKind.INVALID,
+        location: anchor.location,
     };
 };
 
@@ -135,7 +145,7 @@ const parseItem = (
     elementToken: Token,
     itemKeyword: { value: string; location: SourceCodeLocation },
 ): RequisitionPaletteItemNode => {
-    const name = parseQuotedStringValue(ctx, elementToken);
+    const name = parseItemName(ctx, elementToken);
     const state = parseItemState(ctx, elementToken);
 
     return {
@@ -182,7 +192,7 @@ export const requisitionPaletteParser = (
         }
 
         if (keyword.value === "baseline") {
-            baseline = parseBaseline(ctx, elementToken, keyword);
+            baseline = parseBaseline(ctx, elementToken);
             continue;
         }
 

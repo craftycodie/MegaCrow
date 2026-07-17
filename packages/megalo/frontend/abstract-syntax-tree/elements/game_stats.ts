@@ -1,5 +1,5 @@
 import { ASTElementBase, ElementKind } from ".";
-import { ASTErrorNode, ASTIntegerNode, ASTNode, ASTReferenceNode, SyntaxKind } from "..";
+import { ASTErrorNode, ASTIntegerNode, SyntaxKind } from "..";
 import { ASTKeywordParameterNode } from "../parameters";
 import { SourceCodeLocation, SourceLocationType } from "../../diagnostics";
 import { diagnosticMessages } from "../../diagnostics/messages";
@@ -14,11 +14,7 @@ const GAME_STAT_FORMAT_KINDS = new Set(["number", "timer", "delta", "percentage"
 type GameStatEntryNodeName = { value: string; location: SourceCodeLocation };
 type GameStatEntryNodeType = { value: string; location: SourceCodeLocation };
 
-export type GameStatUnitStringNode =
-    | (ASTNode<SyntaxKind.QUOTED_STRING> & { value: string })
-    | ASTReferenceNode
-    | ASTKeywordParameterNode
-    | ASTErrorNode;
+export type GameStatUnitStringNode = ASTStringLiteralOrReference | ASTKeywordParameterNode;
 
 export type GameStatEntryNode = {
     name: GameStatEntryNodeName | ASTErrorNode;
@@ -94,67 +90,22 @@ const parseStatFormat = (
     };
 };
 
+/** Unit may be a string literal/reference, or the keyword `none`. */
 const parseUnitString = (
     ctx: ParserContext,
     anchor: Token,
 ): GameStatUnitStringNode => {
-    const token = ctx.peekToken();
-    if (!token || (token.kind === TokenKind.Identifier && token.value === "end")) {
-        ctx.diagnostics.addError(
-            diagnosticMessages.expectedParameterType("string literal, string reference, or 'none'", token?.value ?? ""),
-            token?.location ?? anchor.location,
-        );
+    const peek = ctx.peekToken();
+    if (peek?.kind === TokenKind.Identifier && peek.value === "none") {
+        const noneToken = ctx.getToken();
         return {
-            kind: SyntaxKind.INVALID,
-            location: anchor.location,
+            kind: SyntaxKind.KEYWORD,
+            value: noneToken.value,
+            location: noneToken.location,
         };
     }
 
-    const unitToken = ctx.getToken();
-    if (unitToken.kind === TokenKind.QuotedString) {
-        return {
-            kind: SyntaxKind.QUOTED_STRING,
-            value: unitToken.value,
-            location: unitToken.location,
-        };
-    }
-
-    if (unitToken.kind === TokenKind.Identifier) {
-        if (unitToken.value === "none") {
-            return {
-                kind: SyntaxKind.KEYWORD,
-                value: unitToken.value,
-                location: unitToken.location,
-            };
-        }
-
-        const symbolId = ctx.symbolParser.lookupString(unitToken.value);
-        if (symbolId === undefined) {
-            ctx.diagnostics.addError(
-                diagnosticMessages.invalidStringIdentifier(unitToken.value),
-                unitToken.location,
-            );
-            return {
-                kind: SyntaxKind.INVALID,
-                location: unitToken.location,
-            };
-        }
-
-        return {
-            kind: SyntaxKind.REFERENCE,
-            identifier: unitToken.value,
-            location: unitToken.location,
-        };
-    }
-
-    ctx.diagnostics.addError(
-        diagnosticMessages.expectedParameterType("string literal, string reference, or 'none'", unitToken.value),
-        unitToken.location,
-    );
-    return {
-        kind: SyntaxKind.INVALID,
-        location: anchor.location,
-    };
+    return parseStringLiteralOrReference(ctx, anchor);
 };
 
 const parseFlags = (

@@ -12,6 +12,8 @@ import {
   type SymbolTableHudWidgetEntry,
   type SymbolTableLoadoutEntry,
   type SymbolTableLoadoutPaletteEntry,
+  type SymbolTableObjectListItemEntry,
+  type SymbolTableRequisitionPaletteEntry,
   type SymbolTableStringEntry,
   type SymbolTableVariableEntry,
 } from "../../frontend/symbol-table";
@@ -23,16 +25,12 @@ const lexer = new Lexer(MEGALO_VERSION);
 const parser = new Parser(MEGALO_VERSION);
 const lowerer = new Lowerer(MEGALO_VERSION);
 
-const formatTokens = (tokens: Token[]): string =>
-  JSON.stringify(
-    tokens.map((token) => ({
-      kind: TokenKind[token.kind] ?? token.kind,
-      value: token.value,
-      location: token.location,
-    })),
-    null,
-    2,
-  );
+const formatTokens = (tokens: Token[]): unknown =>
+  tokens.map((token) => ({
+    kind: TokenKind[token.kind] ?? token.kind,
+    value: token.value,
+    location: token.location,
+  }));
 
 const symbolKindName = (kind: SymbolKind): string => {
   switch (kind) {
@@ -50,6 +48,10 @@ const symbolKindName = (kind: SymbolKind): string => {
       return "Loadout";
     case SymbolKind.LoadoutPalette:
       return "LoadoutPalette";
+    case SymbolKind.RequisitionPalette:
+      return "RequisitionPalette";
+    case SymbolKind.ObjectListItem:
+      return "ObjectListItem";
   }
 };
 
@@ -58,6 +60,7 @@ const serializeSymbolTableEntry = (entry: SymbolTableEntry): object => {
     id: entry.id,
     name: entry.name,
     kind: symbolKindName(entry.kind),
+    range: entry.range,
     references: entry.references,
   };
 
@@ -117,22 +120,39 @@ const serializeSymbolTableEntry = (entry: SymbolTableEntry): object => {
         declaration: loadoutPaletteEntry.declaration,
       };
     }
+    case SymbolKind.RequisitionPalette: {
+      const requisitionPaletteEntry = entry as SymbolTableRequisitionPaletteEntry;
+      return {
+        ...base,
+        declaration: requisitionPaletteEntry.declaration,
+      };
+    }
+    case SymbolKind.ObjectListItem: {
+      const objectListItemEntry = entry as SymbolTableObjectListItemEntry;
+      return {
+        ...base,
+        objectType: objectListItemEntry.objectType,
+        index: objectListItemEntry.index,
+        declaration: objectListItemEntry.declaration,
+      };
+    }
   }
 
   return base;
 };
 
-const formatSymbolTable = (symbolTable: SymbolTable): string =>
-  JSON.stringify(symbolTable.map(serializeSymbolTableEntry), null, 2);
+const formatSymbolTable = (symbolTable: SymbolTable): unknown =>
+  symbolTable.map(serializeSymbolTableEntry);
 
 const jsonReplacer = (_key: string, value: unknown): unknown =>
   typeof value === "bigint" ? value.toString() : value;
 
-const formatJson = (value: unknown): string =>
-  JSON.stringify(value, jsonReplacer, 2);
+/** Structured-clone-safe plain JSON (Maps / bigints / etc. normalized). */
+const toPlainJson = (value: unknown): unknown =>
+  JSON.parse(JSON.stringify(value, jsonReplacer));
 
 self.onmessage = (event: MessageEvent<AnalyzeRequest>): void => {
-  const { id, source, locale } = event.data;
+  const { id, source, locale, objectLists } = event.data;
 
   setLocale(locale);
 
@@ -143,24 +163,24 @@ self.onmessage = (event: MessageEvent<AnalyzeRequest>): void => {
   const lexDuration = performance.now() - lexStart;
 
   const parseStart = performance.now();
-  const ast = parser.parse(tokens, diagnostics);
+  const ast = parser.parse(tokens, diagnostics, objectLists);
   const parseDuration = performance.now() - parseStart;
 
   const lowerStart = performance.now();
-  const ir = lowerer.lower(ast);
+  const ir = lowerer.lower(ast, { objectLists });
   const lowerDuration = performance.now() - lowerStart;
 
   const response: AnalyzeResponse = {
     id,
-    tokensText: formatTokens(tokens),
-    astText: formatJson(ast),
-    symbolTableText: "",
+    tokens: formatTokens(tokens),
+    ast: toPlainJson(ast),
+    symbolTable: formatSymbolTable(ast.symbolTable),
+    ir: toPlainJson(ir),
     tokenCount: tokens.length,
-    symbolCount: 0,
+    symbolCount: ast.symbolTable.length,
     lexDuration,
     parseDuration,
     lowerDuration,
-    irText: formatJson(ir),
     diagnostics: [...diagnostics.getErrors(), ...diagnostics.getWarnings()],
   };
 

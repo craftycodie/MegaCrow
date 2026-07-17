@@ -338,7 +338,7 @@ trigger initialization
 end
 `;
         const tokens = new Lexer(version).lex(source, diagnostics);
-        const { ast } = new Parser(version).parse(tokens, diagnostics);
+        const ast = new Parser(version).parse(tokens, diagnostics);
 
         expect(diagnostics.hasErrors()).toBe(false);
         expect(ast.failed).toBe(false);

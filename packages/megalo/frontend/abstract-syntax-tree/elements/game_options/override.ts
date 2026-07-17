@@ -35,9 +35,11 @@ const parseOverrideName = (
     if (symbolId !== undefined) {
         const entry = ctx.symbolParser.getSymbolEntry(symbolId);
         if (entry?.kind === SymbolKind.GameOption) {
+            ctx.symbolParser.recordReference(symbolId, nameToken.location);
             return {
                 kind: SyntaxKind.REFERENCE,
                 identifier: nameToken.value,
+                symbolId,
                 location: nameToken.location,
             };
         }
@@ -80,9 +82,11 @@ const parseOverrideSimpleValue = (
         const valueToken = ctx.getToken();
         const symbolId = ctx.symbolParser.lookupSymbol(valueToken.value);
         if (symbolId !== undefined) {
+            ctx.symbolParser.recordReference(symbolId, valueToken.location);
             return {
                 kind: SyntaxKind.REFERENCE,
                 identifier: valueToken.value,
+                symbolId,
                 location: valueToken.location,
             };
         }

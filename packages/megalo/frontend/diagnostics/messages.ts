@@ -5,6 +5,10 @@ const expectedOneOf = (alternatives: readonly string[], got: string): string =>
     translate("expected_one_of", { expected: formatAlternatives(alternatives), got });
 
 export const diagnosticMessages = {
+    expectedOneOf(alternatives: readonly string[], got: string): string {
+        return expectedOneOf(alternatives, got);
+    },
+
     expectedElement(value: string): string {
         return translate("unrecognized_element", { value });
     },
@@ -109,5 +113,10 @@ export const diagnosticMessages = {
 
     expectedLoadoutPaletteItemOrEnd(got: string): string {
         return translate("expected_parameter_type", { expected: "item or end", got });
+    },
+
+    invalidObjectType(): string {
+        // MegaloEdit.exe: This is not a valid object type.
+        return "This is not a valid object type.";
     },
 };

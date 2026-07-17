@@ -43,12 +43,19 @@ export type TriggerElementNode = ASTElementBase<ElementKind.TRIGGER> & {
     statements: TriggerStatementNode[];
 };
 
-const withScope = <T>(ctx: ParserContext, scope: ParserScope, fn: () => T): T => {
+const withScope = <T extends { location: SourceCodeLocation }>(
+    ctx: ParserContext,
+    scope: ParserScope,
+    fn: () => T,
+): T => {
     ctx.symbolParser.pushScope(scope);
     try {
-        return fn();
-    } finally {
+        const result = fn();
+        ctx.symbolParser.popScope(result.location.end);
+        return result;
+    } catch (error) {
         ctx.symbolParser.popScope();
+        throw error;
     }
 };
 

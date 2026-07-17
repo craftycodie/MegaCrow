@@ -9,16 +9,19 @@ import {
     KILLER_TYPE_KEYWORDS,
 } from "../../../language-configuration/omni/conditions";
 import {
+    KeywordParameter,
+    ObjectListParameter,
+    ParameterParser,
+    ParameterSignature,
+    ParameterType,
+    parameterParserBuilder,
+} from "../../parameters";
+import { ObjectListType } from "../../../object-lists";
+import {
     ASTConditionOperandNode,
     ConditionOperandParser,
-    conditionOperandsParser,
     isComparisonToken,
     parseIfOperand,
-    parseKeywordOperand,
-    parseObjectOperand,
-    parsePlayerOperand,
-    parseTeamOperand,
-    parseTimerOperand,
 } from "./operand";
 
 export type ConditionStatementNode = ASTNode<SyntaxKind.CONDITION> & {
@@ -145,6 +148,12 @@ const parseIfConditionOperands = (
     return [left, comparison, right];
 };
 
+const asConditionParser = (parser: ParameterParser): ConditionOperandParser =>
+    (ctx, anchor) => parser(ctx, anchor);
+
+const keywordUnion = (...values: readonly string[]) =>
+    values.map((value) => KeywordParameter(value));
+
 export class ConditionParserRepository {
     private readonly parsers = new Map<string, ConditionOperandParser>();
 
@@ -152,79 +161,59 @@ export class ConditionParserRepository {
         this.parsers.set(name, parser);
     }
 
+    private registerSignature(name: string, ...signatures: ParameterSignature[]) {
+        this.registerParser(name, asConditionParser(parameterParserBuilder(...signatures)));
+    }
+
     private registerParsers(_megaloVersion: MegaloVersion) {
         this.registerParser("if", parseIfConditionOperands);
 
-        this.registerParser("object_in_area", conditionOperandsParser(
-            parseObjectOperand,
-            parseObjectOperand,
-        ));
+        this.registerSignature("object_in_area",
+            [ParameterType.Object, ParameterType.Object],
+        );
 
-        this.registerParser("player_died", conditionOperandsParser(
-            parsePlayerOperand,
-            (ctx, anchor) => parseKeywordOperand(ctx, anchor, KILLER_TYPE_KEYWORDS),
-        ));
+        this.registerSignature("player_died",
+            [ParameterType.Player, keywordUnion(...KILLER_TYPE_KEYWORDS)],
+        );
 
-        this.registerParser("team_disposition", conditionOperandsParser(
-            parseTeamOperand,
-            (ctx, anchor) => parseKeywordOperand(ctx, anchor, DISPOSITION_KEYWORDS),
-            parseTeamOperand,
-        ));
+        this.registerSignature("team_disposition",
+            [
+                ParameterType.Team,
+                keywordUnion(...DISPOSITION_KEYWORDS),
+                ParameterType.Team,
+            ],
+        );
 
-        this.registerParser("timer_expired", conditionOperandsParser(parseTimerOperand));
+        this.registerSignature("timer_expired",
+            [ParameterType.Timer],
+        );
 
-        this.registerParser("object_is_type", conditionOperandsParser(
-            parseObjectOperand,
-            (ctx, anchor) => {
-                const token = ctx.peekToken();
-                if (token?.kind === TokenKind.QuotedString) {
-                    const stringToken = ctx.getToken();
-                    return {
-                        kind: SyntaxKind.QUOTED_STRING,
-                        value: stringToken.value,
-                        location: stringToken.location,
-                    };
-                }
+        this.registerSignature("object_is_type",
+            [
+                ParameterType.Object,
+                [
+                    ObjectListParameter(ObjectListType.Objects),
+                    ParameterType.QuotedString,
+                    ParameterType.Number,
+                    ParameterType.Keyword,
+                ],
+            ],
+        );
 
-                if (token?.kind === TokenKind.Integer) {
-                    const integerToken = ctx.getToken();
-                    return {
-                        kind: SyntaxKind.INTEGER,
-                        value: Number.parseInt(integerToken.value, 10),
-                        location: integerToken.location,
-                    };
-                }
-
-                return parseKeywordOperand(ctx, anchor);
-            },
-        ));
-
-        this.registerParser("team_is_active", conditionOperandsParser(parseTeamOperand));
-
-        this.registerParser("object_out_of_bounds", conditionOperandsParser(parseObjectOperand));
-
-        this.registerParser("player_is_fire_team_leader", conditionOperandsParser(parsePlayerOperand));
-
-        this.registerParser("player_assisted_with_kill", conditionOperandsParser(
-            parsePlayerOperand,
-            parsePlayerOperand,
-        ));
-
-        this.registerParser("object_matches_filter", conditionOperandsParser(
-            parseObjectOperand,
-            parseKeywordOperand,
-        ));
-
-        this.registerParser("player_is_active", conditionOperandsParser(parsePlayerOperand));
-
-        this.registerParser("equipment_is_active", conditionOperandsParser(parseObjectOperand));
-
-        this.registerParser("player_is_spartan", conditionOperandsParser(parsePlayerOperand));
-
-        this.registerParser("player_is_elite", conditionOperandsParser(parsePlayerOperand));
-
-        this.registerParser("player_is_editor", conditionOperandsParser(parsePlayerOperand));
-
+        this.registerSignature("team_is_active", [ParameterType.Team]);
+        this.registerSignature("object_out_of_bounds", [ParameterType.Object]);
+        this.registerSignature("player_is_fire_team_leader", [ParameterType.Player]);
+        this.registerSignature("player_assisted_with_kill",
+            [ParameterType.Player, ParameterType.Player],
+        );
+        this.registerSignature("object_matches_filter",
+            [ParameterType.Object, ParameterType.Keyword],
+        );
+        this.registerSignature("player_is_active", [ParameterType.Player]);
+        this.registerSignature("equipment_is_active", [ParameterType.Object]);
+        this.registerSignature("player_is_spartan", [ParameterType.Player]);
+        this.registerSignature("player_is_elite", [ParameterType.Player]);
+        this.registerSignature("player_is_editor", [ParameterType.Player]);
         this.registerParser("game_is_forge", () => []);
     }
 

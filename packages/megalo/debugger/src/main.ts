@@ -12,11 +12,12 @@ import {
 } from "../../frontend/localization";
 import type { AnalyzeRequest, AnalyzeResponse } from "./analyze.types";
 import AnalyzeWorker from "./analyze.worker.ts?worker";
+import { loadObjectLists } from "./object-lists";
+import { renderJsonTree } from "./json-tree";
 import { createSourceEditor } from "./source-editor";
+import type { ObjectLists } from "../../frontend/object-lists";
 
 const LOCALE_STORAGE_KEY = "megalo-debugger-locale";
-
-const NYI = "Not yet implemented.";
 
 const PARSE_DEBOUNCE_MS = 150;
 const DOM_DEBOUNCE_MS = 400;
@@ -56,19 +57,19 @@ app.innerHTML = `
             Tokens
             <span class="pane-header-meta" data-role="token-time"></span>
           </div>
-          <pre class="output-view" data-role="tokens"></pre>
+          <div class="output-view json-tree" data-role="tokens"></div>
         </section>
         <section class="pane">
           <div class="pane-header">AST
             <span class="pane-header-meta" data-role="ast-time"></span>
           </div>
-          <pre class="output-view" data-role="ast"></pre>
+          <div class="output-view json-tree" data-role="ast"></div>
         </section>
         <section class="pane">
           <div class="pane-header">IR
             <span class="pane-header-meta" data-role="ir-time"></span>
           </div>
-          <pre class="output-view" data-role="ir"></pre>
+          <div class="output-view json-tree" data-role="ir"></div>
         </section>
       </div>
       <section class="pane pane-symbols">
@@ -76,7 +77,7 @@ app.innerHTML = `
           Symbol Table
           <span class="pane-header-meta" data-role="symbol-count"></span>
         </div>
-        <pre class="output-view" data-role="symbols"></pre>
+        <div class="output-view json-tree" data-role="symbols"></div>
       </section>
     </div>
     <section class="diagnostics-panel">
@@ -208,13 +209,18 @@ const formatDuration = (milliseconds: number): string => {
   return `${milliseconds.toFixed(1)} ms`;
 };
 
-const setTextIfChanged = (element: HTMLElement, nextText: string, cache: { value: string | null }): void => {
-  if (cache.value === nextText) {
+const setTreeIfChanged = (
+  element: HTMLElement,
+  value: unknown,
+  cache: { signature: string | null },
+): void => {
+  const signature = JSON.stringify(value);
+  if (cache.signature === signature) {
     return;
   }
 
-  element.replaceChildren(document.createTextNode(nextText));
-  cache.value = nextText;
+  renderJsonTree(element, value);
+  cache.signature = signature;
 };
 
 const scheduleIdle = (callback: () => void, timeout: number): void => {
@@ -243,11 +249,13 @@ const scheduleIdleChain = (steps: Array<() => void>, timeout: number): void => {
 
 const analyzeWorker = new AnalyzeWorker();
 
+let objectLists: ObjectLists = {};
+
 let cachedSource: string | null = null;
-let cachedTokensText: { value: string | null } = { value: null };
-let cachedAstText: { value: string | null } = { value: null };
-let cachedIrText: { value: string | null } = { value: null };
-let cachedSymbolTableText: { value: string | null } = { value: null };
+let cachedTokens: { signature: string | null } = { signature: null };
+let cachedAst: { signature: string | null } = { signature: null };
+let cachedIr: { signature: string | null } = { signature: null };
+let cachedSymbolTable: { signature: string | null } = { signature: null };
 let cachedDiagnosticsSummary: { value: string | null } = { value: null };
 let cachedDiagnosticsSignature: string | null = null;
 
@@ -328,7 +336,7 @@ const flushDom = (): void => {
       }
 
       if (!options.diagnosticsOnly || sourceChanged) {
-        setTextIfChanged(tokensView, result.tokensText, cachedTokensText);
+        setTreeIfChanged(tokensView, result.tokens, cachedTokens);
       }
     },
     () => {
@@ -337,8 +345,7 @@ const flushDom = (): void => {
       }
 
       if (!options.diagnosticsOnly || sourceChanged) {
-        setTextIfChanged(astView, result.astText, cachedAstText);
-        astView.classList.remove("placeholder");
+        setTreeIfChanged(astView, result.ast, cachedAst);
       }
     },
     () => {
@@ -347,7 +354,7 @@ const flushDom = (): void => {
       }
 
       if (!options.diagnosticsOnly || sourceChanged) {
-        setTextIfChanged(symbolsView, result.symbolTableText, cachedSymbolTableText);
+        setTreeIfChanged(symbolsView, result.symbolTable, cachedSymbolTable);
         symbolCount.textContent = `${result.symbolCount} symbol${result.symbolCount === 1 ? "" : "s"}`;
       }
     },
@@ -357,7 +364,7 @@ const flushDom = (): void => {
       }
 
       if (!options.diagnosticsOnly || sourceChanged) {
-        setTextIfChanged(irView, result.irText, cachedIrText);
+        setTreeIfChanged(irView, result.ir, cachedIr);
         irTime.textContent = formatDuration(result.lowerDuration);
       }
     },
@@ -431,6 +438,7 @@ const runUpdate = (options: UpdateOptions = {}): void => {
     id: generation,
     source,
     locale: getLocale(),
+    objectLists,
   };
 
   analyzeWorker.postMessage(request);
@@ -496,3 +504,6 @@ const initialLocale: SupportedLocale =
   storedLocale === "en" || storedLocale === "ja" ? storedLocale : "en";
 
 applyLocale(initialLocale);
+
+objectLists = loadObjectLists("107-mcc");
+scheduleUpdate({ immediate: true });

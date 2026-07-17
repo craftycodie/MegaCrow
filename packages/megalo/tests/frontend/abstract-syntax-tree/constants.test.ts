@@ -13,8 +13,8 @@ const parse = (source: string) => {
   const diagnostics = new Diagnostics();
   const version = MEGALO_VERSIONS["107-mcc"];
   const tokens = new Lexer(version).lex(source, diagnostics);
-  const { ast, symbolTable } = new Parser(version).parse(tokens, diagnostics);
-  return { ast, symbolTable, diagnostics };
+  const ast = new Parser(version).parse(tokens, diagnostics);
+  return { ast, symbolTable: ast.symbolTable, diagnostics };
 };
 
 const userConstantSymbols = (symbolTable: readonly { kind: SymbolKind; name: string }[]) =>
@@ -63,7 +63,7 @@ end
 end
 `;
 
-    const { ast, diagnostics } = parse(source);
+    const { ast, symbolTable, diagnostics } = parse(source);
 
     expect(diagnostics.hasErrors()).toBe(false);
     expect(ast.failed).toBe(false);
@@ -73,9 +73,14 @@ end
       return;
     }
 
+    const builtInTrue = symbolTable.find((entry) => entry.name === "true");
+    expect(builtInTrue?.range.start.offset).toBe(-1);
+    expect(builtInTrue?.references).toHaveLength(1);
+
     expect(element.entries[2]?.value).toMatchObject({
       kind: SyntaxKind.REFERENCE,
       identifier: "true",
+      symbolId: builtInTrue?.id,
     });
   });
 
@@ -100,10 +105,12 @@ end
       (entry) => entry.name === "k_special_death_type_melee",
     );
     expect(melee).toBeDefined();
+    expect(melee?.references).toHaveLength(1);
 
     expect(element.entries[2]?.value).toMatchObject({
       kind: SyntaxKind.REFERENCE,
       identifier: "k_special_death_type_melee",
+      symbolId: melee?.id,
     });
   });
 

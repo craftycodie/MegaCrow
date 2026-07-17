@@ -4,6 +4,7 @@ import { SourceCodeLocation, SourceLocationType } from "../../diagnostics";
 import { diagnosticMessages } from "../../diagnostics/messages";
 import { Token, TokenKind } from "../../tokens";
 import { ParserContext } from "../context";
+import { ParameterType, tryParseParameterValue } from "../parameters";
 import { locationSpan } from "./game_options/shared";
 
 type ConstantEntryNodeType = { value: "number"; location: SourceCodeLocation };
@@ -44,35 +45,15 @@ export const parseNumericInitialValue = (
         };
     }
 
+    const node = tryParseParameterValue(ctx, ParameterType.Number);
+    if (
+        node !== undefined
+        && (node.kind === SyntaxKind.INTEGER || node.kind === SyntaxKind.REFERENCE)
+    ) {
+        return node;
+    }
+
     const valueToken = ctx.getToken();
-    if (valueToken.kind === TokenKind.Integer) {
-        return {
-            kind: SyntaxKind.INTEGER,
-            location: valueToken.location,
-            value: Number.parseInt(valueToken.value, 10),
-        };
-    }
-
-    if (valueToken.kind === TokenKind.Identifier) {
-        const symbolId = ctx.symbolParser.lookupSymbol(valueToken.value);
-        if (symbolId === undefined) {
-            ctx.diagnostics.addError(
-                diagnosticMessages.expectedConstantValue(valueToken.value),
-                valueToken.location,
-            );
-            return {
-                kind: SyntaxKind.INVALID,
-                location: valueToken.location,
-            };
-        }
-
-        return {
-            kind: SyntaxKind.REFERENCE,
-            location: valueToken.location,
-            identifier: valueToken.value,
-        };
-    }
-
     ctx.diagnostics.addError(
         diagnosticMessages.expectedConstantValue(valueToken.value),
         valueToken.location,

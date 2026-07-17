@@ -1,6 +1,7 @@
 import { MegaloVersion } from "../../version";
-import { Diagnostics, SourceCodeLocation, SourceLocationType } from "../diagnostics";
+import { Diagnostics, SourceCodeLocation, SourceLocation, SourceLocationType, SourcePosition } from "../diagnostics";
 import { FrontendError } from "../error";
+import { OBJECT_LIST_TYPES, ObjectLists, ObjectListType, objectListLocation } from "../object-lists";
 import { SymbolId, SymbolBinder, SymbolKind, SymbolTableEntry } from "../symbol-table";
 import { addBuiltInConstants, addBuiltInGameOptions, addBuiltInVariables } from "../symbol-table/built-in";
 import { addBuiltInScopeVariables, ParserScope, ParserScopeKind } from "../symbol-table/scope";
@@ -16,6 +17,7 @@ export class ParserSymbolContext {
     public readonly diagnostics: Diagnostics;
 
     private readonly symbolScopes: Map<string, SymbolId>[] = [new Map()];
+    private readonly scopeSymbolIds: SymbolId[][] = [[]];
     // we store strings separately to everything else because Megalo supports variables
     // and strings with the same name, they dont shadow.
     private readonly declaredStrings: Map<string, SymbolId> = new Map();
@@ -23,16 +25,47 @@ export class ParserSymbolContext {
     private readonly declaredLoadouts: Map<string, SymbolId> = new Map();
     private readonly declaredLoadoutPalettes: Map<string, SymbolId> = new Map();
     private readonly declaredRequisitionPalettes: Map<string, SymbolId> = new Map();
+    private readonly declaredObjectListItems = new Map<ObjectListType, Map<string, SymbolId>>();
     private readonly symbolBinder: SymbolBinder;
 
-    public constructor(megaloVersion: MegaloVersion, diagnostics: Diagnostics, symbolTable: SymbolBinder) {
+    public constructor(
+        megaloVersion: MegaloVersion,
+        diagnostics: Diagnostics,
+        symbolTable: SymbolBinder,
+        objectLists: ObjectLists = {},
+    ) {
         this.megaloVersion = megaloVersion;
         this.diagnostics = diagnostics;
         this.symbolBinder = symbolTable;
 
+        this.registerObjectListItems(objectLists, diagnostics);
         addBuiltInConstants(this.megaloVersion, this);
         addBuiltInVariables(this.megaloVersion, this);
         addBuiltInGameOptions(this.megaloVersion, this);
+    }
+
+    private registerObjectListItems(objectLists: ObjectLists, diagnostics: Diagnostics): void {
+        for (const objectType of OBJECT_LIST_TYPES) {
+            const entries = objectLists[objectType] ?? [];
+            const byName = new Map<string, SymbolId>();
+            for (let i = 0; i < entries.length; i++) {
+                const name = entries[i]!;
+                // First occurrence wins if duplicates exist.
+                if (byName.has(name)) {
+                    diagnostics.addError(`Duplicate object "${name}" in ${objectType} object list`, objectListLocation(objectType, i));
+                    continue;
+                }
+
+                const id = this.symbolBinder.addObjectListItem({
+                    name,
+                    objectType,
+                    index: i,
+                    declaration: objectListLocation(objectType, i),
+                });
+                byName.set(name, id);
+            }
+            this.declaredObjectListItems.set(objectType, byName);
+        }
     }
 
     public currentScopeIsGlobal(): boolean {
@@ -60,13 +93,13 @@ export class ParserSymbolContext {
         }
 
         const id = this.symbolBinder.addConstant(entry);
-        this.symbolScopes.at(-1)!.set(entry.name, id);
+        this.registerInCurrentScope(entry.name, id);
         return id;
     }
 
     public addVariableToScope(entry: Parameters<SymbolBinder["addVariable"]>[0]): SymbolId {
         const id = this.symbolBinder.addVariable(entry);
-        this.symbolScopes.at(-1)!.set(entry.name, id);
+        this.registerInCurrentScope(entry.name, id);
         return id;
     }
 
@@ -77,7 +110,7 @@ export class ParserSymbolContext {
         }
 
         const id = this.symbolBinder.addGameOption(entry);
-        this.symbolScopes.at(-1)!.set(entry.name, id);
+        this.registerInCurrentScope(entry.name, id);
         return id;
     }
 
@@ -96,7 +129,11 @@ export class ParserSymbolContext {
         return this.symbolBinder.getSymbolEntry(symbolId);
     }
 
-    public addHudWidgetToScope(name: string, declaration: SourceCodeLocation): SymbolId {
+    public recordReference(symbolId: SymbolId, reference: SourceCodeLocation): void {
+        this.symbolBinder.addReference(symbolId, reference);
+    }
+
+    public addHudWidgetToScope(name: string, declaration: SourceLocation): SymbolId {
         const id = this.symbolBinder.addHudWidget({
             name,
             declaration,
@@ -109,7 +146,7 @@ export class ParserSymbolContext {
         return this.declaredHudWidgets.get(name);
     }
 
-    public addLoadoutToScope(name: string, declaration: SourceCodeLocation): SymbolId {
+    public addLoadoutToScope(name: string, declaration: SourceLocation): SymbolId {
         const id = this.symbolBinder.addLoadout({
             name,
             declaration,
@@ -122,7 +159,7 @@ export class ParserSymbolContext {
         return this.declaredLoadouts.get(name);
     }
 
-    public addLoadoutPaletteToScope(name: string, declaration: SourceCodeLocation): SymbolId {
+    public addLoadoutPaletteToScope(name: string, declaration: SourceLocation): SymbolId {
         const id = this.symbolBinder.addLoadoutPalette({
             name,
             declaration,
@@ -135,7 +172,7 @@ export class ParserSymbolContext {
         return this.declaredLoadoutPalettes.get(name);
     }
 
-    public addRequisitionPaletteToScope(name: string, declaration: SourceCodeLocation): SymbolId {
+    public addRequisitionPaletteToScope(name: string, declaration: SourceLocation): SymbolId {
         const id = this.symbolBinder.addRequisitionPalette({
             name,
             declaration,
@@ -146,6 +183,10 @@ export class ParserSymbolContext {
 
     public lookupRequisitionPalette(name: string): SymbolId | undefined {
         return this.declaredRequisitionPalettes.get(name);
+    }
+
+    public lookupObjectListItem(objectType: ObjectListType, name: string): SymbolId | undefined {
+        return this.declaredObjectListItems.get(objectType)?.get(name);
     }
 
     public lookupString(name: string): SymbolId | undefined {
@@ -178,10 +219,15 @@ export class ParserSymbolContext {
 
     public pushScope(scope: ParserScope = { kind: ParserScopeKind.Block }): void {
         this.symbolScopes.push(new Map());
+        this.scopeSymbolIds.push([]);
         addBuiltInScopeVariables(this.megaloVersion, this, scope);
     }
 
-    public popScope(): void {
+    /**
+     * Pop the current (non-global) scope and mark its symbols as ending at `endPosition`.
+     * Built-in declarations keep an open range.
+     */
+    public popScope(endPosition?: SourcePosition): void {
         if (this.symbolScopes.length <= 1) {
             throw new FrontendError("Cannot pop global scope.", {
                 type: SourceLocationType.SOURCE_CODE,
@@ -190,6 +236,21 @@ export class ParserSymbolContext {
             });
         }
 
+        const ids = this.scopeSymbolIds.pop()!;
         this.symbolScopes.pop();
+
+        if (endPosition !== undefined) {
+            for (const id of ids) {
+                const entry = this.symbolBinder.getSymbolEntry(id);
+                if (entry !== undefined && entry.range.start.offset !== -1) {
+                    this.symbolBinder.setScopeEnd(id, endPosition);
+                }
+            }
+        }
+    }
+
+    private registerInCurrentScope(name: string, id: SymbolId): void {
+        this.symbolScopes.at(-1)!.set(name, id);
+        this.scopeSymbolIds.at(-1)!.push(id);
     }
 }

@@ -1,8 +1,8 @@
 import { MegaloVersion } from "../../version";
 import { AST } from "../abstract-syntax-tree";
-import { BUILT_IN_LOCATION, SourceLocation, SourceLocationType } from "../diagnostics";
+import { BUILT_IN_LOCATION, SourceLocation } from "../diagnostics";
+import { ObjectLists } from "../object-lists";
 import { GameEngineCustomVariant } from "./game/game_variant";
-import { ActionType } from "./game/megalogamengine/megalogamengine_actions";
 import { addStringTableEntry, StringTable } from "./game/string_table";
 import { applyDefaultLoadoutCameraTime } from "./postprocessing/applyDefaultLoadoutCameraTime";
 
@@ -19,6 +19,10 @@ export type ValueWithLocation<T> =
 export type IR = {
     baseFilePath?: string;
     gameVariant: GameEngineCustomVariant;
+};
+
+export type LowerContext = {
+    objectLists?: ObjectLists;
 };
 
 export const valueWithLocation = <T>(
@@ -38,7 +42,11 @@ export class Lowerer {
         this.megaloVersion = megaloVersion;
     }
 
-    public lower(ast: AST): IR {
+    public lower(ast: AST, context: LowerContext = {}): IR {
+        void ast;
+        void context;
+        void this.megaloVersion;
+
         const ir = this.buildDefaultIR();
 
         this.postprocess(ir);

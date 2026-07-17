@@ -2,6 +2,7 @@ import { MegaloVersion } from "../version";
 import { Parser } from "./abstract-syntax-tree";
 import { Diagnostics } from "./diagnostics";
 import { Lowerer } from "./intermediate-representation";
+import { ObjectLists } from "./object-lists";
 import { Lexer } from "./tokens";
 
 // The frontend is Workspace lifecycle - it is instanced per workspace.
@@ -19,12 +20,12 @@ export class Frontend {
         this.lowerer = new Lowerer(this.megaloVersion);
     }
 
-    public analyzeSource(source: string) {
+    public analyzeSource(source: string, objectLists: ObjectLists = {}) {
         const diagnostics = new Diagnostics();
         
         const tokens = this.lexer.lex(source, diagnostics);
-        const ast = this.parser.parse(tokens, diagnostics);
-        const ir = this.lowerer.lower(ast);
+        const ast = this.parser.parse(tokens, diagnostics, objectLists);
+        const ir = this.lowerer.lower(ast, { objectLists });
 
         return ir;
     }

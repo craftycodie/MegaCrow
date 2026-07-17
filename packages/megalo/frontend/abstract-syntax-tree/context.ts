@@ -1,6 +1,7 @@
 import { MegaloVersion } from "../../version";
 import { Diagnostics, SourceCodeLocation, SourceLocationType } from "../diagnostics";
 import { diagnosticMessages } from "../diagnostics/messages";
+import { ObjectLists } from "../object-lists";
 import { SymbolBinder } from "../symbol-table";
 import { ParserSymbolContext as ParserSymbolContext } from "./symbol-context";
 import { Token, TokenKind, Tokens } from "../tokens";
@@ -28,10 +29,16 @@ export class ParserContext {
     public readonly actionParserRepository: ActionParserRepository;
     public readonly conditionParserRepository: ConditionParserRepository;
 
-    public constructor(tokens: Tokens, megaloVersion: MegaloVersion, diagnostics: Diagnostics, symbolTable: SymbolBinder) {
+    public constructor(
+        tokens: Tokens,
+        megaloVersion: MegaloVersion,
+        diagnostics: Diagnostics,
+        symbolTable: SymbolBinder,
+        objectLists: ObjectLists = {},
+    ) {
         this.diagnostics = diagnostics;
         this.tokens = tokens;
-        this.symbolParser = new ParserSymbolContext(megaloVersion, diagnostics, symbolTable);
+        this.symbolParser = new ParserSymbolContext(megaloVersion, diagnostics, symbolTable, objectLists);
         this.playerTraitParserRepository = new PlayerTraitParserRepository(megaloVersion);
         this.loadoutParserRepository = new LoadoutParserRepository(megaloVersion);
         this.loadoutPaletteParserRepository = new LoadoutPaletteParserRepository(megaloVersion);

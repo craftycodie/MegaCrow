@@ -4,6 +4,7 @@ import { SourceCodeLocation, SourceLocationType } from "../../diagnostics";
 import { diagnosticMessages } from "../../diagnostics/messages";
 import { Token, TokenKind } from "../../tokens";
 import { ParserContext } from "../context";
+import { ParameterType, tryParseParameterValue } from "../parameters";
 import { locationSpan } from "./game_options/shared";
 
 type StringTableEntryNodeSymbol = { value: string; location: SourceCodeLocation };
@@ -73,15 +74,17 @@ export const stringTableParser = (ctx: ParserContext, elementToken: Token): Stri
             };
         }
 
-        const valueToken = ctx.getToken();
+        const quoted = tryParseParameterValue(ctx, ParameterType.QuotedString);
         let value: StringTableEntryNode["value"];
-        if (valueToken.kind === TokenKind.QuotedString) {
-            value = {
-                kind: SyntaxKind.QUOTED_STRING,
-                location: valueToken.location,
-                value: valueToken.value,
-            };
+        let valueLocation: SourceCodeLocation;
+        let content = "";
+
+        if (quoted !== undefined && quoted.kind === SyntaxKind.QUOTED_STRING) {
+            value = quoted;
+            valueLocation = quoted.location;
+            content = quoted.value;
         } else {
+            const valueToken = ctx.getToken();
             ctx.diagnostics.addError(
                 diagnosticMessages.expectedTokenKind(TokenKind.QuotedString, valueToken.kind, valueToken.value),
                 valueToken.location,
@@ -90,6 +93,7 @@ export const stringTableParser = (ctx: ParserContext, elementToken: Token): Stri
                 kind: SyntaxKind.INVALID,
                 location: valueToken.location,
             };
+            valueLocation = valueToken.location;
         }
 
         if (symbolToken.kind === TokenKind.Identifier) {
@@ -97,7 +101,7 @@ export const stringTableParser = (ctx: ParserContext, elementToken: Token): Stri
                 name: symbolToken.value,
                 declaration: symbolToken.location,
                 language: language.value,
-                content: valueToken.kind === TokenKind.QuotedString ? valueToken.value : "",
+                content,
             });
         }
 
@@ -107,7 +111,7 @@ export const stringTableParser = (ctx: ParserContext, elementToken: Token): Stri
             location: {
                 type: SourceLocationType.SOURCE_CODE,
                 start: symbolToken.location.start,
-                end: valueToken.location.end,
+                end: valueLocation.end,
             },
         });
     });

@@ -12,7 +12,7 @@ import {
     ParameterType,
     parameterParserBuilder as buildParameterParser,
 } from "../parameters";
-import { grenadeCountParser } from "../parameters/grenade-count";
+import { grenadeCountParser } from "../parameters/types/grenade-count";
 import { locationSpan } from "./game_options/shared";
 
 export type LoadoutItemNode = {

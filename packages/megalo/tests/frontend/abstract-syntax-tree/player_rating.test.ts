@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { ElementKind } from "../../../frontend/abstract-syntax-tree/elements";
 import { Parser, SyntaxKind } from "../../../frontend/abstract-syntax-tree";
+import { ElementKind } from "../../../frontend/abstract-syntax-tree/elements";
 import { Diagnostics } from "../../../frontend/diagnostics";
 import { Lexer } from "../../../frontend/tokens";
 import { MEGALO_VERSIONS } from "../../../version";
@@ -10,7 +10,7 @@ const parse = (source: string) => {
   const version = MEGALO_VERSIONS["107-mcc"];
   const tokens = new Lexer(version).lex(source, diagnostics);
   const ast = new Parser(version).parse(tokens, diagnostics);
-  return { ast, symbolTable: ast.symbolTable, diagnostics };
+  return { ast, symbolTable: ast.symbolTable.toArray(), diagnostics };
 };
 
 describe("playerRatingParser", () => {
@@ -134,6 +134,8 @@ end
     const { diagnostics } = parse(source);
 
     expect(diagnostics.hasErrors()).toBe(true);
-    expect(diagnostics.getErrors().some((error) => error.message.includes("end"))).toBe(true);
+    expect(
+      diagnostics.getErrors().some((error) => error.message.includes("end"))
+    ).toBe(true);
   });
 });

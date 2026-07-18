@@ -1,9 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { ElementKind, GameOptionEntryKind, OverrideValueKind } from "../../../frontend/abstract-syntax-tree/elements";
 import { Parser, SyntaxKind } from "../../../frontend/abstract-syntax-tree";
+import {
+  ElementKind,
+  GameOptionEntryKind,
+  OverrideValueKind,
+} from "../../../frontend/abstract-syntax-tree/elements";
 import { Diagnostics } from "../../../frontend/diagnostics";
+import {
+  SymbolKind,
+  type SymbolTableGameOptionEntry,
+} from "../../../frontend/symbol-table";
 import { Lexer } from "../../../frontend/tokens";
-import { SymbolKind, type SymbolTableGameOptionEntry } from "../../../frontend/symbol-table";
 import { MEGALO_VERSIONS } from "../../../version";
 
 const parse = (source: string) => {
@@ -11,12 +18,15 @@ const parse = (source: string) => {
   const version = MEGALO_VERSIONS["107-mcc"];
   const tokens = new Lexer(version).lex(source, diagnostics);
   const ast = new Parser(version).parse(tokens, diagnostics);
-  return { ast, symbolTable: ast.symbolTable, diagnostics };
+  return { ast, symbolTable: ast.symbolTable.toArray(), diagnostics };
 };
 
-const gameOptionSymbols = (symbolTable: readonly { kind: SymbolKind; name: string }[]) =>
+const gameOptionSymbols = (
+  symbolTable: readonly { kind: SymbolKind; name: string }[]
+) =>
   symbolTable.filter(
-    (entry): entry is SymbolTableGameOptionEntry => entry.kind === SymbolKind.GameOption,
+    (entry): entry is SymbolTableGameOptionEntry =>
+      entry.kind === SymbolKind.GameOption
   );
 
 describe("gameOptionsParser", () => {
@@ -116,7 +126,10 @@ end
     });
 
     const option = element.entries[0];
-    if (option.kind !== GameOptionEntryKind.OPTION && option.kind !== GameOptionEntryKind.RANGED_OPTION) {
+    if (
+      option.kind !== GameOptionEntryKind.OPTION &&
+      option.kind !== GameOptionEntryKind.RANGED_OPTION
+    ) {
       return;
     }
 
@@ -129,9 +142,14 @@ end
       identifier: "option_description_kill_points",
     });
     expect(option.values).toHaveLength(3);
-    expect(option.values[0]?.value).toMatchObject({ kind: SyntaxKind.INTEGER, value: -1 });
+    expect(option.values[0]?.value).toMatchObject({
+      kind: SyntaxKind.INTEGER,
+      value: -1,
+    });
 
-    const killPoints = gameOptionSymbols(symbolTable).find((entry) => entry.name === "kill_points");
+    const killPoints = gameOptionSymbols(symbolTable).find(
+      (entry) => entry.name === "kill_points"
+    );
     expect(killPoints).toBeDefined();
   });
 
@@ -165,12 +183,25 @@ end
       return;
     }
 
-    expect(entry.defaultValue).toMatchObject({ kind: SyntaxKind.INTEGER, value: 7 });
+    expect(entry.defaultValue).toMatchObject({
+      kind: SyntaxKind.INTEGER,
+      value: 7,
+    });
     expect(entry.values).toHaveLength(2);
-    expect(entry.values[0]?.value).toMatchObject({ kind: SyntaxKind.INTEGER, value: 3 });
-    expect(entry.values[1]?.value).toMatchObject({ kind: SyntaxKind.INTEGER, value: 16 });
+    expect(entry.values[0]?.value).toMatchObject({
+      kind: SyntaxKind.INTEGER,
+      value: 3,
+    });
+    expect(entry.values[1]?.value).toMatchObject({
+      kind: SyntaxKind.INTEGER,
+      value: 16,
+    });
 
-    expect(gameOptionSymbols(symbolTable).some((symbol) => symbol.name === "float_time")).toBe(true);
+    expect(
+      gameOptionSymbols(symbolTable).some(
+        (symbol) => symbol.name === "float_time"
+      )
+    ).toBe(true);
   });
 
   it("parses an inline ranged_option", () => {
@@ -196,10 +227,19 @@ end
       return;
     }
 
-    expect(entry.defaultValue).toMatchObject({ kind: SyntaxKind.INTEGER, value: 1 });
+    expect(entry.defaultValue).toMatchObject({
+      kind: SyntaxKind.INTEGER,
+      value: 1,
+    });
     expect(entry.values).toHaveLength(2);
-    expect(entry.values[0]?.value).toMatchObject({ kind: SyntaxKind.INTEGER, value: -10 });
-    expect(entry.values[1]?.value).toMatchObject({ kind: SyntaxKind.INTEGER, value: 10 });
+    expect(entry.values[0]?.value).toMatchObject({
+      kind: SyntaxKind.INTEGER,
+      value: -10,
+    });
+    expect(entry.values[1]?.value).toMatchObject({
+      kind: SyntaxKind.INTEGER,
+      value: 10,
+    });
   });
 
   it("parses nested base_player_traits override", () => {
@@ -452,7 +492,9 @@ end
     const { ast, diagnostics } = parse(source);
 
     expect(diagnostics.hasErrors()).toBe(true);
-    expect(diagnostics.getErrors()[0]?.message).toContain("Expected player trait modifier");
+    expect(diagnostics.getErrors()[0]?.message).toContain(
+      "Expected player trait modifier"
+    );
     expect(diagnostics.getErrors()[0]?.message).toContain("not_a_real_trait");
 
     const element = ast.elements[1]!;

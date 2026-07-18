@@ -2,8 +2,9 @@ import * as monaco from "monaco-editor";
 import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
 import "monaco-editor/min/vs/editor/editor.main.css";
 import {
-  DiagnosticSeverity,
   type Diagnostic,
+  DiagnosticSeverity,
+  SourceLocationType,
 } from "../../frontend/diagnostics";
 
 self.MonacoEnvironment = {
@@ -14,7 +15,9 @@ self.MonacoEnvironment = {
 
 const MARKER_OWNER = "megalo";
 
-const severityToMarker = (severity: DiagnosticSeverity): monaco.MarkerSeverity => {
+const severityToMarker = (
+  severity: DiagnosticSeverity
+): monaco.MarkerSeverity => {
   switch (severity) {
     case DiagnosticSeverity.Warning:
       return monaco.MarkerSeverity.Warning;
@@ -28,8 +31,12 @@ const severityToMarker = (severity: DiagnosticSeverity): monaco.MarkerSeverity =
 
 const diagnosticToMarker = (
   model: monaco.editor.ITextModel,
-  diagnostic: Diagnostic,
-): monaco.editor.IMarkerData => {
+  diagnostic: Diagnostic
+): monaco.editor.IMarkerData | undefined => {
+  if (diagnostic.location.type !== SourceLocationType.SOURCE_CODE) {
+    return;
+  }
+
   const { start, end } = diagnostic.location;
   const valueLength = model.getValueLength();
   const startOffset = Math.min(Math.max(0, start.offset), valueLength);
@@ -57,7 +64,7 @@ const diagnosticToMarker = (
   const endLineLength = model.getLineLength(endLine);
   const endColumn = Math.min(
     Math.max(end.column, startColumn + 1),
-    endLineLength + 1,
+    endLineLength + 1
   );
 
   return {
@@ -83,7 +90,7 @@ export type SourceEditor = {
 
 export const createSourceEditor = (
   container: HTMLElement,
-  initialValue: string,
+  initialValue: string
 ): SourceEditor => {
   const editor = monaco.editor.create(container, {
     value: initialValue,
@@ -119,11 +126,17 @@ export const createSourceEditor = (
       monaco.editor.setModelMarkers(
         model,
         MARKER_OWNER,
-        diagnostics.map((diagnostic) => diagnosticToMarker(model, diagnostic)),
+        diagnostics.flatMap((diagnostic) => {
+          const marker = diagnosticToMarker(model, diagnostic);
+          return marker === undefined ? [] : [marker];
+        })
       );
     },
     revealDiagnostic: (diagnostic) => {
       const marker = diagnosticToMarker(model, diagnostic);
+      if (marker === undefined) {
+        return;
+      }
       editor.revealLineInCenter(marker.startLineNumber);
       editor.setPosition({
         lineNumber: marker.startLineNumber,

@@ -311,6 +311,14 @@ include "strings/engine_category_strings.txt"
 
 include "includes/engine_icons.txt"
 
+constants
+	number k_engine_icon_vip 3
+end
+
+string_table english
+    vip "VIP"
+end
+
 engine_data
 	name engine_name
 	description engine_description

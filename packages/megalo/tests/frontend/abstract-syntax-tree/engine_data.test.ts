@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { ElementKind } from "../../../frontend/abstract-syntax-tree/elements";
 import { Parser, SyntaxKind } from "../../../frontend/abstract-syntax-tree";
+import { ElementKind } from "../../../frontend/abstract-syntax-tree/elements";
 import { Diagnostics } from "../../../frontend/diagnostics";
 import { Lexer } from "../../../frontend/tokens";
 import { MEGALO_VERSIONS } from "../../../version";
@@ -10,7 +10,7 @@ const parse = (source: string) => {
   const version = MEGALO_VERSIONS["107-mcc"];
   const tokens = new Lexer(version).lex(source, diagnostics);
   const ast = new Parser(version).parse(tokens, diagnostics);
-  return { ast, symbolTable: ast.symbolTable, diagnostics };
+  return { ast, symbolTable: ast.symbolTable.toArray(), diagnostics };
 };
 
 describe("engineDataParser", () => {
@@ -48,11 +48,15 @@ end
     });
     expect(element.properties[1]).toMatchObject({
       identifier: "description",
-      parameters: [{ kind: SyntaxKind.REFERENCE, identifier: "slayer_description" }],
+      parameters: [
+        { kind: SyntaxKind.REFERENCE, identifier: "slayer_description" },
+      ],
     });
     expect(element.properties[2]).toMatchObject({
       identifier: "icon",
-      parameters: [{ kind: SyntaxKind.REFERENCE, identifier: "k_engine_icon_slayer" }],
+      parameters: [
+        { kind: SyntaxKind.REFERENCE, identifier: "k_engine_icon_slayer" },
+      ],
     });
     expect(element.properties[3]).toMatchObject({
       identifier: "category",
@@ -87,7 +91,9 @@ end
 
     expect(element.properties[2]).toMatchObject({
       identifier: "icon",
-      parameters: [{ kind: SyntaxKind.REFERENCE, identifier: "k_engine_icon_slayer" }],
+      parameters: [
+        { kind: SyntaxKind.REFERENCE, identifier: "k_engine_icon_slayer" },
+      ],
     });
     expect(element.properties[3]).toMatchObject({
       identifier: "category",
@@ -104,7 +110,9 @@ end
     const { ast, diagnostics } = parse(source);
 
     expect(diagnostics.hasErrors()).toBe(true);
-    expect(diagnostics.getErrors()[0]?.message).toContain("engine_data property");
+    expect(diagnostics.getErrors()[0]?.message).toContain(
+      "engine_data property"
+    );
     expect(diagnostics.getErrors()[0]?.message).toContain("not_a_property");
 
     const element = ast.elements[0]!;
@@ -144,6 +152,8 @@ end
     const { diagnostics } = parse(source);
 
     expect(diagnostics.hasErrors()).toBe(true);
-    expect(diagnostics.getErrors().some((error) => error.message.includes("end"))).toBe(true);
+    expect(
+      diagnostics.getErrors().some((error) => error.message.includes("end"))
+    ).toBe(true);
   });
 });

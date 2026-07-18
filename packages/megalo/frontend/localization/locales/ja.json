@@ -1,4 +1,5 @@
 {
+  "unused_value": "{{location}} に未使用の値があります",
   "unrecognized_element": "認識できない要素 '{{value}}'。",
   "expected_token_kind": "{{expected}} 型のトークンが必要ですが、{{kind}} 型のトークン {{token}} が見つかりました",
   "expected_end_before_eof": "ファイル末尾の前に 'end' が必要です",
@@ -12,5 +13,6 @@
   "unknown_teams_block_property": "teams block property が必要ですが、'{{got}}' が見つかりました",
   "unknown_team_property": "team property が必要ですが、'{{got}}' が見つかりました",
   "unknown_engine_data_property": "engine_data property が必要ですが、'{{got}}' が見つかりました",
-  "string_already_defined": "言語 {{language}} の string table には、トークン {{identifier}} 用の文字列が既に定義されています"
+  "string_already_defined": "言語 {{language}} の string table には、トークン {{identifier}} 用の文字列が既に定義されています",
+  "invalid_parameter_count": "{{expected}} パラメータが必要ですが、{{got}} パラメータが見つかりました"
 }

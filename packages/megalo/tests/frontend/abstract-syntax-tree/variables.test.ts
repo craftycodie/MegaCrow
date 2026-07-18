@@ -1,9 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { ElementKind } from "../../../frontend/abstract-syntax-tree/elements";
 import { Parser, SyntaxKind } from "../../../frontend/abstract-syntax-tree";
+import { ElementKind } from "../../../frontend/abstract-syntax-tree/elements";
 import { Diagnostics } from "../../../frontend/diagnostics";
+import {
+  SymbolKind,
+  type SymbolTableVariableEntry,
+  VariableScope,
+} from "../../../frontend/symbol-table";
 import { Lexer } from "../../../frontend/tokens";
-import { SymbolKind, VariableScope, type SymbolTableVariableEntry } from "../../../frontend/symbol-table";
 import { MEGALO_VERSIONS } from "../../../version";
 
 const parse = (source: string) => {
@@ -11,12 +15,15 @@ const parse = (source: string) => {
   const version = MEGALO_VERSIONS["107-mcc"];
   const tokens = new Lexer(version).lex(source, diagnostics);
   const ast = new Parser(version).parse(tokens, diagnostics);
-  return { ast, symbolTable: ast.symbolTable, diagnostics };
+  return { ast, symbolTable: ast.symbolTable.toArray(), diagnostics };
 };
 
-const variableSymbols = (symbolTable: readonly { kind: SymbolKind; name: string }[]) =>
+const variableSymbols = (
+  symbolTable: readonly { kind: SymbolKind; name: string }[]
+) =>
   symbolTable.filter(
-    (entry): entry is SymbolTableVariableEntry => entry.kind === SymbolKind.Variable,
+    (entry): entry is SymbolTableVariableEntry =>
+      entry.kind === SymbolKind.Variable
   );
 
 describe("variablesParser", () => {
@@ -76,10 +83,15 @@ end
 
     const variables = variableSymbols(symbolTable);
     expect(
-      variables.find((entry) => entry.name === "defenders" && entry.scope === VariableScope.Team),
+      variables.find(
+        (entry) =>
+          entry.name === "defenders" && entry.scope === VariableScope.Team
+      )
     ).toBeDefined();
     expect(variables.find((entry) => entry.name === "sd_vo")).toBeDefined();
-    expect(variables.find((entry) => entry.name === "defending_team")).toBeDefined();
+    expect(
+      variables.find((entry) => entry.name === "defending_team")
+    ).toBeDefined();
   });
 
   it("resolves team designators as initial values without a same-named variable", () => {
@@ -100,10 +112,12 @@ end
     }
 
     const defendersId = variableSymbols(symbolTable).find(
-      (entry) => entry.name === "defenders" && entry.scope === VariableScope.Global,
+      (entry) =>
+        entry.name === "defenders" && entry.scope === VariableScope.Global
     )?.id;
     const attackersId = variableSymbols(symbolTable).find(
-      (entry) => entry.name === "attackers" && entry.scope === VariableScope.Global,
+      (entry) =>
+        entry.name === "attackers" && entry.scope === VariableScope.Global
     )?.id;
 
     expect(defendersId).toBeDefined();
@@ -145,8 +159,12 @@ end
     expect(playerBlock.scope).toMatchObject({ value: "player" });
     expect(teamBlock.scope).toMatchObject({ value: "team" });
 
-    const playerVar = variableSymbols(symbolTable).find((entry) => entry.name === "cooldown");
-    const teamVar = variableSymbols(symbolTable).find((entry) => entry.name === "goal");
+    const playerVar = variableSymbols(symbolTable).find(
+      (entry) => entry.name === "cooldown"
+    );
+    const teamVar = variableSymbols(symbolTable).find(
+      (entry) => entry.name === "goal"
+    );
     expect(playerVar?.scope).toBe(2);
     expect(teamVar?.scope).toBe(1);
   });

@@ -33,7 +33,7 @@
     "vitest": "^3.2.6"
   },
   "dependencies": {
-    "@blamnetwork/blf": "^1.1.0-beta.2",
+    "@blamnetwork/blf": "^1.1.0-beta.6",
     "monaco-editor": "^0.55.1",
     "rosetta": "^1.1.0"
   }

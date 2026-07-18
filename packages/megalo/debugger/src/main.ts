@@ -1,21 +1,29 @@
 import { DEFAULT_SOURCE } from "./example";
 import "./styles.css";
 import {
-  DiagnosticSeverity,
   type Diagnostic,
+  DiagnosticSeverity,
+  type SourceLocation,
+  SourceLocationType,
 } from "../../frontend/diagnostics";
 import {
   getLocale,
-  setLocale,
   SUPPORTED_LOCALES,
   type SupportedLocale,
+  setLocale,
 } from "../../frontend/localization";
-import type { AnalyzeRequest, AnalyzeResponse } from "./analyze.types";
-import AnalyzeWorker from "./analyze.worker.ts?worker";
-import { loadObjectLists } from "./object-lists";
-import { renderJsonTree } from "./json-tree";
-import { createSourceEditor } from "./source-editor";
 import type { ObjectLists } from "../../frontend/object-lists";
+import type {
+  AnalyzeRequest,
+  AnalyzeResponse,
+  SaveGametypeRequest,
+  SaveGametypeResponse,
+  WorkerResponse,
+} from "./analyze.types";
+import AnalyzeWorker from "./analyze.worker.ts?worker";
+import { renderJsonTree } from "./json-tree";
+import { loadObjectLists } from "./object-lists";
+import { createSourceEditor } from "./source-editor";
 
 const LOCALE_STORAGE_KEY = "megalo-debugger-locale";
 
@@ -34,6 +42,7 @@ app.innerHTML = `
     <header class="toolbar">
       <h1>Megalo Debugger</h1>
       <a class="toolbar-link" href="/inspector">Inspector</a>
+      <button type="button" class="toolbar-button" data-role="save-gametype">Save Gametype</button>
       <div
         class="locale-toggle"
         data-role="locale-toggle"
@@ -90,67 +99,123 @@ app.innerHTML = `
   </div>
 `;
 
-const sourceEditorHost = app.querySelector<HTMLElement>('[data-role="source-editor"]');
+const sourceEditorHost = app.querySelector<HTMLElement>(
+  '[data-role="source-editor"]'
+);
 const tokensView = app.querySelector<HTMLElement>('[data-role="tokens"]');
 const astView = app.querySelector<HTMLElement>('[data-role="ast"]');
 const astTime = app.querySelector<HTMLElement>('[data-role="ast-time"]');
 const irView = app.querySelector<HTMLElement>('[data-role="ir"]');
 const irTime = app.querySelector<HTMLElement>('[data-role="ir-time"]');
 const symbolsView = app.querySelector<HTMLElement>('[data-role="symbols"]');
-const symbolCount = app.querySelector<HTMLElement>('[data-role="symbol-count"]');
+const symbolCount = app.querySelector<HTMLElement>(
+  '[data-role="symbol-count"]'
+);
 const tokenCount = app.querySelector<HTMLElement>('[data-role="token-count"]');
 const tokenTime = app.querySelector<HTMLElement>('[data-role="token-time"]');
 const totalTime = app.querySelector<HTMLElement>('[data-role="total-time"]');
-const diagnosticsView = app.querySelector<HTMLElement>('[data-role="diagnostics"]');
-const diagnosticsCount = app.querySelector<HTMLElement>(
-  '[data-role="diagnostics-count"]',
+const diagnosticsView = app.querySelector<HTMLElement>(
+  '[data-role="diagnostics"]'
 );
-const localeToggle = app.querySelector<HTMLElement>('[data-role="locale-toggle"]');
+const diagnosticsCount = app.querySelector<HTMLElement>(
+  '[data-role="diagnostics-count"]'
+);
+const localeToggle = app.querySelector<HTMLElement>(
+  '[data-role="locale-toggle"]'
+);
+const saveGametypeButton = app.querySelector<HTMLButtonElement>(
+  '[data-role="save-gametype"]'
+);
 
 if (
-  !sourceEditorHost ||
-  !tokensView ||
-  !astView ||
-  !irView ||
-  !irTime ||
-  !symbolsView ||
-  !symbolCount ||
-  !tokenCount ||
-  !tokenTime ||
-  !astTime ||
-  !totalTime ||
-  !diagnosticsView ||
-  !diagnosticsCount ||
-  !localeToggle
+  !(
+    sourceEditorHost &&
+    tokensView &&
+    astView &&
+    irView &&
+    irTime &&
+    symbolsView &&
+    symbolCount &&
+    tokenCount &&
+    tokenTime &&
+    astTime &&
+    totalTime &&
+    diagnosticsView &&
+    diagnosticsCount &&
+    localeToggle &&
+    saveGametypeButton
+  )
 ) {
   throw new Error("Debugger layout failed to initialize.");
 }
 
-const localeButtons = localeToggle.querySelectorAll<HTMLButtonElement>("[data-locale]");
+const localeButtons =
+  localeToggle.querySelectorAll<HTMLButtonElement>("[data-locale]");
 const sourceEditor = createSourceEditor(sourceEditorHost, DEFAULT_SOURCE);
 
 const severityLabel = (severity: DiagnosticSeverity): string =>
   DiagnosticSeverity[severity] ?? String(severity);
 
+const sourceSpan = (
+  location: SourceLocation
+):
+  | { offset: number; line: number; column: number; endOffset: number }
+  | undefined => {
+  if (location.type === SourceLocationType.SOURCE_CODE) {
+    return {
+      offset: location.start.offset,
+      line: location.start.line,
+      column: location.start.column,
+      endOffset: location.end.offset,
+    };
+  }
+  if (location.type === SourceLocationType.OBJECT_LIST) {
+    return {
+      offset: location.source.offset,
+      line: location.source.line,
+      column: location.source.column,
+      endOffset: location.source.offset,
+    };
+  }
+  return;
+};
+
 const formatDiagnosticLocation = (diagnostic: Diagnostic): string => {
-  const { line, column } = diagnostic.location.start;
-  return `${line}:${column}`;
+  const span = sourceSpan(diagnostic.location);
+  if (span === undefined) {
+    return diagnostic.location.type === SourceLocationType.BUILT_IN
+      ? "built-in"
+      : "—";
+  }
+  return `${span.line}:${span.column}`;
 };
 
 const sortDiagnostics = (diagnostics: Diagnostic[]): Diagnostic[] =>
-  [...diagnostics].sort(
-    (left, right) =>
-      left.location.start.offset - right.location.start.offset ||
-      left.location.start.line - right.location.start.line ||
-      left.location.start.column - right.location.start.column,
-  );
+  [...diagnostics].sort((left, right) => {
+    const leftSpan = sourceSpan(left.location);
+    const rightSpan = sourceSpan(right.location);
+    if (leftSpan === undefined && rightSpan === undefined) {
+      return 0;
+    }
+    if (leftSpan === undefined) {
+      return 1;
+    }
+    if (rightSpan === undefined) {
+      return -1;
+    }
+    return (
+      leftSpan.offset - rightSpan.offset ||
+      leftSpan.line - rightSpan.line ||
+      leftSpan.column - rightSpan.column
+    );
+  });
 
 const formatDiagnosticsSummary = (diagnostics: Diagnostic[]): string => {
   const errorCount = diagnostics.filter(
-    (diagnostic) => diagnostic.severity === DiagnosticSeverity.Error,
+    (diagnostic) => diagnostic.severity === DiagnosticSeverity.Error
   ).length;
   const warningCount = diagnostics.filter(
-    (diagnostic) => diagnostic.severity === DiagnosticSeverity.Warning,
+    (diagnostic) => diagnostic.severity === DiagnosticSeverity.Warning
   ).length;
 
   if (errorCount === 0 && warningCount === 0) {
@@ -212,7 +277,7 @@ const formatDuration = (milliseconds: number): string => {
 const setTreeIfChanged = (
   element: HTMLElement,
   value: unknown,
-  cache: { signature: string | null },
+  cache: { signature: string | null }
 ): void => {
   const signature = JSON.stringify(value);
   if (cache.signature === signature) {
@@ -252,11 +317,11 @@ const analyzeWorker = new AnalyzeWorker();
 let objectLists: ObjectLists = {};
 
 let cachedSource: string | null = null;
-let cachedTokens: { signature: string | null } = { signature: null };
-let cachedAst: { signature: string | null } = { signature: null };
-let cachedIr: { signature: string | null } = { signature: null };
-let cachedSymbolTable: { signature: string | null } = { signature: null };
-let cachedDiagnosticsSummary: { value: string | null } = { value: null };
+const cachedTokens: { signature: string | null } = { signature: null };
+const cachedAst: { signature: string | null } = { signature: null };
+const cachedIr: { signature: string | null } = { signature: null };
+const cachedSymbolTable: { signature: string | null } = { signature: null };
+const cachedDiagnosticsSummary: { value: string | null } = { value: null };
 let cachedDiagnosticsSignature: string | null = null;
 
 let updateGeneration = 0;
@@ -303,10 +368,14 @@ const markSourceEditorActive = (): void => {
 
 const diagnosticsSignature = (diagnostics: Diagnostic[]): string =>
   diagnostics
-    .map(
-      (diagnostic) =>
-        `${diagnostic.severity}:${diagnostic.location.start.offset}:${diagnostic.location.end.offset}:${diagnostic.message}`,
-    )
+    .map((diagnostic) => {
+      const span = sourceSpan(diagnostic.location);
+      const range =
+        span === undefined
+          ? String(diagnostic.location.type)
+          : `${span.offset}:${span.endOffset}`;
+      return `${diagnostic.severity}:${range}:${diagnostic.message}`;
+    })
     .join("\n");
 
 const flushDom = (): void => {
@@ -323,70 +392,75 @@ const flushDom = (): void => {
   const options = pendingOptions;
   const sourceChanged = pendingSourceChanged;
 
-  scheduleIdleChain([
-    () => {
-      tokenCount.textContent = `${result.tokenCount} token${result.tokenCount === 1 ? "" : "s"}`;
-      tokenTime.textContent = formatDuration(result.lexDuration);
-      astTime.textContent = formatDuration(result.parseDuration);
-      totalTime.textContent = formatDuration(result.lexDuration + result.parseDuration);
-    },
-    () => {
-      if (!latestResult || latestResult.id !== updateGeneration) {
-        return;
-      }
+  scheduleIdleChain(
+    [
+      () => {
+        tokenCount.textContent = `${result.tokenCount} token${result.tokenCount === 1 ? "" : "s"}`;
+        tokenTime.textContent = formatDuration(result.lexDuration);
+        astTime.textContent = formatDuration(result.parseDuration);
+        totalTime.textContent = formatDuration(
+          result.lexDuration + result.parseDuration
+        );
+      },
+      () => {
+        if (!latestResult || latestResult.id !== updateGeneration) {
+          return;
+        }
 
-      if (!options.diagnosticsOnly || sourceChanged) {
-        setTreeIfChanged(tokensView, result.tokens, cachedTokens);
-      }
-    },
-    () => {
-      if (!latestResult || latestResult.id !== updateGeneration) {
-        return;
-      }
+        if (!options.diagnosticsOnly || sourceChanged) {
+          setTreeIfChanged(tokensView, result.tokens, cachedTokens);
+        }
+      },
+      () => {
+        if (!latestResult || latestResult.id !== updateGeneration) {
+          return;
+        }
 
-      if (!options.diagnosticsOnly || sourceChanged) {
-        setTreeIfChanged(astView, result.ast, cachedAst);
-      }
-    },
-    () => {
-      if (!latestResult || latestResult.id !== updateGeneration) {
-        return;
-      }
+        if (!options.diagnosticsOnly || sourceChanged) {
+          setTreeIfChanged(astView, result.ast, cachedAst);
+        }
+      },
+      () => {
+        if (!latestResult || latestResult.id !== updateGeneration) {
+          return;
+        }
 
-      if (!options.diagnosticsOnly || sourceChanged) {
-        setTreeIfChanged(symbolsView, result.symbolTable, cachedSymbolTable);
-        symbolCount.textContent = `${result.symbolCount} symbol${result.symbolCount === 1 ? "" : "s"}`;
-      }
-    },
-    () => {
-      if (!latestResult || latestResult.id !== updateGeneration) {
-        return;
-      }
+        if (!options.diagnosticsOnly || sourceChanged) {
+          setTreeIfChanged(symbolsView, result.symbolTable, cachedSymbolTable);
+          symbolCount.textContent = `${result.symbolCount} symbol${result.symbolCount === 1 ? "" : "s"}`;
+        }
+      },
+      () => {
+        if (!latestResult || latestResult.id !== updateGeneration) {
+          return;
+        }
 
-      if (!options.diagnosticsOnly || sourceChanged) {
-        setTreeIfChanged(irView, result.ir, cachedIr);
-        irTime.textContent = formatDuration(result.lowerDuration);
-      }
-    },
-    () => {
-      if (!latestResult || latestResult.id !== updateGeneration) {
-        return;
-      }
+        if (!options.diagnosticsOnly || sourceChanged) {
+          setTreeIfChanged(irView, result.ir, cachedIr);
+          irTime.textContent = formatDuration(result.lowerDuration);
+        }
+      },
+      () => {
+        if (!latestResult || latestResult.id !== updateGeneration) {
+          return;
+        }
 
-      const signature = diagnosticsSignature(result.diagnostics);
-      if (cachedDiagnosticsSignature !== signature) {
-        renderDiagnostics(result.diagnostics);
-        sourceEditor.setDiagnostics(result.diagnostics);
-        cachedDiagnosticsSignature = signature;
-      }
+        const signature = diagnosticsSignature(result.diagnostics);
+        if (cachedDiagnosticsSignature !== signature) {
+          renderDiagnostics(result.diagnostics);
+          sourceEditor.setDiagnostics(result.diagnostics);
+          cachedDiagnosticsSignature = signature;
+        }
 
-      const diagnosticsSummary = formatDiagnosticsSummary(result.diagnostics);
-      if (cachedDiagnosticsSummary.value !== diagnosticsSummary) {
-        diagnosticsCount.textContent = diagnosticsSummary;
-        cachedDiagnosticsSummary.value = diagnosticsSummary;
-      }
-    },
-  ], 500);
+        const diagnosticsSummary = formatDiagnosticsSummary(result.diagnostics);
+        if (cachedDiagnosticsSummary.value !== diagnosticsSummary) {
+          diagnosticsCount.textContent = diagnosticsSummary;
+          cachedDiagnosticsSummary.value = diagnosticsSummary;
+        }
+      },
+    ],
+    500
+  );
 };
 
 const scheduleDomFlush = (immediate = false): void => {
@@ -418,14 +492,84 @@ const cancelDomFlush = (): void => {
   }
 };
 
-analyzeWorker.onmessage = (event: MessageEvent<AnalyzeResponse>) => {
-  if (event.data.id !== updateGeneration) {
+analyzeWorker.onmessage = (event: MessageEvent<WorkerResponse>) => {
+  const response = event.data;
+
+  if (response.type === "saveGametype") {
+    handleSaveGametypeResponse(response);
     return;
   }
 
-  latestResult = event.data;
+  if (response.id !== updateGeneration) {
+    return;
+  }
+
+  latestResult = response;
   scheduleDomFlush(pendingOptions.immediate === true);
 };
+
+const downloadArrayBuffer = (data: ArrayBuffer, filename: string): void => {
+  const blob = new Blob([data], { type: "application/octet-stream" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.click();
+  URL.revokeObjectURL(url);
+};
+
+let saveGeneration = 0;
+
+const handleSaveGametypeResponse = (response: SaveGametypeResponse): void => {
+  if (response.id !== saveGeneration) {
+    return;
+  }
+
+  saveGametypeButton.disabled = false;
+
+  const errorCount = response.diagnostics.filter(
+    (diagnostic) => diagnostic.severity === DiagnosticSeverity.Error
+  ).length;
+  const succeeded = response.error === undefined && errorCount === 0;
+
+  console.log(
+    succeeded
+      ? "Compile finished: success"
+      : `Compile finished: failed (${errorCount} error${errorCount === 1 ? "" : "s"}${response.error === undefined ? "" : `, ${response.error}`})`
+  );
+
+  if (response.error !== undefined) {
+    window.alert(`Failed to save gametype:\n${response.error}`);
+    return;
+  }
+
+  if (response.data === undefined) {
+    window.alert("Failed to save gametype: no data returned.");
+    return;
+  }
+
+  downloadArrayBuffer(response.data, "gametype.mglo");
+};
+
+const saveGametype = (): void => {
+  const id = ++saveGeneration;
+  saveGametypeButton.disabled = true;
+  console.log("Compile started");
+
+  const request: SaveGametypeRequest = {
+    type: "saveGametype",
+    id,
+    source: sourceEditor.getValue(),
+    locale: getLocale(),
+    objectLists,
+  };
+
+  analyzeWorker.postMessage(request);
+};
+
+saveGametypeButton.addEventListener("click", () => {
+  saveGametype();
+});
 
 const runUpdate = (options: UpdateOptions = {}): void => {
   const generation = ++updateGeneration;
@@ -435,6 +579,7 @@ const runUpdate = (options: UpdateOptions = {}): void => {
   cachedSource = source;
 
   const request: AnalyzeRequest = {
+    type: "analyze",
     id: generation,
     source,
     locale: getLocale(),
@@ -480,7 +625,7 @@ const applyLocale = (locale: SupportedLocale): void => {
 for (const button of localeButtons) {
   button.addEventListener("click", () => {
     const locale = button.dataset.locale;
-    if (!locale || !SUPPORTED_LOCALES.includes(locale as SupportedLocale)) {
+    if (!(locale && SUPPORTED_LOCALES.includes(locale as SupportedLocale))) {
       return;
     }
 

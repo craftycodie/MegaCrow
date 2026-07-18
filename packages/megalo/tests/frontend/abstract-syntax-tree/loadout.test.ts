@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { ElementKind } from "../../../frontend/abstract-syntax-tree/elements";
 import { Parser, SyntaxKind } from "../../../frontend/abstract-syntax-tree";
+import { ElementKind } from "../../../frontend/abstract-syntax-tree/elements";
 import { Diagnostics } from "../../../frontend/diagnostics";
+import {
+  SymbolKind,
+  type SymbolTableLoadoutEntry,
+} from "../../../frontend/symbol-table";
 import { Lexer } from "../../../frontend/tokens";
-import { SymbolKind, type SymbolTableLoadoutEntry } from "../../../frontend/symbol-table";
 import { MEGALO_VERSIONS } from "../../../version";
 
 const parse = (source: string) => {
@@ -11,12 +14,15 @@ const parse = (source: string) => {
   const version = MEGALO_VERSIONS["107-mcc"];
   const tokens = new Lexer(version).lex(source, diagnostics);
   const ast = new Parser(version).parse(tokens, diagnostics);
-  return { ast, symbolTable: ast.symbolTable, diagnostics };
+  return { ast, symbolTable: ast.symbolTable.toArray(), diagnostics };
 };
 
-const loadoutSymbols = (symbolTable: readonly { kind: SymbolKind; name: string }[]) =>
+const loadoutSymbols = (
+  symbolTable: readonly { kind: SymbolKind; name: string }[]
+) =>
   symbolTable.filter(
-    (entry): entry is SymbolTableLoadoutEntry => entry.kind === SymbolKind.Loadout,
+    (entry): entry is SymbolTableLoadoutEntry =>
+      entry.kind === SymbolKind.Loadout
   );
 
 describe("loadoutParser", () => {
@@ -59,7 +65,9 @@ end
       ],
     });
 
-    expect(loadoutSymbols(symbolTable).map((entry) => entry.name)).toEqual(["loadout_scout"]);
+    expect(loadoutSymbols(symbolTable).map((entry) => entry.name)).toEqual([
+      "loadout_scout",
+    ]);
   });
 
   it("parses grenades keyword presets", () => {
@@ -92,7 +100,9 @@ end
     const { ast, diagnostics } = parse(source);
 
     expect(diagnostics.hasErrors()).toBe(true);
-    expect(diagnostics.getErrors()[0]?.message).toContain("Expected loadout property");
+    expect(diagnostics.getErrors()[0]?.message).toContain(
+      "Expected loadout property"
+    );
     expect(diagnostics.getErrors()[0]?.message).toContain("not_a_property");
 
     const element = ast.elements[0]!;

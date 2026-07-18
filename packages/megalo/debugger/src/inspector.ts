@@ -1,5 +1,5 @@
-import { decodeMglo, toPlainJson } from "./mglo";
 import { renderJsonTree } from "./json-tree";
+import { decodeMglo, toPlainJson } from "./mglo";
 import "./styles.css";
 
 const app = document.querySelector<HTMLDivElement>("#app");
@@ -35,7 +35,9 @@ app.innerHTML = `
 `;
 
 const dropzone = app.querySelector<HTMLLabelElement>('[data-role="dropzone"]');
-const fileInput = app.querySelector<HTMLInputElement>('[data-role="file-input"]');
+const fileInput = app.querySelector<HTMLInputElement>(
+  '[data-role="file-input"]'
+);
 const resultPanel = app.querySelector<HTMLElement>('[data-role="result"]');
 const metaView = app.querySelector<HTMLElement>('[data-role="meta"]');
 const treeView = app.querySelector<HTMLElement>('[data-role="tree"]');
@@ -43,13 +45,15 @@ const errorView = app.querySelector<HTMLElement>('[data-role="error"]');
 const statusView = app.querySelector<HTMLElement>('[data-role="status"]');
 
 if (
-  !dropzone ||
-  !fileInput ||
-  !resultPanel ||
-  !metaView ||
-  !treeView ||
-  !errorView ||
-  !statusView
+  !(
+    dropzone &&
+    fileInput &&
+    resultPanel &&
+    metaView &&
+    treeView &&
+    errorView &&
+    statusView
+  )
 ) {
   throw new Error("Inspector layout failed to initialize.");
 }

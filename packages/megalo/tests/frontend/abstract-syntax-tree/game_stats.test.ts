@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { ElementKind } from "../../../frontend/abstract-syntax-tree/elements";
 import { Parser, SyntaxKind } from "../../../frontend/abstract-syntax-tree";
+import { ElementKind } from "../../../frontend/abstract-syntax-tree/elements";
 import { Diagnostics } from "../../../frontend/diagnostics";
 import { Lexer } from "../../../frontend/tokens";
 import { MEGALO_VERSIONS } from "../../../version";
@@ -10,7 +10,7 @@ const parse = (source: string) => {
   const version = MEGALO_VERSIONS["107-mcc"];
   const tokens = new Lexer(version).lex(source, diagnostics);
   const ast = new Parser(version).parse(tokens, diagnostics);
-  return { ast, symbolTable: ast.symbolTable, diagnostics };
+  return { ast, symbolTable: ast.symbolTable.toArray(), diagnostics };
 };
 
 describe("gameStatsParser", () => {
@@ -51,7 +51,10 @@ end
     expect(element.entries[1]).toMatchObject({
       name: { value: "stat_carry_time" },
       type: { value: "timer" },
-      labelString: { kind: SyntaxKind.REFERENCE, identifier: "stat_carry_time_text" },
+      labelString: {
+        kind: SyntaxKind.REFERENCE,
+        identifier: "stat_carry_time_text",
+      },
       unitString: { kind: SyntaxKind.KEYWORD, value: "none" },
       flags: { kind: SyntaxKind.INTEGER, value: 0 },
     });
@@ -193,6 +196,8 @@ game_stats
     const { diagnostics } = parse(source);
 
     expect(diagnostics.hasErrors()).toBe(true);
-    expect(diagnostics.getErrors().some((error) => error.message.includes("end"))).toBe(true);
+    expect(
+      diagnostics.getErrors().some((error) => error.message.includes("end"))
+    ).toBe(true);
   });
 });

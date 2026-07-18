@@ -6,6 +6,5 @@ const OBJECT_LISTS_BY_VERSION: Readonly<Record<string, ObjectLists>> = {
 };
 
 /** Load the bundled object lists for a given megalo version (e.g. "107-mcc"). */
-export const loadObjectLists = (versionId: string): ObjectLists => {
-  return OBJECT_LISTS_BY_VERSION[versionId] ?? {};
-};
+export const loadObjectLists = (versionId: string): ObjectLists =>
+  OBJECT_LISTS_BY_VERSION[versionId] ?? {};

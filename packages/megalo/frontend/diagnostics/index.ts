@@ -1,33 +1,33 @@
 export type SourcePosition = {
-    offset: number;
-    // Megalo does not support multi-line tokens, so tokens start and end on the same line.
-    // However, SourcePosition is not just used for single token locations.
-    line: number;
-    column: number;
-}
-
-export const BUILT_IN_POSITION: SourcePosition = {
-    offset: -1,
-    line: -1,
-    column: -1,
+  offset: number;
+  // Megalo does not support multi-line tokens, so tokens start and end on the same line.
+  // However, SourcePosition is not just used for single token locations.
+  line: number;
+  column: number;
 };
 
-export const enum SourceLocationType {
-    SOURCE_CODE,
-    INCLUDE,
-    BUILT_IN,
-    OBJECT_LIST,
+export const BUILT_IN_POSITION: SourcePosition = {
+  offset: -1,
+  line: -1,
+  column: -1,
+};
+
+export enum SourceLocationType {
+  SOURCE_CODE = 0,
+  INCLUDE = 1,
+  BUILT_IN = 2,
+  OBJECT_LIST = 3,
 }
 
 export const BUILT_IN_LOCATION: BuiltInLocation = {
-    type: SourceLocationType.BUILT_IN,
-}
+  type: SourceLocationType.BUILT_IN,
+};
 
 export type SourceCodeLocation = {
-    type: SourceLocationType.SOURCE_CODE;
-    start: SourcePosition;
-    end: SourcePosition;
-}
+  type: SourceLocationType.SOURCE_CODE;
+  start: SourcePosition;
+  end: SourcePosition;
+};
 
 // TODO
 // export type IncludeLocation = {
@@ -37,8 +37,8 @@ export type SourceCodeLocation = {
 export type IncludeLocation = SourceCodeLocation;
 
 export type BuiltInLocation = {
-    type: SourceLocationType.BUILT_IN
-}
+  type: SourceLocationType.BUILT_IN;
+};
 
 /**
  * Location of an entry in an external object list (weapons.txt, objects.txt, ...).
@@ -47,46 +47,54 @@ export type BuiltInLocation = {
 import type { ObjectListType } from "../object-lists";
 
 export type ObjectListLocation = {
-    type: SourceLocationType.OBJECT_LIST;
-    objectType: ObjectListType;
-    source: SourcePosition;
-}
+  type: SourceLocationType.OBJECT_LIST;
+  objectType: ObjectListType;
+  source: SourcePosition;
+};
 
-export type SourceLocation = SourceCodeLocation | IncludeLocation | BuiltInLocation | ObjectListLocation;
+export type SourceLocation =
+  | SourceCodeLocation
+  | IncludeLocation
+  | BuiltInLocation
+  | ObjectListLocation;
 
 export enum DiagnosticSeverity {
-    Error,
-    Warning,
-    Info,
+  Error = 0,
+  Warning = 1,
+  Info = 2,
 }
 
 export type Diagnostic = {
-    message: string;
-    severity: DiagnosticSeverity;
-    location: SourceLocation;
-}
+  message: string;
+  severity: DiagnosticSeverity;
+  location: SourceLocation;
+};
 
 export class Diagnostics {
-    private warnings: Diagnostic[] = [];
-    private errors: Diagnostic[] = [];
+  private warnings: Diagnostic[] = [];
+  private errors: Diagnostic[] = [];
 
-    public addWarning(message: string, location: SourceLocation): void {
-        this.warnings.push({ message, severity: DiagnosticSeverity.Warning, location });
-    }
+  public addWarning(message: string, location: SourceLocation): void {
+    this.warnings.push({
+      message,
+      severity: DiagnosticSeverity.Warning,
+      location,
+    });
+  }
 
-    public addError(message: string, location: SourceLocation): void {
-        this.errors.push({ message, severity: DiagnosticSeverity.Error, location });
-    }
+  public addError(message: string, location: SourceLocation): void {
+    this.errors.push({ message, severity: DiagnosticSeverity.Error, location });
+  }
 
-    public getWarnings(): Diagnostic[] {
-        return this.warnings;
-    }
+  public getWarnings(): Diagnostic[] {
+    return this.warnings;
+  }
 
-    public getErrors(): Diagnostic[] {
-        return this.errors;
-    }
+  public getErrors(): Diagnostic[] {
+    return this.errors;
+  }
 
-    public hasErrors(): boolean {
-        return this.errors.length > 0;
-    }
+  public hasErrors(): boolean {
+    return this.errors.length > 0;
+  }
 }

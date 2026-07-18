@@ -1,20 +1,25 @@
 import { describe, expect, it } from "vitest";
+import { Diagnostics } from "../../../frontend/diagnostics";
 import {
   Lexer,
-  TokenKind,
   type Token,
+  TokenKind,
   type Tokens,
 } from "../../../frontend/tokens/index";
 import { MEGALO_VERSIONS } from "../../../version";
-import { Diagnostics } from "../../../frontend/diagnostics";
 
 const kinds = (source: string): TokenKind[] =>
-  new Lexer(MEGALO_VERSIONS["107-mcc"]).lex(source, new Diagnostics()).map((token) => token.kind);
+  new Lexer(MEGALO_VERSIONS["107-mcc"])
+    .lex(source, new Diagnostics())
+    .map((token) => token.kind);
 
 const values = (source: string): string[] =>
-  new Lexer(MEGALO_VERSIONS["107-mcc"]).lex(source, new Diagnostics()).map((token) => token.value);
+  new Lexer(MEGALO_VERSIONS["107-mcc"])
+    .lex(source, new Diagnostics())
+    .map((token) => token.value);
 
-const tokens = (source: string): Tokens => new Lexer(MEGALO_VERSIONS["107-mcc"]).lex(source, new Diagnostics());
+const tokens = (source: string): Tokens =>
+  new Lexer(MEGALO_VERSIONS["107-mcc"]).lex(source, new Diagnostics());
 
 const expectToken = (
   token: Token,
@@ -178,10 +183,21 @@ end`;
 
   it("tokenizes compound math assignment operators", () => {
     expect(values("+= -= *= /= = %= &= |= ^= ~= << >>")).toEqual([
-      "+=", "-=", "*=", "/=", "=", "%=", "&=", "|=", "^=", "~=", "<<", ">>",
+      "+=",
+      "-=",
+      "*=",
+      "/=",
+      "=",
+      "%=",
+      "&=",
+      "|=",
+      "^=",
+      "~=",
+      "<<",
+      ">>",
     ]);
     expect(kinds("+= -= *= /= = %= &= |= ^= ~= << >>")).toEqual(
-      Array(12).fill(TokenKind.Operator),
+      Array(12).fill(TokenKind.Operator)
     );
   });
 

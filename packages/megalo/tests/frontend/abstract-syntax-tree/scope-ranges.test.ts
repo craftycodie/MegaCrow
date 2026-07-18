@@ -11,7 +11,7 @@ const parse = (source: string) => {
   const version = MEGALO_VERSIONS["107-mcc"];
   const tokens = new Lexer(version).lex(source, diagnostics);
   const ast = new Parser(version).parse(tokens, diagnostics);
-  return { ast, symbolTable: ast.symbolTable, diagnostics };
+  return { ast, symbolTable: ast.symbolTable.toArray(), diagnostics };
 };
 
 describe("symbol scope ranges and symbolId stamping", () => {
@@ -32,19 +32,24 @@ describe("symbol scope ranges and symbolId stamping", () => {
     expect(diagnostics.hasErrors()).toBe(false);
 
     const scores = symbolTable.filter(
-      (entry) => entry.kind === SymbolKind.Variable && entry.name === "score",
+      (entry) => entry.kind === SymbolKind.Variable && entry.name === "score"
     );
     expect(scores.length).toBeGreaterThanOrEqual(2);
 
     const globalScore = scores.find(
-      (entry) => entry.range.end.offset === -1 && entry.range.start.offset !== -1,
+      (entry) =>
+        entry.range.end.offset === -1 && entry.range.start.offset !== -1
     );
-    const temporaryScore = scores.find((entry) => entry.range.end.offset !== -1);
+    const temporaryScore = scores.find(
+      (entry) => entry.range.end.offset !== -1
+    );
 
     expect(globalScore).toBeDefined();
     expect(temporaryScore).toBeDefined();
     expect(temporaryScore!.range.start.offset).toBeGreaterThanOrEqual(0);
-    expect(temporaryScore!.range.end.offset).toBeGreaterThan(temporaryScore!.range.start.offset);
+    expect(temporaryScore!.range.end.offset).toBeGreaterThan(
+      temporaryScore!.range.start.offset
+    );
   });
 
   it("stamps symbolId on condition references to the in-scope variable", () => {
@@ -64,25 +69,32 @@ describe("symbol scope ranges and symbolId stamping", () => {
 
     const score = symbolTable.find(
       (entry) =>
-        entry.kind === SymbolKind.Variable
-        && entry.name === "score"
-        && entry.type === VariableType.Number
-        && entry.range.start.offset !== -1
-        && entry.range.end.offset === -1,
+        entry.kind === SymbolKind.Variable &&
+        entry.name === "score" &&
+        entry.type === VariableType.Number &&
+        entry.range.start.offset !== -1 &&
+        entry.range.end.offset === -1
     );
     expect(score).toBeDefined();
     expect(score!.references.length).toBeGreaterThanOrEqual(1);
 
-    const trigger = ast.elements.find((element) => element.elementKind === ElementKind.TRIGGER);
+    const trigger = ast.elements.find(
+      (element) => element.elementKind === ElementKind.TRIGGER
+    );
     expect(trigger).toBeDefined();
 
-    const findReference = (node: unknown): { kind: SyntaxKind; symbolId?: number } | undefined => {
+    const findReference = (
+      node: unknown
+    ): { kind: SyntaxKind; symbolId: number } | undefined => {
       if (!node || typeof node !== "object") {
-        return undefined;
+        return;
       }
       const record = node as Record<string, unknown>;
-      if (record.kind === SyntaxKind.REFERENCE && record.identifier === "score") {
-        return record as { kind: SyntaxKind; symbolId?: number };
+      if (
+        record.kind === SyntaxKind.REFERENCE &&
+        record.identifier === "score"
+      ) {
+        return record as { kind: SyntaxKind; symbolId: number };
       }
       for (const value of Object.values(record)) {
         if (Array.isArray(value)) {
@@ -99,7 +111,7 @@ describe("symbol scope ranges and symbolId stamping", () => {
           }
         }
       }
-      return undefined;
+      return;
     };
 
     const reference = findReference(ast);

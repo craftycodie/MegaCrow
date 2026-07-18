@@ -1,5 +1,8 @@
 export type JsonPrimitive = null | boolean | number | string;
-export type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue };
+export type JsonValue =
+  | JsonPrimitive
+  | JsonValue[]
+  | { [key: string]: JsonValue };
 
 const isObject = (value: unknown): value is Record<string, JsonValue> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
@@ -27,7 +30,7 @@ const createSummary = (value: JsonValue): string => {
 const renderNode = (
   key: string | null,
   value: JsonValue,
-  options: { open?: boolean } = {},
+  options: { open?: boolean } = {}
 ): HTMLElement => {
   const row = document.createElement("div");
   row.className = "json-node";
@@ -94,7 +97,10 @@ const renderNode = (
 };
 
 /** Replace `container` contents with an accordion JSON tree. Root node starts open. */
-export const renderJsonTree = (container: HTMLElement, value: unknown): void => {
+export const renderJsonTree = (
+  container: HTMLElement,
+  value: unknown
+): void => {
   container.replaceChildren();
   container.append(renderNode(null, value as JsonValue, { open: true }));
 };

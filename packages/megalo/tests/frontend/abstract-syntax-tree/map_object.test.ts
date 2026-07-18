@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { ElementKind } from "../../../frontend/abstract-syntax-tree/elements";
 import { Parser, SyntaxKind } from "../../../frontend/abstract-syntax-tree";
+import { ElementKind } from "../../../frontend/abstract-syntax-tree/elements";
 import { Diagnostics } from "../../../frontend/diagnostics";
-import { ObjectListType, type ObjectLists } from "../../../frontend/object-lists";
+import {
+  type ObjectLists,
+  ObjectListType,
+} from "../../../frontend/object-lists";
 import { Lexer } from "../../../frontend/tokens";
 import { MEGALO_VERSIONS } from "../../../version";
 
@@ -11,7 +14,7 @@ const parse = (source: string, objectLists: ObjectLists = {}) => {
   const version = MEGALO_VERSIONS["107-mcc"];
   const tokens = new Lexer(version).lex(source, diagnostics);
   const ast = new Parser(version).parse(tokens, diagnostics, objectLists);
-  return { ast, symbolTable: ast.symbolTable, diagnostics };
+  return { ast, symbolTable: ast.symbolTable.toArray(), diagnostics };
 };
 
 describe("mapObjectParser", () => {
@@ -111,7 +114,10 @@ end
     }
 
     expect(element.properties).toMatchObject([
-      { key: "label", value: { kind: SyntaxKind.QUOTED_STRING, value: "phase_marker" } },
+      {
+        key: "label",
+        value: { kind: SyntaxKind.QUOTED_STRING, value: "phase_marker" },
+      },
       { key: "user_data", value: { kind: SyntaxKind.INTEGER, value: 2 } },
       { key: "min", value: { kind: SyntaxKind.INTEGER, value: 1 } },
     ]);
@@ -171,6 +177,8 @@ end
     const { diagnostics } = parse(source);
 
     expect(diagnostics.hasErrors()).toBe(true);
-    expect(diagnostics.getErrors().some((error) => error.message.includes("end"))).toBe(true);
+    expect(
+      diagnostics.getErrors().some((error) => error.message.includes("end"))
+    ).toBe(true);
   });
 });

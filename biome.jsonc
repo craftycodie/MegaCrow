@@ -9,6 +9,13 @@
       "!**/src-tauri/target"
     ]
   },
+  "linter": {
+    "rules": {
+      "style": {
+        "useNumericSeparators": "off"
+      }
+    }
+  },
   "overrides": [
     {
       "includes": ["packages/ide/src-tauri/**"],

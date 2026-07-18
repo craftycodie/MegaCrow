@@ -1,16 +1,19 @@
-import { ObjectListType, type ObjectLists } from "../../../frontend/object-lists";
+import {
+  type ObjectLists,
+  ObjectListType,
+} from "../../../frontend/object-lists";
 import equipment from "./equipment";
 import grenades from "./grenades";
 import hudWidgetIcons from "./hud_widget_icons";
 import incidents from "./incidents";
-import loadouts from "./loadouts";
 import loadoutPalettes from "./loadout_palettes";
+import loadouts from "./loadouts";
 import objects from "./objects";
 import strings from "./strings";
-import vehicles from "./vehicles";
 import vehicleSets from "./vehicle_sets";
-import weapons from "./weapons";
+import vehicles from "./vehicles";
 import weaponSets from "./weapon_sets";
+import weapons from "./weapons";
 
 const objectLists = {
   [ObjectListType.Equipment]: equipment,

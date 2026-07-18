@@ -1,14 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { Diagnostics, SourceLocationType, type SourceCodeLocation } from "../../../frontend/diagnostics";
+import { ParserSymbolContext } from "../../../frontend/abstract-syntax-tree/symbol-context";
+import {
+  Diagnostics,
+  type SourceCodeLocation,
+  SourceLocationType,
+} from "../../../frontend/diagnostics";
+import { TEAM_DESIGNATORS } from "../../../frontend/language-configuration/omni/teams";
 import {
   SymbolBinder,
   SymbolKind,
+  type SymbolTableStringEntry,
   VariableScope,
   VariableType,
-  type SymbolTableStringEntry,
 } from "../../../frontend/symbol-table";
-import { TEAM_DESIGNATORS } from "../../../frontend/language-configuration/omni/teams";
-import { ParserSymbolContext } from "../../../frontend/abstract-syntax-tree/symbol-context";
 import { ParserScopeKind } from "../../../frontend/symbol-table/scope";
 import { MEGALO_VERSIONS } from "../../../version";
 
@@ -38,7 +42,7 @@ describe("SymbolBinder", () => {
     expect(id).toBe(0);
     expect(diagnostics.hasErrors()).toBe(false);
 
-    const [entry] = binder.getSymbolTable();
+    const [entry] = binder.getSymbolTable().toArray();
     expect(entry).toMatchObject({
       id: 0,
       name: "slayer_title",
@@ -47,8 +51,8 @@ describe("SymbolBinder", () => {
     });
 
     const stringEntry = entry as SymbolTableStringEntry;
-    expect(stringEntry.languageDeclarations.get("english")).toEqual(declaration);
-    expect(stringEntry.languageContents.get("english")).toBe("Slayer");
+    expect(stringEntry.languageDeclarations.english).toEqual(declaration);
+    expect(stringEntry.languageContents.english).toBe("Slayer");
   });
 
   it("addString merges language declarations for the same symbol name", () => {
@@ -73,13 +77,17 @@ describe("SymbolBinder", () => {
     expect(englishId).toBe(0);
     expect(frenchId).toBe(0);
     expect(diagnostics.hasErrors()).toBe(false);
-    expect(binder.getSymbolTable()).toHaveLength(1);
+    expect(binder.getSymbolTable().toArray()).toHaveLength(1);
 
-    const stringEntry = binder.getSymbolTable()[0] as SymbolTableStringEntry;
-    expect(stringEntry.languageDeclarations.get("english")).toEqual(englishDeclaration);
-    expect(stringEntry.languageDeclarations.get("french")).toEqual(frenchDeclaration);
-    expect(stringEntry.languageContents.get("english")).toBe("Welcome %p");
-    expect(stringEntry.languageContents.get("french")).toBe("Bienvenue %p");
+    const stringEntry = binder
+      .getSymbolTable()
+      .toArray()[0] as SymbolTableStringEntry;
+    expect(stringEntry.languageDeclarations.english).toEqual(
+      englishDeclaration
+    );
+    expect(stringEntry.languageDeclarations.french).toEqual(frenchDeclaration);
+    expect(stringEntry.languageContents.english).toBe("Welcome %p");
+    expect(stringEntry.languageContents.french).toBe("Bienvenue %p");
   });
 
   it("addString reports duplicate declarations for the same language", () => {
@@ -106,10 +114,12 @@ describe("SymbolBinder", () => {
     expect(diagnostics.getErrors()[0]?.message).toContain("msg_welcome");
     expect(diagnostics.getErrors()[0]?.location).toEqual(duplicateDeclaration);
 
-    const stringEntry = binder.getSymbolTable()[0] as SymbolTableStringEntry;
-    expect(stringEntry.languageDeclarations.get("english")).toEqual(firstDeclaration);
-    expect(stringEntry.languageContents.get("english")).toBe("Welcome");
-    expect(stringEntry.languageDeclarations.size).toBe(1);
+    const stringEntry = binder
+      .getSymbolTable()
+      .toArray()[0] as SymbolTableStringEntry;
+    expect(stringEntry.languageDeclarations.english).toEqual(firstDeclaration);
+    expect(stringEntry.languageContents.english).toBe("Welcome");
+    expect(Object.keys(stringEntry.languageDeclarations)).toHaveLength(1);
   });
 
   it("addVariable and addConstant append distinct entries", () => {
@@ -127,13 +137,14 @@ describe("SymbolBinder", () => {
     const constantId = binder.addConstant({
       name: "max_score",
       declaration: constantDeclaration,
+      value: 100,
     });
 
     expect(variableId).toBe(0);
     expect(constantId).toBe(1);
     expect(diagnostics.hasErrors()).toBe(false);
 
-    const table = binder.getSymbolTable();
+    const table = binder.getSymbolTable().toArray();
     expect(table).toHaveLength(2);
     expect(table[0]).toMatchObject({
       id: 0,
@@ -166,7 +177,9 @@ describe("SymbolBinder", () => {
     });
     binder.addReference(id!, reference);
 
-    const stringEntry = binder.getSymbolTable()[0] as SymbolTableStringEntry;
+    const stringEntry = binder
+      .getSymbolTable()
+      .toArray()[0] as SymbolTableStringEntry;
     expect(stringEntry.references).toEqual([reference]);
   });
 
@@ -175,7 +188,11 @@ describe("SymbolBinder", () => {
     const binder = new SymbolBinder(version, diagnostics);
     const parser = new ParserSymbolContext(version, diagnostics, binder);
 
-    for (const name of ["round_timer", "sudden_death_timer", "grace_period_timer"] as const) {
+    for (const name of [
+      "round_timer",
+      "sudden_death_timer",
+      "grace_period_timer",
+    ] as const) {
       const id = parser.lookupSymbol(name);
       expect(id).toBeDefined();
       expect(parser.getSymbolEntry(id!)).toMatchObject({

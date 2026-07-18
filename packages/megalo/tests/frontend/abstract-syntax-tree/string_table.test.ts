@@ -1,13 +1,12 @@
 import { describe, expect, it } from "vitest";
+import { Parser, SyntaxKind } from "../../../frontend/abstract-syntax-tree";
 import { ElementKind } from "../../../frontend/abstract-syntax-tree/elements";
-import { Parser } from "../../../frontend/abstract-syntax-tree";
-import { SyntaxKind } from "../../../frontend/abstract-syntax-tree";
 import { Diagnostics } from "../../../frontend/diagnostics";
-import { Lexer } from "../../../frontend/tokens";
 import {
   SymbolKind,
   type SymbolTableStringEntry,
 } from "../../../frontend/symbol-table";
+import { Lexer } from "../../../frontend/tokens";
 import { MEGALO_VERSIONS } from "../../../version";
 
 const parse = (source: string) => {
@@ -15,13 +14,18 @@ const parse = (source: string) => {
   const version = MEGALO_VERSIONS["107-mcc"];
   const tokens = new Lexer(version).lex(source, diagnostics);
   const ast = new Parser(version).parse(tokens, diagnostics);
-  return { ast, symbolTable: ast.symbolTable, diagnostics };
+  return { ast, symbolTable: ast.symbolTable.toArray(), diagnostics };
 };
 
-const stringSymbols = (symbolTable: readonly { kind: SymbolKind; name: string }[]) =>
-  symbolTable.filter(
-    (entry): entry is SymbolTableStringEntry => entry.kind === SymbolKind.String,
-  );
+const stringSymbols = (symbolTable: {
+  toArray(): readonly { kind: SymbolKind; name: string }[];
+}) =>
+  symbolTable
+    .toArray()
+    .filter(
+      (entry): entry is SymbolTableStringEntry =>
+        entry.kind === SymbolKind.String
+    );
 
 describe("stringTableParser", () => {
   it("parses a string_table block with language and entries", () => {
@@ -65,12 +69,12 @@ end
       "slayer_title",
       "slayer_description",
     ]);
-    expect(symbols.every((entry) => entry.languageDeclarations.has("english"))).toBe(
-      true,
-    );
-    expect(symbols[0]?.languageContents.get("english")).toBe("Slayer");
-    expect(symbols[1]?.languageContents.get("english")).toBe(
-      "Score points by killing players on the opposing team.",
+    expect(
+      symbols.every((entry) => entry.languageDeclarations.english !== undefined)
+    ).toBe(true);
+    expect(symbols[0]?.languageContents.english).toBe("Slayer");
+    expect(symbols[1]?.languageContents.english).toBe(
+      "Score points by killing players on the opposing team."
     );
   });
 
@@ -94,7 +98,9 @@ end
 
     const [symbol] = stringSymbols(symbolTable);
     expect(symbol?.name).toBe("msg_welcome");
-    expect(symbol?.languageDeclarations.get("test")).toBeDefined();
+    expect(
+      (symbol?.languageDeclarations as Record<string, unknown>).test
+    ).toBeDefined();
   });
 
   it("parses without a language identifier on the same line", () => {
@@ -116,7 +122,9 @@ end
     expect(element.entries).toHaveLength(1);
 
     const [symbol] = stringSymbols(symbolTable);
-    expect(symbol?.languageDeclarations.has("")).toBe(true);
+    expect(
+      (symbol?.languageDeclarations as Record<string, unknown>)[""]
+    ).toBeDefined();
   });
 
   it("binds the same symbol name across languages into one entry", () => {
@@ -135,7 +143,7 @@ end
     const symbols = stringSymbols(symbolTable);
     expect(symbols).toHaveLength(1);
     expect(symbols[0]?.name).toBe("msg_welcome");
-    expect([...symbols[0]!.languageDeclarations.keys()]).toEqual([
+    expect(Object.keys(symbols[0]!.languageDeclarations)).toEqual([
       "english",
       "french",
     ]);

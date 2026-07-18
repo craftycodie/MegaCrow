@@ -53,19 +53,19 @@ export function readMgloEncodingVersion(bytes: Uint8Array): number {
 
   const reader = c_bitstream_reader.new(
     bytes,
-    e_bitstream_byte_order._bitstream_byte_order_big_endian,
+    e_bitstream_byte_order._bitstream_byte_order_big_endian
   );
   reader.begin_reading();
   return reader.read_signed_integer("encoding-version", 32);
 }
 
 export function resolveGametypeVersion(
-  encodingVersion: number,
+  encodingVersion: number
 ): MgloGametypeVersion & { Variant: CustomVariantCtor } {
   const resolved = GAMETYPE_BY_ENCODING[encodingVersion];
   if (!resolved) {
     throw new Error(
-      `Unsupported encoding version ${encodingVersion}. Supported: ${Object.keys(GAMETYPE_BY_ENCODING).join(", ")}.`,
+      `Unsupported encoding version ${encodingVersion}. Supported: ${Object.keys(GAMETYPE_BY_ENCODING).join(", ")}.`
     );
   }
 
@@ -84,7 +84,7 @@ export function decodeMglo(bytes: Uint8Array): DecodedMglo {
 
   const reader = c_bitstream_reader.new(
     bytes,
-    e_bitstream_byte_order._bitstream_byte_order_big_endian,
+    e_bitstream_byte_order._bitstream_byte_order_big_endian
   );
   reader.begin_reading();
   const gametype = new version.Variant();
@@ -108,6 +108,6 @@ export function toPlainJson(value: unknown): unknown {
         return current.toString();
       }
       return current;
-    }),
+    })
   );
 }

@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { ElementKind } from "../../../frontend/abstract-syntax-tree/elements";
 import { Parser, SyntaxKind } from "../../../frontend/abstract-syntax-tree";
+import { ElementKind } from "../../../frontend/abstract-syntax-tree/elements";
 import { Diagnostics } from "../../../frontend/diagnostics";
-import { Lexer } from "../../../frontend/tokens";
 import {
   SymbolKind,
   type SymbolTableLoadoutPaletteEntry,
 } from "../../../frontend/symbol-table";
+import { Lexer } from "../../../frontend/tokens";
 import { MEGALO_VERSIONS } from "../../../version";
 
 const parse = (source: string) => {
@@ -14,12 +14,15 @@ const parse = (source: string) => {
   const version = MEGALO_VERSIONS["107-mcc"];
   const tokens = new Lexer(version).lex(source, diagnostics);
   const ast = new Parser(version).parse(tokens, diagnostics);
-  return { ast, symbolTable: ast.symbolTable, diagnostics };
+  return { ast, symbolTable: ast.symbolTable.toArray(), diagnostics };
 };
 
-const loadoutPaletteSymbols = (symbolTable: readonly { kind: SymbolKind; name: string }[]) =>
+const loadoutPaletteSymbols = (
+  symbolTable: readonly { kind: SymbolKind; name: string }[]
+) =>
   symbolTable.filter(
-    (entry): entry is SymbolTableLoadoutPaletteEntry => entry.kind === SymbolKind.LoadoutPalette,
+    (entry): entry is SymbolTableLoadoutPaletteEntry =>
+      entry.kind === SymbolKind.LoadoutPalette
   );
 
 const minimalLoadout = (name: string) => `loadout ${name}
@@ -59,7 +62,7 @@ end
     expect(ast.failed).toBe(false);
 
     const palettes = ast.elements.filter(
-      (element) => element.elementKind === ElementKind.LOADOUT_PALETTE,
+      (element) => element.elementKind === ElementKind.LOADOUT_PALETTE
     );
     expect(palettes).toHaveLength(3);
 
@@ -90,7 +93,9 @@ end
       identifier: "loadout_guard",
     });
 
-    expect(loadoutPaletteSymbols(symbolTable).map((entry) => entry.name)).toEqual([
+    expect(
+      loadoutPaletteSymbols(symbolTable).map((entry) => entry.name)
+    ).toEqual([
       "slayer_loadouts_t1",
       "slayer_loadouts_t2",
       "slayer_loadouts_t3",
@@ -110,7 +115,9 @@ end
     expect(diagnostics.getErrors()[0]?.message).toContain("item or end");
     expect(diagnostics.getErrors()[0]?.message).toContain("not_a_property");
 
-    const element = ast.elements.find((entry) => entry.elementKind === ElementKind.LOADOUT_PALETTE);
+    const element = ast.elements.find(
+      (entry) => entry.elementKind === ElementKind.LOADOUT_PALETTE
+    );
     if (element?.elementKind !== ElementKind.LOADOUT_PALETTE) {
       return;
     }
@@ -128,7 +135,9 @@ end
 
     expect(diagnostics.hasErrors()).toBe(false);
 
-    const element = ast.elements.find((entry) => entry.elementKind === ElementKind.LOADOUT_PALETTE);
+    const element = ast.elements.find(
+      (entry) => entry.elementKind === ElementKind.LOADOUT_PALETTE
+    );
     if (element?.elementKind !== ElementKind.LOADOUT_PALETTE) {
       return;
     }

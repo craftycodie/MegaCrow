@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { ElementKind } from "../../../frontend/abstract-syntax-tree/elements";
 import { Parser, SyntaxKind } from "../../../frontend/abstract-syntax-tree";
+import { ElementKind } from "../../../frontend/abstract-syntax-tree/elements";
 import { Diagnostics } from "../../../frontend/diagnostics";
-import { Lexer } from "../../../frontend/tokens";
 import {
   SymbolKind,
   type SymbolTableConstantEntry,
 } from "../../../frontend/symbol-table";
+import { Lexer } from "../../../frontend/tokens";
 import { MEGALO_VERSIONS } from "../../../version";
 
 const parse = (source: string) => {
@@ -14,15 +14,17 @@ const parse = (source: string) => {
   const version = MEGALO_VERSIONS["107-mcc"];
   const tokens = new Lexer(version).lex(source, diagnostics);
   const ast = new Parser(version).parse(tokens, diagnostics);
-  return { ast, symbolTable: ast.symbolTable, diagnostics };
+  return { ast, symbolTable: ast.symbolTable.toArray(), diagnostics };
 };
 
-const userConstantSymbols = (symbolTable: readonly { kind: SymbolKind; name: string }[]) =>
+const userConstantSymbols = (
+  symbolTable: readonly { kind: SymbolKind; name: string }[]
+) =>
   symbolTable.filter(
     (entry): entry is SymbolTableConstantEntry =>
       entry.kind === SymbolKind.Constant &&
       entry.name !== "true" &&
-      entry.name !== "false",
+      entry.name !== "false"
   );
 
 describe("constantsParser", () => {
@@ -102,7 +104,7 @@ end
     }
 
     const melee = userConstantSymbols(symbolTable).find(
-      (entry) => entry.name === "k_special_death_type_melee",
+      (entry) => entry.name === "k_special_death_type_melee"
     );
     expect(melee).toBeDefined();
     expect(melee?.references).toHaveLength(1);

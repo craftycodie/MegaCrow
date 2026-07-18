@@ -5,7 +5,10 @@ import { MEGALO_VERSIONS } from "../../../version";
 
 describe("unescapeQuotedString", () => {
   const quotedValue = (source: string): string => {
-    const token = new Lexer(MEGALO_VERSIONS["107-mcc"]).lex(source, new Diagnostics())[0];
+    const token = new Lexer(MEGALO_VERSIONS["107-mcc"]).lex(
+      source,
+      new Diagnostics()
+    )[0];
     expect(token?.kind).toBe(TokenKind.QuotedString);
     return token!.value;
   };

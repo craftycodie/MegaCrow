@@ -1,112 +1,118 @@
-import { ElementKind } from "..";
-import { SyntaxKind } from "../..";
-import { SourceCodeLocation } from "../../../diagnostics";
+import type { SourceCodeLocation } from "../../../diagnostics";
 import { diagnosticMessages } from "../../../diagnostics/messages";
-import { Token, TokenKind } from "../../../tokens";
-import { ParserContext } from "../../context";
+import { type Token, TokenKind } from "../../../tokens";
+import { SyntaxKind } from "../..";
+import type { ParserContext } from "../../context";
+import { ElementKind } from "..";
 import { optionParser } from "./option";
 import { overrideParser } from "./override";
 import { playerTraitsParser } from "./player_traits";
 import { rangedOptionParser } from "./ranged_option";
 import { isEndToken, locationSpan } from "./shared";
-import {
-    type GameOptionEntryNode,
-    type GameOptionModifiers,
-    type GameOptionsElementNode,
+import type {
+  GameOptionEntryNode,
+  GameOptionModifiers,
+  GameOptionsElementNode,
 } from "./types";
 
 export type {
-    ASTStringLiteralOrReference,
-    GameOptionEntryNode,
-    GameOptionModifiers,
-    GameOptionsElementNode,
-    OverrideEntryNode,
-    OverrideLoadoutPaletteNode,
-    OverrideNestedBodyNode,
-    OverrideSimpleValueNode,
-    UserDefinedOptionNode,
-    UserDefinedOptionValueNode,
+  ASTStringLiteralOrReference,
+  GameOptionEntryNode,
+  GameOptionModifiers,
+  GameOptionsElementNode,
+  OverrideEntryNode,
+  OverrideLoadoutPaletteNode,
+  OverrideNestedBodyNode,
+  OverrideSimpleValueNode,
+  UserDefinedOptionNode,
+  UserDefinedOptionValueNode,
 } from "./types";
 
 export { GameOptionEntryKind, OverrideValueKind } from "./types";
 
-export const gameOptionsParser = (ctx: ParserContext, elementToken: Token): GameOptionsElementNode => {
-    const entries: GameOptionEntryNode[] = [];
-    let foundEnd = false;
-    let endLocation: SourceCodeLocation = elementToken.location;
-    let pendingLock = false;
-    let pendingHide = false;
+export const gameOptionsParser = (
+  ctx: ParserContext,
+  elementToken: Token
+): GameOptionsElementNode => {
+  const entries: GameOptionEntryNode[] = [];
+  let foundEnd = false;
+  let endLocation: SourceCodeLocation = elementToken.location;
+  let pendingLock = false;
+  let pendingHide = false;
 
-    while (ctx.hasMore()) {
-        const token = ctx.peekToken()!;
-        if (isEndToken(token)) {
-            const endToken = ctx.getToken();
-            foundEnd = true;
-            endLocation = endToken.location;
-            break;
-        }
-
-        if (token.kind === TokenKind.Identifier && token.value === "lock") {
-            ctx.getToken();
-            pendingLock = true;
-            continue;
-        }
-
-        if (token.kind === TokenKind.Identifier && token.value === "hide") {
-            ctx.getToken();
-            pendingHide = true;
-            continue;
-        }
-
-        const modifiers: GameOptionModifiers = {
-            lock: pendingLock,
-            hide: pendingHide,
-        };
-        pendingLock = false;
-        pendingHide = false;
-
-        if (token.kind !== TokenKind.Identifier) {
-            ctx.diagnostics.addError(
-                diagnosticMessages.expectedGameOptionElement(token.value),
-                token.location,
-            );
-            ctx.getToken();
-            continue;
-        }
-
-        const keywordToken = ctx.getToken();
-        switch (keywordToken.value) {
-            case "override":
-                entries.push(overrideParser(ctx, keywordToken, modifiers));
-                break;
-            case "option":
-                entries.push(optionParser(ctx, keywordToken, modifiers));
-                break;
-            case "ranged_option":
-                entries.push(rangedOptionParser(ctx, keywordToken, modifiers));
-                break;
-            case "player_traits":
-                entries.push(playerTraitsParser(ctx, keywordToken, modifiers));
-                break;
-            default:
-                ctx.diagnostics.addError(
-                    diagnosticMessages.expectedGameOptionElement(keywordToken.value),
-                    keywordToken.location,
-                );
-                break;
-        }
+  while (ctx.hasMore()) {
+    const token = ctx.peekToken()!;
+    if (isEndToken(token)) {
+      const endToken = ctx.getToken();
+      foundEnd = true;
+      endLocation = endToken.location;
+      break;
     }
 
-    if (!foundEnd) {
-        endLocation = entries.at(-1)?.location ?? elementToken.location;
-        ctx.diagnostics.addError(diagnosticMessages.expectedEndBeforeEof(), endLocation);
+    if (token.kind === TokenKind.Identifier && token.value === "lock") {
+      ctx.getToken();
+      pendingLock = true;
+      continue;
     }
 
-    return {
-        kind: SyntaxKind.ELEMENT,
-        elementKind: ElementKind.GAME_OPTIONS,
-        keywordLocation: elementToken.location,
-        location: locationSpan(elementToken.location, endLocation),
-        entries,
+    if (token.kind === TokenKind.Identifier && token.value === "hide") {
+      ctx.getToken();
+      pendingHide = true;
+      continue;
+    }
+
+    const modifiers: GameOptionModifiers = {
+      lock: pendingLock,
+      hide: pendingHide,
     };
+    pendingLock = false;
+    pendingHide = false;
+
+    if (token.kind !== TokenKind.Identifier) {
+      ctx.diagnostics.addError(
+        diagnosticMessages.expectedGameOptionElement(token.value),
+        token.location
+      );
+      ctx.getToken();
+      continue;
+    }
+
+    const keywordToken = ctx.getToken();
+    switch (keywordToken.value) {
+      case "override":
+        entries.push(overrideParser(ctx, keywordToken, modifiers));
+        break;
+      case "option":
+        entries.push(optionParser(ctx, keywordToken, modifiers));
+        break;
+      case "ranged_option":
+        entries.push(rangedOptionParser(ctx, keywordToken, modifiers));
+        break;
+      case "player_traits":
+        entries.push(playerTraitsParser(ctx, keywordToken, modifiers));
+        break;
+      default:
+        ctx.diagnostics.addError(
+          diagnosticMessages.expectedGameOptionElement(keywordToken.value),
+          keywordToken.location
+        );
+        break;
+    }
+  }
+
+  if (!foundEnd) {
+    endLocation = entries.at(-1)?.location ?? elementToken.location;
+    ctx.diagnostics.addError(
+      diagnosticMessages.expectedEndBeforeEof(),
+      endLocation
+    );
+  }
+
+  return {
+    kind: SyntaxKind.ELEMENT,
+    elementKind: ElementKind.GAME_OPTIONS,
+    keywordLocation: elementToken.location,
+    location: locationSpan(elementToken.location, endLocation),
+    entries,
+  };
 };

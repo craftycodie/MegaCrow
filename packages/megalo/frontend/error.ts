@@ -1,10 +1,10 @@
-import { SourceLocation } from "./diagnostics";
+import type { SourceLocation } from "./diagnostics";
 
 export class FrontendError extends Error {
-    public readonly location?: SourceLocation;
+  public readonly location?: SourceLocation;
 
-    public constructor(message: string, location: SourceLocation) {
-        super(message);
-        this.location = location;
-    }
+  public constructor(message: string, location: SourceLocation) {
+    super(message);
+    this.location = location;
+  }
 }

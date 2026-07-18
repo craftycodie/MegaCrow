@@ -1,14 +1,20 @@
 import { describe, expect, it } from "vitest";
-import { ElementKind } from "../../../frontend/abstract-syntax-tree/elements";
 import { Parser, SyntaxKind } from "../../../frontend/abstract-syntax-tree";
+import { ElementKind } from "../../../frontend/abstract-syntax-tree/elements";
 import { Diagnostics } from "../../../frontend/diagnostics";
-import { SymbolKind, type SymbolTableRequisitionPaletteEntry } from "../../../frontend/symbol-table";
+import {
+  SymbolKind,
+  type SymbolTableRequisitionPaletteEntry,
+} from "../../../frontend/symbol-table";
 import { Lexer } from "../../../frontend/tokens";
 import { MEGALO_VERSIONS } from "../../../version";
 
-const requisitionPaletteSymbols = (symbolTable: readonly { kind: SymbolKind; name: string }[]) =>
+const requisitionPaletteSymbols = (
+  symbolTable: readonly { kind: SymbolKind; name: string }[]
+) =>
   symbolTable.filter(
-    (entry): entry is SymbolTableRequisitionPaletteEntry => entry.kind === SymbolKind.RequisitionPalette,
+    (entry): entry is SymbolTableRequisitionPaletteEntry =>
+      entry.kind === SymbolKind.RequisitionPalette
   );
 
 const parse = (source: string) => {
@@ -16,7 +22,7 @@ const parse = (source: string) => {
   const version = MEGALO_VERSIONS["107-mcc"];
   const tokens = new Lexer(version).lex(source, diagnostics);
   const ast = new Parser(version).parse(tokens, diagnostics);
-  return { ast, symbolTable: ast.symbolTable, diagnostics };
+  return { ast, symbolTable: ast.symbolTable.toArray(), diagnostics };
 };
 
 describe("requisitionPaletteParser", () => {
@@ -48,7 +54,9 @@ end
     expect(diagnostics.hasErrors()).toBe(false);
     expect(ast.failed).toBe(false);
 
-    expect(requisitionPaletteSymbols(symbolTable).map((entry) => entry.name)).toEqual([
+    expect(
+      requisitionPaletteSymbols(symbolTable).map((entry) => entry.name)
+    ).toEqual([
       "covy_palette_gold",
       "covy_palette_silver",
       "covy_palette_bronze",
@@ -56,7 +64,7 @@ end
     ]);
 
     const palettes = ast.elements.filter(
-      (element) => element.elementKind === ElementKind.REQUISITION_PALETTE,
+      (element) => element.elementKind === ElementKind.REQUISITION_PALETTE
     );
     expect(palettes).toHaveLength(4);
 
@@ -172,6 +180,8 @@ end
     const { diagnostics } = parse(source);
 
     expect(diagnostics.hasErrors()).toBe(true);
-    expect(diagnostics.getErrors().some((error) => error.message.includes("end"))).toBe(true);
+    expect(
+      diagnostics.getErrors().some((error) => error.message.includes("end"))
+    ).toBe(true);
   });
 });

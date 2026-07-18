@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { ElementKind } from "../../../frontend/abstract-syntax-tree/elements";
 import { Parser } from "../../../frontend/abstract-syntax-tree";
+import { ElementKind } from "../../../frontend/abstract-syntax-tree/elements";
 import { Diagnostics } from "../../../frontend/diagnostics";
+import {
+  SymbolKind,
+  type SymbolTableHudWidgetEntry,
+} from "../../../frontend/symbol-table";
 import { Lexer } from "../../../frontend/tokens";
-import { SymbolKind, type SymbolTableHudWidgetEntry } from "../../../frontend/symbol-table";
 import { MEGALO_VERSIONS } from "../../../version";
 
 const parse = (source: string) => {
@@ -11,12 +14,15 @@ const parse = (source: string) => {
   const version = MEGALO_VERSIONS["107-mcc"];
   const tokens = new Lexer(version).lex(source, diagnostics);
   const ast = new Parser(version).parse(tokens, diagnostics);
-  return { ast, symbolTable: ast.symbolTable, diagnostics };
+  return { ast, symbolTable: ast.symbolTable.toArray(), diagnostics };
 };
 
-const hudWidgetSymbols = (symbolTable: readonly { kind: SymbolKind; name: string }[]) =>
+const hudWidgetSymbols = (
+  symbolTable: readonly { kind: SymbolKind; name: string }[]
+) =>
   symbolTable.filter(
-    (entry): entry is SymbolTableHudWidgetEntry => entry.kind === SymbolKind.HudWidget,
+    (entry): entry is SymbolTableHudWidgetEntry =>
+      entry.kind === SymbolKind.HudWidget
   );
 
 describe("hudWidgetsParser", () => {

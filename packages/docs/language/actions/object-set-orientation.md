@@ -12,14 +12,16 @@ Sets an object's facing/orientation explicitly.
 ## Example
 
 ```megalo
-action object_set_orientation …
+action object_set_orientation current_object base_orientation
 ```
 
-No curated example yet — see [Megalo Versions](/versions/) for build availability.
+Example from HREK `speedflag.txt`.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)
+- [object_face_object](/language/actions/object-face-object)

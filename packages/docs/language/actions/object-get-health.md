@@ -12,14 +12,15 @@ Reads an object's current health into an out-variable.
 ## Example
 
 ```megalo
-action object_get_vitality current_object helf
+action object_get_health player_unit player_health
 ```
 
-Example from HREK `broken/1Flag_Boneyard.txt`.
+Example from HREK `chess.txt`.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)

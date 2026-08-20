@@ -12,14 +12,15 @@ Writes a player's scoreboard rank into an out-variable.
 ## Example
 
 ```megalo
-action player_get_place current_player temp
+action player_get_place current_player my_place
 ```
 
-Example from HREK `broken/equipment_slayer.txt`.
+Example from HREK `race.txt`.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)

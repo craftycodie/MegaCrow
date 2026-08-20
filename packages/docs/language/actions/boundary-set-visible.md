@@ -12,14 +12,17 @@ Shows or hides a boundary volume.
 ## Example
 
 ```megalo
-action boundary_set_visible hill true
+action boundary_set_visible the_hill everyone
 ```
 
-Example from HREK `broken/calvinball.txt`.
+Example from HREK `koth.txt`.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)
+- [set_boundary](/language/actions/set-boundary)
+- [boundary_set_player_color](/language/actions/boundary-set-player-color)

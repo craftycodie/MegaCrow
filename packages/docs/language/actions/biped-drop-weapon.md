@@ -5,21 +5,21 @@
 
 ## Description
 
-Drops a weapon from a biped/player.
+Drops a weapon from a biped.
 
 <ActionParameters />
 
 ## Example
 
 ```megalo
-action biped_drop_weapon …
+action biped_drop_weapon chess_piece primary delete_on_drop
 ```
-
-No curated example yet — see [Megalo Versions](/versions/) for build availability.
+Example from HREK `chess.txt`.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)

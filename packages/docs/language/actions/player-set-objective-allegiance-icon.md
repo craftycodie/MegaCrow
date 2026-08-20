@@ -22,4 +22,5 @@ Example from HREK `3nvasion.txt`.
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)

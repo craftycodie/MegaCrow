@@ -12,14 +12,17 @@ Writes the vehicle a player occupies into an out-variable.
 ## Example
 
 ```megalo
-action player_get_vehicle current_player test_for_vehicle
+action player_get_vehicle current_player vehicle
 ```
 
-Example from HREK `broken/bumpercars.txt`.
+Example from HREK `rocket_race.txt`.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)
+- [player_get_equipment](/language/actions/player-get-equipment)
+- [player_get_weapon](/language/actions/player-get-weapon)

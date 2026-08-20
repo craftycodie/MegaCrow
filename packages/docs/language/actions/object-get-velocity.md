@@ -15,11 +15,12 @@ Reads an object's velocity into an out-variable.
 action object_get_velocity current_object speedness
 ```
 
-Example from HREK `broken/slayer-revenant.txt`.
+Example from HREK `race.txt`.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)

@@ -22,4 +22,5 @@ No curated example yet — see [Megalo Versions](/versions/) for build availabil
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)

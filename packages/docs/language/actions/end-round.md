@@ -15,11 +15,11 @@ Ends the current round immediately.
 action end_round
 ```
 
-Example from HREK `broken/1Flag_Boneyard.txt`.
+Example from HREK `koth.txt`.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
-
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)

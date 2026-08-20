@@ -42,4 +42,5 @@ action get_button_time current_player jump button_hold_ms
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)

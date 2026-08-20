@@ -12,12 +12,13 @@ Reads an object's current shields into an out-variable.
 ## Example
 
 ```megalo
-action object_get_shield …
+action object_get_shield current_player shields
 ```
-
+Example from HREK `assault.txt`.
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)

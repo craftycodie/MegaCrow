@@ -12,14 +12,15 @@ Links a navpoint to a timer for countdown display.
 ## Example
 
 ```megalo
-action navpoint_set_timer one_flag none
+action navpoint_set_timer safehaven haven_move_time
 ```
 
-Example from HREK `broken/1Flag_Boneyard.txt`.
+Example from HREK `infection.txt`.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)

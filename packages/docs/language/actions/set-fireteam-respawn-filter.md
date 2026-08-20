@@ -12,14 +12,15 @@ Restricts fireteam respawn permissions on an object.
 ## Example
 
 ```megalo
-action set_fireteam_respawn_filter respawner 0
+action set_fireteam_respawn_filter current_object 1
 ```
 
-Example from HREK `broken/1Flag_Boneyard_Extreme2.txt`.
+Example from HREK `3nvasion.txt`.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)

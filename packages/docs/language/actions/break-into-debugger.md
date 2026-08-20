@@ -12,7 +12,7 @@ Breaks into the script debugger when tracing is enabled.
 ## Example
 
 ```megalo
-action break_into_debugger …
+action break_into_debugger
 ```
 
 ## Supported Versions
@@ -20,4 +20,5 @@ action break_into_debugger …
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)

@@ -12,14 +12,15 @@ Megalo action `player_set_fireteam_tier`.
 ## Example
 
 ```megalo
-action player_set_fireteam_tier …
+action player_set_fireteam_tier current_player  1
 ```
 
-No curated example yet — see [Megalo Versions](/versions/) for build availability.
+Example from HREK `broken/Slayer_SvE.txt`.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)

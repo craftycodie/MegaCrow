@@ -12,14 +12,14 @@ Debug action to force player view count.
 ## Example
 
 ```megalo
-action debug_force_player_view_count …
+action debug_force_player_view_count 2
 ```
 
-No curated example yet — see [Megalo Versions](/versions/) for build availability.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)

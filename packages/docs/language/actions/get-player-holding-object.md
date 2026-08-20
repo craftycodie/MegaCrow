@@ -5,21 +5,22 @@
 
 ## Description
 
-Writes the player holding an object into an out-variable.
+Writes the player holding a weapon object into an out-variable.
 
 <ActionParameters />
 
 ## Example
 
 ```megalo
-action get_player_holding_object flag player_holding_flag
+action get_player_holding_object current_object carrier
 ```
 
-Example from HREK `broken/calvinball.txt`.
+Example from HREK `oddball.txt`.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)

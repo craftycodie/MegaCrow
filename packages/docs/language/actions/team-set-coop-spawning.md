@@ -5,7 +5,7 @@
 
 ## Description
 
-Enables or disables cooperative spawning for a team.
+Enables or disables co-op spawning for a team, allowing them to spawn at teammates or objects that have been configured accordingly.
 
 <ActionParameters />
 
@@ -15,11 +15,12 @@ Enables or disables cooperative spawning for a team.
 action team_set_coop_spawning current_team true
 ```
 
-Example from HREK `broken/1Flag_Boneyard.txt`.
+Example from HREK `3nvasion.txt`.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)

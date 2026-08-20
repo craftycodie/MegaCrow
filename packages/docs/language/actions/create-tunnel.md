@@ -17,14 +17,14 @@ If both endpoints are the same object, the tunnel is placed **exactly** on that 
 ## Example
 
 ```megalo
-action create_tunnel …
+action create_tunnel current_object cool_object "spartan" 5 created_object
 ```
-
-No curated example yet — see [Megalo Versions](/versions/) for build availability.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)
+- [create_object](/language/actions/create-object)

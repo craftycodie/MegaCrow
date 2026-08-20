@@ -21,14 +21,15 @@ Using `set_loadout_palette` will set `loadout_selection_time`to 10 if:
 ## Example
 
 ```megalo
-action set_loadout_palette player current_player slayer_loadouts
+action set_loadout_palette player current_player spartan_tier1
 ```
 
-Example from HREK `broken/equipment_slayer.txt`.
+Example from HREK `infection.txt`.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)

@@ -12,14 +12,17 @@ Reads a player's current weapon into an out-variable.
 ## Example
 
 ```megalo
-action player_get_weapon …
+action player_get_weapon current_player primary player_wep
 ```
 
-No curated example yet — see [Megalo Versions](/versions/) for build availability.
+Example from HREK `slayer_RPG.txt`.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)
+- [player_get_equipment](/language/actions/player-get-equipment)
+- [player_get_vehicle](/language/actions/player-get-vehicle)

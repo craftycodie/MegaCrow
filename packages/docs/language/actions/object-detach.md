@@ -12,14 +12,19 @@ Detaches a child object from its parent.
 ## Example
 
 ```megalo
-action object_detach the_flag
+action object_detach current_object
 ```
 
-Example from HREK `broken/1Flag_Boneyard.txt`.
+Example from HREK `oddball.txt`.
+
+## Notes
+- Applying this action to a player in a Vehicle will cause them to exit that vehicle.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)
+- [object_attach](/language/actions/object-attach)

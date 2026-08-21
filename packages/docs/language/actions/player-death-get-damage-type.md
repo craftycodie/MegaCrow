@@ -12,14 +12,17 @@ Writes the damage type from a death event into an out-variable.
 ## Example
 
 ```megalo
-action player_death_get_damage_type dead_player damage_id
+action player_death_get_damage_type current_player damage_type
 ```
 
-Example from HREK `broken/1Flag_Boneyard.txt`.
+Example from HREK `slayer_RPG.txt`.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)
+- [player_death_get_killing_player](/language/actions/player-death-get-killing-player)
+- [player_death_get_special_type](/language/actions/player-death-get-special-type)

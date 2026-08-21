@@ -5,21 +5,22 @@
 
 ## Description
 
-Prevents the engine from garbage-collecting an object.
+Prevents the engine from garbage-collecting a weapon or equipment after it has been picked up and dropped. Does not work on objects spawned via [create_object](/language/actions/create-object) with the `never_garbage` flag. Does not work on objects placed via forge.
 
 <ActionParameters />
 
 ## Example
 
 ```megalo
-action object_set_never_garbage …
+action object_set_never_garbage current_object 1
 ```
 
-No curated example yet — see [Megalo Versions](/versions/) for build availability.
+Example from HREK `broken\freezetag.txt`.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)

@@ -12,14 +12,15 @@ Applies a named `player_traits` block to a player.
 ## Example
 
 ```megalo
-action apply_player_traits current_player uber_traits
+action apply_player_traits player_holding_ball ball_carrier_traits
 ```
 
-Example from HREK `broken/derekball.txt`.
+Example from HREK `oddball.txt`.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)

@@ -12,7 +12,7 @@ Prints a [dynamic string](/language/enums/dynamic-strings) to the debug log.
 ## Example
 
 ```megalo
-action print_variable …
+action print_variable "hello world"
 ```
 
 ## Supported Versions
@@ -20,4 +20,5 @@ action print_variable …
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)

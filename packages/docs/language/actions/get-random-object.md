@@ -5,21 +5,22 @@
 
 ## Description
 
-Selects a random object matching criteria and writes it to an out-variable.
+Selects a random object matching criteria and writes it to an out-variable. The object in the `ignore object` parameter won't be selected.
 
 <ActionParameters />
 
 ## Example
 
 ```megalo
-action get_random_object …
+action get_random_object hill_object last_hill the_hill
 ```
 
-No curated example yet — see [Megalo Versions](/versions/) for build availability.
+Example from HREK `koth.txt`.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)

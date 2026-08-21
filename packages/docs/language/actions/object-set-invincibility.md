@@ -12,14 +12,15 @@ Sets whether an object can take damage.
 ## Example
 
 ```megalo
-action object_set_invincibility my_spawn true
+action object_set_invincibility current_object true
 ```
 
-Example from HREK `broken/1Flag_Boneyard.txt`.
+Example from HREK `race.txt`.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)

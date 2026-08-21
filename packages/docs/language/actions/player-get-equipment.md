@@ -12,14 +12,17 @@ Reads a player's equipment into an out-variable.
 ## Example
 
 ```megalo
-action player_get_equipment …
+action player_get_equipment current_player armor_ability
 ```
 
-No curated example yet — see [Megalo Versions](/versions/) for build availability.
+Example from HREK `3nvasion.txt`.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)
+- [player_get_vehicle](/language/actions/player-get-vehicle)
+- [player_get_weapon](/language/actions/player-get-weapon)

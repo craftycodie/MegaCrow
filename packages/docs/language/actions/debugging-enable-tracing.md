@@ -12,7 +12,7 @@ Enables or disables script tracing in the debugger.
 ## Example
 
 ```megalo
-action debugging_enable_tracing …
+action debugging_enable_tracing true
 ```
 
 ## Supported Versions
@@ -20,4 +20,5 @@ action debugging_enable_tracing …
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)

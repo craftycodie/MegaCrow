@@ -12,14 +12,15 @@ Modifies a variable using a [math operation](/language/enums/math-operations) (`
 ## Example
 
 ```megalo
-action set temp modulo 5
+action set current_player.skulls = 0
 ```
 
-Example from HREK `broken/equipment_slayer.txt`.
+Example from HREK `headhunter.txt`.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)

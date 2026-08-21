@@ -28,4 +28,5 @@ Example from HREK `broken/tankinabox.txt`.
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)

@@ -12,14 +12,17 @@ Enables or disables vehicle spawning for a player.
 ## Example
 
 ```megalo
-action player_set_vehicle_spawning …
+action player_set_vehicle_spawning current_player true
 ```
 
-No curated example yet — see [Megalo Versions](/versions/) for build availability.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)
+- [set_player_respawn_vehicle](/language/actions/set-player-respawn-vehicle)
+- [team_set_vehicle_spawning](/language/actions/team-set-vehicle-spawning)
+- [set_team_respawn_vehicle](/language/actions/set-team-respawn-vehicle)

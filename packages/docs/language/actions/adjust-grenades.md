@@ -12,7 +12,7 @@ Modifies a player's grenade count by type using a [math operation](/language/enu
 ## Example
 
 ```megalo
-action adjust_grenades …
+action adjust_grenades current_player frag add 1
 ```
 
 ## Supported Versions
@@ -20,4 +20,5 @@ action adjust_grenades …
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)

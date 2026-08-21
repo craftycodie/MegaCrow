@@ -14,14 +14,15 @@ The ME name table ends with `coop spawning` (space). MegaloEdit cannot parse it 
 ## Example
 
 ```megalo
-action navpoint_set_icon hill king
+action navpoint_set_icon player_holding_flag flag
 ```
 
-Example from HREK `broken/calvinball.txt`.
+Example from HREK `ctf.txt`.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)

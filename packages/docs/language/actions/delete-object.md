@@ -5,21 +5,25 @@
 
 ## Description
 
-Removes an object reference from the map.
+Removes an object reference from the game.
 
 <ActionParameters />
 
 ## Example
 
 ```megalo
-action delete_object flag
+action delete_object current_object
 ```
 
-Example from HREK `broken/calvinball.txt`.
+Example from HREK `ctf.txt`.
+
+## Notes
+* Deleting a player's biped will cause them to instantly respawn.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)

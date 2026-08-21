@@ -12,14 +12,16 @@ Reads or writes a player's fireteam index.
 ## Example
 
 ```megalo
-action player_get_fireteam_index current_player ftindex
+action player_get_fireteam_index current_player my_ft
 ```
 
-Example from HREK `broken/kim-1flag-hill.txt`.
+Example from HREK `3nvasion.txt`.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)
+- [player_set_fireteam_index](/language/actions/player-set-fireteam-index)

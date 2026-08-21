@@ -48,4 +48,5 @@ Technically, writing `action begin ... end` compiles and behaves the same as `be
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)

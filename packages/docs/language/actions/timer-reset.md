@@ -12,14 +12,15 @@ Resets a timer to its initial value.
 ## Example
 
 ```megalo
-action timer_reset period_timer
+action timer_reset current_player.lap_time
 ```
 
-Example from HREK `broken/1Flag_Boneyard_Extreme.txt`.
+Example from HREK `race.txt`.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)

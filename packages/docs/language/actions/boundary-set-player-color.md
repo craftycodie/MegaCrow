@@ -5,21 +5,22 @@
 
 ## Description
 
-Sets boundary tint color for a player.
+Sets boundary tint color to an object to match the a player's primary color. The player must be a nested variable of the object.
 
 <ActionParameters />
 
 ## Example
 
 ```megalo
-action boundary_set_player_color …
+action boundary_set_player_color current_object owner
 ```
 
-No curated example yet — see [Megalo Versions](/versions/) for build availability.
+Example from HREK `koth.txt`.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)

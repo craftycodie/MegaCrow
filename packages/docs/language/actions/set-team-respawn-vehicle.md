@@ -5,21 +5,24 @@
 
 ## Description
 
-Sets the respawn vehicle type for a team (Reach MCC only).
+Sets the respawn vehicle type for a team that has been set to spawn in vehicles via [team_set_vehicle-spawning](/language/actions/team-set-vehicle-spawning) (Reach MCC only).
 
 <ActionParameters />
 
 ## Example
 
 ```megalo
-action set_team_respawn_vehicle …
+action set_team_respawn_vehicle "warthog" current_team
 ```
 
-No curated example yet — see [Megalo Versions](/versions/) for build availability.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)
+- [player_set_vehicle_spawning](/language/actions/player-set-vehicle-spawning)
+- [set_player_respawn_vehicle](/language/actions/set-player-respawn-vehicle)
+- [team_set_vehicle_spawning](/language/actions/team-set-vehicle-spawning)

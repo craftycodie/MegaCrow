@@ -12,17 +12,18 @@ Posts a HUD message to a [team or player target](/language/enums/team-or-player-
 ## Example
 
 ```megalo
-action hud_post_message everyone none "CTF"
+action hud_post_message everyone destination_moved destination_moved
 ```
 
-Example from HREK `broken/derekball.txt`.
+Example from HREK `headhunter.txt`.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)
 - [Team or player target](/language/enums/team-or-player-target) — target operand syntax
 - [Sounds](/language/enums/sounds) — `e_megalo_sound` tokens
 - [Dynamic strings](/language/enums/dynamic-strings) — message text and `%` placeholders

@@ -12,14 +12,15 @@ Forces a player into a vehicle reference.
 ## Example
 
 ```megalo
-action player_set_vehicle this_box.buyer product
+action player_set_vehicle current_player current_player.ride
 ```
 
-Example from HREK `broken/1Flag_Boneyard_Extreme2.txt`.
+Example from HREK `race.txt`.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)

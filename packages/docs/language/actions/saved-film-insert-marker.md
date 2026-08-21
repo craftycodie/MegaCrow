@@ -12,7 +12,7 @@ Inserts a marker into a saved film recording. The label operand is a [dynamic st
 ## Example
 
 ```megalo
-action saved_film_insert_marker …
+action saved_film_insert_marker -5 "cool marker" 
 ```
 
 ## Supported Versions
@@ -20,4 +20,5 @@ action saved_film_insert_marker …
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)

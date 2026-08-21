@@ -12,14 +12,15 @@ Assigns a player to a fireteam index.
 ## Example
 
 ```megalo
-action player_set_fireteam_tier current_player 0
+action player_set_fireteam_index current_player 1
 ```
 
-Example from HREK `broken/1Flag_Boneyard.txt`.
 
 ## Supported Versions
 
 <ActionSupportedVersions />
 
 
-See also [action syntax](/language/elements/trigger/action).
+## See also 
+- [action syntax](/language/elements/trigger/action)
+- [player_get_fireteam_index](/language/actions/player-get-fireteam-index.md)

@@ -5,7 +5,7 @@
 
 ## Description
 
-Enables or disables vehicle spawning for a player (Reach MCC only).
+Enables or disables vehicle spawning for a player.
 
 <ActionParameters />
 

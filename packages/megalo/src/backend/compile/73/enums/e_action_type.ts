@@ -60,7 +60,6 @@ const ACTION_TYPE_TO_BLF = {
   [ActionType.object_get_velocity]: e_action_type.object_get_velocity,
   [ActionType.object_set_invincibility]: e_action_type.object_set_invincibility,
   [ActionType.object_set_never_garbage]: e_action_type.object_set_never_garbage,
-  [ActionType.object_set_orientation]: e_action_type.object_set_orientation,
   [ActionType.object_set_scale]: e_action_type.object_set_scale,
   [ActionType.play_sound]: e_action_type.play_sound,
   [ActionType.player_adjust_money]: e_action_type.player_adjust_money,
@@ -82,6 +81,8 @@ const ACTION_TYPE_TO_BLF = {
   [ActionType.player_get_weapon]: e_action_type.player_get_weapon,
   [ActionType.player_pick_up_weapon]: e_action_type.player_pick_up_weapon,
   [ActionType.player_set_coop_spawning]: e_action_type.player_set_coop_spawning,
+  [ActionType.player_set_vehicle_spawning]:
+    e_action_type.player_set_vehicle_spawning,
   [ActionType.player_set_fireteam_index]:
     e_action_type.player_set_fireteam_index,
   [ActionType.player_set_fireteam_tier]: e_action_type.player_set_fireteam_tier,

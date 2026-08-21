@@ -632,7 +632,7 @@
       }
     },
     "player_set_vehicle_spawning": {
-      "summary": "Enables or disables vehicle spawning for a player (Reach MCC only).",
+      "summary": "Enables or disables vehicle spawning for a player.",
       "params": {
         "player": "Player reference or variable.",
         "literal_boolean": "Literal true or false."

@@ -51,7 +51,6 @@
   s_action_object_get_velocity_parameters,
   s_action_object_set_invincibility_parameters,
   s_action_object_set_never_garbage_parameters,
-  s_action_object_set_orientation_parameters,
   s_action_object_set_scale_parameters,
   s_action_play_sound_parameters,
   s_action_player_adjust_money_parameters,
@@ -75,6 +74,7 @@
   s_action_player_set_requisition_palette_parameters,
   s_action_player_set_unit_parameters,
   s_action_player_set_vehicle_parameters,
+  s_action_player_set_vehicle_spawning_parameters,
   s_action_print_variable_parameters,
   s_action_random_parameters,
   s_action_respawn_zone_enable_parameters,
@@ -998,13 +998,11 @@ const compileAction = (
       target.m_player_set_coop_spawning_parameters = params;
       break;
     }
-    case ActionType.object_set_orientation: {
-      const params = new s_action_object_set_orientation_parameters();
-      params.m_object_1 = encodeObjectReference(action.parameters.object);
-      params.m_object_2 = encodeObjectReference(action.parameters.source);
-      params.m_absolute_orientation =
-        action.parameters.absoluteOrientation ?? false;
-      target.m_object_set_orientation_parameters = params;
+    case ActionType.player_set_vehicle_spawning: {
+      const params = new s_action_player_set_vehicle_spawning_parameters();
+      params.m_player = encodePlayerReference(action.parameters.player);
+      params.m_enabled = action.parameters.enabled;
+      target.m_player_set_vehicle_spawning_parameters = params;
       break;
     }
     default: {

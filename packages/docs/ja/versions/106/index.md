@@ -16,6 +16,7 @@ Xbox 360 Reach 発売当初の megalo ビルド（エンコーディングバー
 
 - [`player_set_objective_allegiance`](/ja/language/actions/player-set-objective-allegiance) (opcode 57)
 - [`player_set_objective_allegiance_icon`](/ja/language/actions/player-set-objective-allegiance-icon) (opcode 58)
+- [`object_set_orientation`](/ja/language/actions/object-set-orientation) (opcode 91)
 - [`object_face_object`](/ja/language/actions/object-face-object) (opcode 92)
 - [`biped_give_weapon`](/ja/language/actions/biped-give-weapon) (opcode 93)
 - [`biped_drop_weapon`](/ja/language/actions/biped-drop-weapon) (opcode 94)
@@ -29,6 +30,7 @@ Xbox 360 Reach 発売当初の megalo ビルド（エンコーディングバー
 - `player_set_fireteam_tier` (opcode 68)
 - `give_weapon` (opcode 73)
 - `set_loadout` (opcode 77)
+- `player_set_vehicle_spawning` (opcode 92)
 
 ## 制限
 

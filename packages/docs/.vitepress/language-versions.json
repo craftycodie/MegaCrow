@@ -457,7 +457,6 @@
         "get_button_time",
         "hide_object",
         "hs_function_call",
-        "player_set_vehicle_spawning",
         "set_player_respawn_vehicle",
         "set_team_respawn_vehicle",
         "team_set_vehicle_spawning"
@@ -1285,6 +1284,7 @@
       "addedActionNames": [
         "player_set_objective_allegiance",
         "player_set_objective_allegiance_icon",
+        "object_set_orientation",
         "object_face_object",
         "biped_give_weapon",
         "biped_drop_weapon",
@@ -1296,7 +1296,8 @@
       "removedActionNames": [
         "player_set_fireteam_tier",
         "give_weapon",
-        "set_loadout"
+        "set_loadout",
+        "player_set_vehicle_spawning"
       ]
     },
     {
@@ -1679,7 +1680,7 @@
           "opcode": 91
         },
         {
-          "name": "object_set_orientation",
+          "name": "player_set_vehicle_spawning",
           "opcode": 92
         }
       ],
@@ -1694,7 +1695,7 @@
         "debug_force_player_view_count",
         "player_pick_up_weapon",
         "player_set_coop_spawning",
-        "object_set_orientation"
+        "player_set_vehicle_spawning"
       ],
       "removedActionNames": [
         "object_set_minimap_visibility",
@@ -2063,7 +2064,6 @@
     "get_button_time",
     "hide_object",
     "hs_function_call",
-    "player_set_vehicle_spawning",
     "set_player_respawn_vehicle",
     "set_team_respawn_vehicle",
     "team_set_vehicle_spawning"

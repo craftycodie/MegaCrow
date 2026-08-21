@@ -798,9 +798,8 @@
       "slug": "object-set-orientation",
       "docLink": "/language/actions/object-set-orientation",
       "reach": "partial",
-      "builds": ["mcc", "omaha-delta", "release", "tu1"],
+      "builds": ["mcc", "release", "tu1"],
       "opcodesByBuild": {
-        "omaha-delta": 92,
         "release": 91,
         "tu1": 91,
         "mcc": 91
@@ -1148,8 +1147,9 @@
       "slug": "player-set-vehicle-spawning",
       "docLink": "/language/actions/player-set-vehicle-spawning",
       "reach": "partial",
-      "builds": ["mcc"],
+      "builds": ["mcc", "omaha-delta"],
       "opcodesByBuild": {
+        "omaha-delta": 92,
         "mcc": 103
       }
     },

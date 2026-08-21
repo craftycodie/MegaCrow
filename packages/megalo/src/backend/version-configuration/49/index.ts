@@ -27,7 +27,6 @@ export class VersionConfiguration49 extends VersionConfiguration {
     "strings.txt",
   ];
 
-  /** Derived from omaha_alpha variable metadata bit-widths. */
   private static readonly VARIABLE_LIMITS: VariableLimits = {
     [VariableScope.Global]: {
       [VariableType.Number]: 12,
@@ -48,14 +47,14 @@ export class VersionConfiguration49 extends VersionConfiguration {
       [VariableType.Timer]: 4,
       [VariableType.Team]: 3,
       [VariableType.Player]: 3,
-      [VariableType.Object]: 6,
+      [VariableType.Object]: 4,
     },
     [VariableScope.Object]: {
       [VariableType.Number]: 8,
       [VariableType.Timer]: 4,
-      [VariableType.Team]: 3,
+      [VariableType.Team]: 2,
       [VariableType.Player]: 4,
-      [VariableType.Object]: 6,
+      [VariableType.Object]: 4,
     },
     [VariableScope.Temporary]: {
       [VariableType.Number]: 0,
@@ -69,7 +68,7 @@ export class VersionConfiguration49 extends VersionConfiguration {
     return {
       variables: VersionConfiguration49.VARIABLE_LIMITS,
       objectsUsed: 2048,
-      triggers: 320,
+      triggers: 256,
       conditions: 512,
       actions: 1024,
       userDefinedOptions: 16,

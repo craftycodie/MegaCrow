@@ -24,7 +24,7 @@ Compared to [49](/versions/49/).
 - [`debug_force_player_view_count`](/language/actions/debug-force-player-view-count) (opcode 89)
 - [`player_pick_up_weapon`](/language/actions/player-pick-up-weapon) (opcode 90)
 - [`player_set_coop_spawning`](/language/actions/player-set-coop-spawning) (opcode 91)
-- [`object_set_orientation`](/language/actions/object-set-orientation) (opcode 92)
+- [`player_set_vehicle_spawning`](/language/actions/player-set-vehicle-spawning) (opcode 92)
 
 ### Actions removed
 

@@ -429,7 +429,7 @@
     },
     "player_set_vehicle_spawning": {
       "kind": "action",
-      "description": "Enables or disables vehicle spawning for a player (Reach MCC only).",
+      "description": "Enables or disables vehicle spawning for a player.",
       "slug": "player-set-vehicle-spawning"
     },
     "player_set_vehicle": {

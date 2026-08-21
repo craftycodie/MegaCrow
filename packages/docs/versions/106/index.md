@@ -16,6 +16,7 @@ Compared to [73](/versions/73/).
 
 - [`player_set_objective_allegiance`](/language/actions/player-set-objective-allegiance) (opcode 57)
 - [`player_set_objective_allegiance_icon`](/language/actions/player-set-objective-allegiance-icon) (opcode 58)
+- [`object_set_orientation`](/language/actions/object-set-orientation) (opcode 91)
 - [`object_face_object`](/language/actions/object-face-object) (opcode 92)
 - [`biped_give_weapon`](/language/actions/biped-give-weapon) (opcode 93)
 - [`biped_drop_weapon`](/language/actions/biped-drop-weapon) (opcode 94)
@@ -29,6 +30,7 @@ Compared to [73](/versions/73/).
 - `player_set_fireteam_tier` (opcode 68)
 - `give_weapon` (opcode 73)
 - `set_loadout` (opcode 77)
+- `player_set_vehicle_spawning` (opcode 92)
 
 ## Limits
 

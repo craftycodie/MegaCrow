@@ -24,7 +24,7 @@ Public Beta（Omaha Delta）megalo ビルドです。歴史的比較用のアク
 - [`debug_force_player_view_count`](/ja/language/actions/debug-force-player-view-count) (opcode 89)
 - [`player_pick_up_weapon`](/ja/language/actions/player-pick-up-weapon) (opcode 90)
 - [`player_set_coop_spawning`](/ja/language/actions/player-set-coop-spawning) (opcode 91)
-- [`object_set_orientation`](/ja/language/actions/object-set-orientation) (opcode 92)
+- [`player_set_vehicle_spawning`](/ja/language/actions/player-set-vehicle-spawning) (opcode 92)
 
 ### 削除されたアクション
 

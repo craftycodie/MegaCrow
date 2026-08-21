@@ -378,11 +378,14 @@ var actionType = megaloEnum(ACTION_TYPE_MEMBERS, (version2) => {
     supported.add("debug_force_player_view_count");
     supported.add("player_pick_up_weapon");
     supported.add("player_set_coop_spawning");
-    supported.add("object_set_orientation");
+  }
+  if (version2.version === 73) {
+    supported.add("player_set_vehicle_spawning");
   }
   if (version2.version >= 106) {
     supported.add("player_set_objective_allegiance");
     supported.add("player_set_objective_allegiance_icon");
+    supported.add("object_set_orientation");
     supported.add("object_face_object");
     supported.add("biped_give_weapon");
     supported.add("biped_drop_weapon");
@@ -13172,7 +13175,7 @@ var en_default2 = {
       }
     },
     player_set_vehicle_spawning: {
-      summary: "Enables or disables vehicle spawning for a player (Reach MCC only).",
+      summary: "Enables or disables vehicle spawning for a player.",
       params: {
         player: "Player reference or variable.",
         literal_boolean: "Literal true or false."
@@ -16923,7 +16926,8 @@ var Disposition = disposition.enum;
 // ../megalo/src/language-service/completion/suggest/top-level.ts
 var TOP_LEVEL_NAMED_HEADER = {
   trigger: snippetTabstop(1),
-  variables: snippetTabstop(1, "global"),
+  // Trailing space + `end`; scope is chosen from suggest, not a `global` default.
+  variables: " ",
   loadout: snippetTabstop(1, "name"),
   loadout_palette: snippetTabstop(1, "name"),
   map_object: snippetTabstop(1, "name"),

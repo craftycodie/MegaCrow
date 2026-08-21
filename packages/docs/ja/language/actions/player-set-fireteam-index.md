@@ -12,14 +12,15 @@
 ## 例
 
 ```megalo
-action player_set_fireteam_tier current_player 0
+action player_set_fireteam_index current_player 1
 ```
 
-HREK の `broken/1Flag_Boneyard.txt` からの例。
 
 ## 対応バージョン
 
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+- [アクション構文](/ja/language/elements/trigger/action)
+- [player_get_fireteam_index](/ja/language/actions/player-get-fireteam-index.md)

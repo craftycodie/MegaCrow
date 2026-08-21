@@ -12,7 +12,7 @@
 ## 例
 
 ```megalo
-action adjust_grenades …
+action adjust_grenades current_player frag add 1
 ```
 
 ## 対応バージョン
@@ -20,4 +20,6 @@ action adjust_grenades …
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+
+- [アクション構文](/ja/language/elements/trigger/action)

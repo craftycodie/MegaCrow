@@ -21,11 +21,12 @@
 action player_enable_purchases current_player dead all true
 ```
 
-HREK の `broken/dmiller_sve.txt` からの例。
+HREK の `broken/dmiller_sve.txt` より。
 
 ## 対応バージョン
 
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+- [アクション構文](/ja/language/elements/trigger/action)

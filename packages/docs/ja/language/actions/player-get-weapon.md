@@ -12,14 +12,17 @@
 ## 例
 
 ```megalo
-action player_get_weapon …
+action player_get_weapon current_player primary player_wep
 ```
 
-整備済みの例はまだありません — ビルド可用性は [Megalo バージョン](/ja/versions/) を参照。
+HREK の `slayer_RPG.txt` より。
 
 ## 対応バージョン
 
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+- [アクション構文](/ja/language/elements/trigger/action)
+- [player_get_equipment](/ja/language/actions/player-get-equipment)
+- [player_get_vehicle](/ja/language/actions/player-get-vehicle)

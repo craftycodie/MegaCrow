@@ -12,14 +12,16 @@
 ## 例
 
 ```megalo
-action team_get_place current_player.team temp
+action team_get_place current_player.team place
 ```
 
-HREK の `broken/equipment_slayer.txt` より。
+HREK の `gun_game.txt` より。
 
 ## 対応バージョン
 
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+
+- [アクション構文](/ja/language/elements/trigger/action)

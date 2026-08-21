@@ -21,11 +21,12 @@
 action player_set_requisition_palette current_player req_sniper
 ```
 
-HREK の `broken/tankinabox.txt` からの例。
+HREK の `broken/tankinabox.txt` より。
 
 ## 対応バージョン
 
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+- [アクション構文](/ja/language/elements/trigger/action)

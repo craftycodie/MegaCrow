@@ -5,21 +5,27 @@
 
 ## 説明
 
-マップからオブジェクト参照を削除します。
+ゲームからオブジェクト参照を削除します。
 
 <ActionParameters />
 
 ## 例
 
 ```megalo
-action delete_object flag
+action delete_object current_object
 ```
 
-HREK の `broken/calvinball.txt` からの例。
+HREK の `ctf.txt` より。
+
+## 注記
+
+- プレイヤーのバイペッドを削除すると、そのプレイヤーは即座にリスポーンします。
 
 ## 対応バージョン
 
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+
+- [アクション構文](/ja/language/elements/trigger/action)

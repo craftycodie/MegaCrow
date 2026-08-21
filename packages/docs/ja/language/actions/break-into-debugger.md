@@ -12,7 +12,7 @@
 ## 例
 
 ```megalo
-action break_into_debugger …
+action break_into_debugger
 ```
 
 ## 対応バージョン
@@ -20,4 +20,6 @@ action break_into_debugger …
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+
+- [アクション構文](/ja/language/elements/trigger/action)

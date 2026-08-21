@@ -5,7 +5,7 @@
 
 ## 説明
 
-[数学演算](/ja/language/enums/math-operations) を使って、オブジェクトの最大ヘルスを変更します。
+[数学演算](/ja/language/enums/math-operations) を使って、オブジェクトの最大ヘルスを変更します。100 はヘルス 100% です。
 
 <ActionParameters />
 
@@ -15,11 +15,17 @@
 action object_adjust_maximum_health current_player set_to health_give
 ```
 
-HREK の `broken/1.txt` からの例。
+HREK の `broken/1.txt` より。
+
+
 
 ## 対応バージョン
 
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+- [アクション構文](/ja/language/elements/trigger/action)
+- [object_adjust_health](/ja/language/actions/object-adjust-health)
+- [object_adjust_maximum_shield](/ja/language/actions/object-adjust-maximum-shield)
+- [object_adjust_shield](/ja/language/actions/object-adjust-shield)

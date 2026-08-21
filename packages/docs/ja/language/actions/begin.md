@@ -17,7 +17,7 @@
 
 ## 例
 
-`begin` はアクションスコープ内で単独行として書き、`action begin` にはしません:
+`begin` はアクションスコープ内で単独行として書き、`action begin` としては書きません:
 
 ```megalo
 action for_each team
@@ -35,7 +35,7 @@ action for_each team
 end
 ```
 
-Reach MCC の `tu1_winter_contingency.txt` より — 詳細な解説は [begin 要素](/ja/language/elements/begin) のページを参照。
+Reach MCC の `tu1_winter_contingency.txt` より — 詳細な解説は [begin 要素](/ja/language/elements/begin) のページを参照してください。
 
 <DocsBlock type="note" title="アクション構文">
 
@@ -48,4 +48,6 @@ Reach MCC の `tu1_winter_contingency.txt` より — 詳細な解説は [begin 
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+
+- [アクション構文](/ja/language/elements/trigger/action)

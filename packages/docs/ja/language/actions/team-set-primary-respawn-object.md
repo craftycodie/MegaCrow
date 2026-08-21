@@ -12,14 +12,16 @@
 ## 例
 
 ```megalo
-action team_set_primary_respawn_object my_team none
+action team_set_primary_respawn_object current_team current_team.ride
 ```
 
-HREK の `broken/1Flag_SvE_influence.txt` より。
+HREK の `rocket_race.txt` より。
 
 ## 対応バージョン
 
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+
+- [アクション構文](/ja/language/elements/trigger/action)

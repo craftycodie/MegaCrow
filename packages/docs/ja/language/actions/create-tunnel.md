@@ -8,7 +8,7 @@
 
 <DocsBlock type="info" title="両端点が同じオブジェクトの場合">
 
-両端点が同じオブジェクトの場合、トンネルはその参照上に **そのまま** 置かれます — [create_object](/ja/language/actions/create-object) とは異なり衝突チェックはありません。生成されたオブジェクトは真上を向きます。
+両端点が同じオブジェクトの場合、トンネルはその参照上に **正確に** 置かれます — [create_object](/ja/language/actions/create-object) とは異なり、衝突チェックはありません。生成されたオブジェクトは真上を向きます。
 
 </DocsBlock>
 
@@ -17,14 +17,15 @@
 ## 例
 
 ```megalo
-action create_tunnel …
+action create_tunnel current_object cool_object "spartan" 5 created_object
 ```
-
-精選の例はまだありません — ビルド可用性は [Megalo バージョン](/ja/versions/) を参照。
 
 ## 対応バージョン
 
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+
+- [アクション構文](/ja/language/elements/trigger/action)
+- [create_object](/ja/language/actions/create-object)

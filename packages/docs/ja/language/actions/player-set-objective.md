@@ -12,15 +12,16 @@
 ## 例
 
 ```megalo
-action player_set_objective current_player "+%n" 1
+action player_set_objective current_player oddball_summary score_to_win_round
 ```
 
-HREK の `broken/calvinball.txt` からの例。
+HREK の `oddball.txt` より。
 
 ## 対応バージョン
 
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+- [アクション構文](/ja/language/elements/trigger/action)
 - [動的文字列](/ja/language/enums/dynamic-strings) — オブジェクティブテキストと `%` プレースホルダ

@@ -21,14 +21,15 @@
 ## 例
 
 ```megalo
-action set_loadout_palette player current_player slayer_loadouts
+action set_loadout_palette player current_player spartan_tier1
 ```
 
-HREK の `broken/equipment_slayer.txt` より。
+HREK の `infection.txt` より。
 
 ## 対応バージョン
 
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+- [アクション構文](/ja/language/elements/trigger/action)

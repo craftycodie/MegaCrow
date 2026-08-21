@@ -5,21 +5,23 @@
 
 ## 説明
 
-バイペッド／プレイヤーから武器を落とします。
+バイペッドから武器を落とします。
 
 <ActionParameters />
 
 ## 例
 
 ```megalo
-action biped_drop_weapon …
+action biped_drop_weapon chess_piece primary delete_on_drop
 ```
 
-精選の例はまだありません — ビルド可用性は [Megalo バージョン](/ja/versions/) を参照。
+HREK の `chess.txt` より。
 
 ## 対応バージョン
 
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+
+- [アクション構文](/ja/language/elements/trigger/action)

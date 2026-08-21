@@ -15,11 +15,12 @@
 action end_round
 ```
 
-HREK の `broken/1Flag_Boneyard.txt` からの例。
+HREK の `koth.txt` より。
 
 ## 対応バージョン
 
 <ActionSupportedVersions />
 
+## 関連項目
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+- [アクション構文](/ja/language/elements/trigger/action)

@@ -12,14 +12,19 @@
 ## 例
 
 ```megalo
-action navpoint_set_visible_range current_object req_range_near req_range_far
+action navpoint_set_visible_range current_object 0 20
 ```
 
-HREK の `broken/1Flag_Boneyard_Extreme2.txt` からの例。
+HREK の `rocket_race.txt` より。
+
+## 注記
+
+- ほかの Megalo アクションとは異なり、このアクションの距離値はワールドユニット全体に相当します（0.1 ワールドユニットではありません）。
 
 ## 対応バージョン
 
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+- [アクション構文](/ja/language/elements/trigger/action)

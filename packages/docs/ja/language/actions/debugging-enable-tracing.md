@@ -12,7 +12,7 @@
 ## 例
 
 ```megalo
-action debugging_enable_tracing …
+action debugging_enable_tracing true
 ```
 
 ## 対応バージョン
@@ -20,4 +20,6 @@ action debugging_enable_tracing …
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+
+- [アクション構文](/ja/language/elements/trigger/action)

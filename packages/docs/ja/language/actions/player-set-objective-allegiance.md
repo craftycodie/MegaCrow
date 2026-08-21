@@ -15,11 +15,12 @@
 action player_set_objective_allegiance current_player objective_team_elite
 ```
 
-HREK の `3nvasion.txt` からの例。
+HREK の `3nvasion.txt` より。
 
 ## 対応バージョン
 
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+- [アクション構文](/ja/language/elements/trigger/action)

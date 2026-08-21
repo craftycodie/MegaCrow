@@ -15,11 +15,12 @@
 action player_get_killing_spree_count killing_player temp
 ```
 
-HREK の `broken/equipment_slayer.txt` からの例。
+HREK の `slayer_RPG.txt` より。
 
 ## 対応バージョン
 
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+- [アクション構文](/ja/language/elements/trigger/action)

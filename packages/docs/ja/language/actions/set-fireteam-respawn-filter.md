@@ -5,21 +5,22 @@
 
 ## 説明
 
-オブジェクト上のファイアチーム再スポーン権限を制限します。
+オブジェクト上のファイアチームのリスポーン権限を制限します。
 
 <ActionParameters />
 
 ## 例
 
 ```megalo
-action set_fireteam_respawn_filter respawner 0
+action set_fireteam_respawn_filter current_object 1
 ```
 
-HREK の `broken/1Flag_Boneyard_Extreme2.txt` より。
+HREK の `3nvasion.txt` より。
 
 ## 対応バージョン
 
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+- [アクション構文](/ja/language/elements/trigger/action)

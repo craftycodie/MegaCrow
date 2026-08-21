@@ -12,7 +12,7 @@
 ## 例
 
 ```megalo
-action print_variable …
+action print_variable "hello world"
 ```
 
 ## 対応バージョン
@@ -20,4 +20,5 @@ action print_variable …
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+- [アクション構文](/ja/language/elements/trigger/action)

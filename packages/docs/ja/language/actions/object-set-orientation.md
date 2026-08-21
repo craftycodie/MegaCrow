@@ -12,14 +12,16 @@
 ## 例
 
 ```megalo
-action object_set_orientation …
+action object_set_orientation current_object base_orientation
 ```
 
-整備済みの例はまだありません — ビルド可用性は [Megalo バージョン](/ja/versions/) を参照。
+HREK の `speedflag.txt` より。
 
 ## 対応バージョン
 
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+- [アクション構文](/ja/language/elements/trigger/action)
+- [object_face_object](/ja/language/actions/object-face-object)

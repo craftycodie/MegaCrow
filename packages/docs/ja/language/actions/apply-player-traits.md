@@ -12,14 +12,16 @@
 ## 例
 
 ```megalo
-action apply_player_traits current_player uber_traits
+action apply_player_traits player_holding_ball ball_carrier_traits
 ```
 
-HREK の `broken/derekball.txt` からの例。
+HREK の `oddball.txt` より。
 
 ## 対応バージョン
 
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+
+- [アクション構文](/ja/language/elements/trigger/action)

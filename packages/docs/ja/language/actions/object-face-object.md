@@ -12,14 +12,19 @@
 ## 例
 
 ```megalo
-action object_face_object …
+action object_face_object white_orientation black_orientation
 ```
 
-キュレーション済みの例はまだありません — ビルド可用性は [Megalo バージョン](/ja/versions/) を参照。
+HREK の `chess.txt` より。
+
+## 注記
+- オブジェクトを自分自身の方へ向けると、オフセット値を使ってオブジェクトをヨー軸まわりに回転させることができます。
 
 ## 対応バージョン
 
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+- [アクション構文](/ja/language/elements/trigger/action)
+- [object_set_orientation](/ja/language/actions/object-set-orientation)

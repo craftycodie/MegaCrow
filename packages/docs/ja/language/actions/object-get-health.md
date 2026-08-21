@@ -12,14 +12,15 @@
 ## 例
 
 ```megalo
-action object_get_vitality current_object helf
+action object_get_health player_unit player_health
 ```
 
-HREK の `broken/1Flag_Boneyard.txt` からの例。
+HREK の `chess.txt` より。
 
 ## 対応バージョン
 
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+- [アクション構文](/ja/language/elements/trigger/action)

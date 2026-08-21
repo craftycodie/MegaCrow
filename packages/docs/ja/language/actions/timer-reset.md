@@ -12,14 +12,16 @@
 ## 例
 
 ```megalo
-action timer_reset period_timer
+action timer_reset current_player.lap_time
 ```
 
-HREK の `broken/1Flag_Boneyard_Extreme.txt` より。
+HREK の `race.txt` より。
 
 ## 対応バージョン
 
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+
+- [アクション構文](/ja/language/elements/trigger/action)

@@ -12,14 +12,15 @@
 ## 例
 
 ```megalo
-action navpoint_set_timer one_flag none
+action navpoint_set_timer safehaven haven_move_time
 ```
 
-HREK の `broken/1Flag_Boneyard.txt` からの例。
+HREK の `infection.txt` より。
 
 ## 対応バージョン
 
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+- [アクション構文](/ja/language/elements/trigger/action)

@@ -5,21 +5,22 @@
 
 ## 説明
 
-オペランド player、object を取る Megalo アクション `player_set_unit`。
+プレイヤーがバイペッドを操作するように設定します。すでにバイペッドを持っていた場合は、その古いバイペッドを放棄します。
 
 <ActionParameters />
 
 ## 例
 
 ```megalo
-action player_set_unit …
+action player_set_unit active_player chess_piece
 ```
 
-整備済みの例はまだありません — ビルド可用性は [Megalo バージョン](/ja/versions/) を参照。
+HREK の `chess.txt` より。
 
 ## 対応バージョン
 
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+- [アクション構文](/ja/language/elements/trigger/action)

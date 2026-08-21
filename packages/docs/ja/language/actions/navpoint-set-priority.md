@@ -7,19 +7,28 @@
 
 ナビポイントの描画優先度（`high`、`normal`、`low`、`blink`）を設定します。
 
+`low` はナビポイントを半透明のシェブロンにします。
+
+`normal` はナビポイントを不透明なシェブロンにします。
+
+`high` はナビポイントを「ピン」形状にし、画面外でも表示されます。
+
+`blink` はナビポイントを点滅するシェブロンにし、画面外でも表示されます。
+
 <ActionParameters />
 
 ## 例
 
 ```megalo
-action navpoint_set_priority hill high
+action navpoint_set_priority the_hill high
 ```
 
-HREK の `broken/calvinball.txt` からの例。
+HREK の `koth.txt` より。
 
 ## 対応バージョン
 
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+- [アクション構文](/ja/language/elements/trigger/action)

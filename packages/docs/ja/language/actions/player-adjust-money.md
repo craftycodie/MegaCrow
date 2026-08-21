@@ -21,11 +21,12 @@
 action player_adjust_money current_player add 5
 ```
 
-HREK の `broken/1Flag_Boneyard.txt` からの例。
+HREK の `broken/1Flag_Boneyard.txt` より。
 
 ## 対応バージョン
 
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+- [アクション構文](/ja/language/elements/trigger/action)

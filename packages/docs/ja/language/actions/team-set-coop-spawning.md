@@ -5,7 +5,7 @@
 
 ## 説明
 
-チームの協力スポーンを有効または無効にします。
+チームの協力スポーンを有効または無効にします。有効にすると、チームメイトや、そのように設定されたオブジェクトの位置でスポーンできるようになります。
 
 <ActionParameters />
 
@@ -15,11 +15,13 @@
 action team_set_coop_spawning current_team true
 ```
 
-HREK の `broken/1Flag_Boneyard.txt` より。
+HREK の `3nvasion.txt` より。
 
 ## 対応バージョン
 
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+
+- [アクション構文](/ja/language/elements/trigger/action)

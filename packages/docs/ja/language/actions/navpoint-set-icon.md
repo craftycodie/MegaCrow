@@ -14,14 +14,15 @@ ME の名前テーブル末尾は `coop spawning`（スペース付き）です�
 ## 例
 
 ```megalo
-action navpoint_set_icon hill king
+action navpoint_set_icon player_holding_flag flag
 ```
 
-HREK の `broken/calvinball.txt` からの例。
+HREK の `ctf.txt` より。
 
 ## 対応バージョン
 
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+- [アクション構文](/ja/language/elements/trigger/action)

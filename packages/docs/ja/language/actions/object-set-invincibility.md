@@ -12,14 +12,15 @@
 ## 例
 
 ```megalo
-action object_set_invincibility my_spawn true
+action object_set_invincibility current_object true
 ```
 
-HREK の `broken/1Flag_Boneyard.txt` からの例。
+HREK の `race.txt` より。
 
 ## 対応バージョン
 
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+- [アクション構文](/ja/language/elements/trigger/action)

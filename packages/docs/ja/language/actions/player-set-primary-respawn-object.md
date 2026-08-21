@@ -12,12 +12,14 @@
 ## 例
 
 ```megalo
-action player_set_primary_respawn_object …
+action player_set_primary_respawn_object current_player current_object
 ```
+HREK の `3nvasion.txt` より。
 
 ## 対応バージョン
 
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+- [アクション構文](/ja/language/elements/trigger/action)

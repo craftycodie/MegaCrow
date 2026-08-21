@@ -5,21 +5,23 @@
 
 ## 説明
 
-プレイヤーに武器オブジェクトを強制的に拾わせます。
+プレイヤーに既存の武器オブジェクトを強制的に拾わせます。
 
 <ActionParameters />
 
 ## 例
 
 ```megalo
-action player_pick_up_weapon …
+action player_pick_up_weapon active_player flag
 ```
 
-整備済みの例はまだありません — ビルド可用性は [Megalo バージョン](/ja/versions/) を参照。
+HREK の `chess.txt` より。
 
 ## 対応バージョン
 
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+- [アクション構文](/ja/language/elements/trigger/action)
+- [biped_give_weapon](/ja/language/actions/biped-give-weapon)

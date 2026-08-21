@@ -12,14 +12,15 @@
 ## 例
 
 ```megalo
-action navpoint_set_visible hill off
+action navpoint_set_visible current_object everyone
 ```
 
-HREK の `broken/calvinball.txt` からの例。
+HREK の `assault.txt` より。
 
 ## 対応バージョン
 
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+- [アクション構文](/ja/language/elements/trigger/action)

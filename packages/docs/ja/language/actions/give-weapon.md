@@ -5,21 +5,23 @@
 
 ## 説明
 
-Megalo アクション `give_weapon`。
+このアクションはいずれのローンチ版 Megalo でも動作せず、[biped_give_weapon](/ja/language/actions/biped-give-weapon) に改名されたと考えられます。
 
 <ActionParameters />
 
 ## 例
 
 ```megalo
-action give_weapon …
+action give_weapon "assault_rifle" current_player primary
 ```
 
-精選の例はまだありません — ビルド可用性は [Megalo バージョン](/ja/versions/) を参照。
+HREK の `broken\freezetag.txt` より。
 
 ## 対応バージョン
 
 <ActionSupportedVersions />
 
 
-関連 [アクション構文](/ja/language/elements/trigger/action)。
+## 関連項目
+
+- [アクション構文](/ja/language/elements/trigger/action)

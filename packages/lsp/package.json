@@ -8,7 +8,11 @@
     ".": "./src/browser/index.ts",
     "./browser": "./src/browser/index.ts",
     "./node": "./src/node/index.ts",
-    "./core": "./src/core.ts"
+    "./core": "./src/core.ts",
+    "./protocol": "./src/protocol.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@megacrow/megalo": "*",

@@ -1,0 +1,362 @@
+import type { MegaloVersionId } from "@megacrow/megalo";
+import { useEffect, useState } from "react";
+import type { MegaloIncludeRoot } from "../../compile";
+import {
+  flattenSourceFileNodes,
+  setSourceFileQuickOpenEntries,
+} from "../../editor";
+import { formatLocalDiskPath, pathKey } from "../../files";
+import { isObjectListsPath } from "../../gametype";
+import { useT } from "../../localization";
+import type { StoredWorkspace, Workspace } from "../../workspace";
+import { ConfirmDeleteDialog } from "../dialogs/ConfirmDeleteDialog";
+import { ConfirmRegenerateObjectListsDialog } from "../dialogs/ConfirmRegenerateObjectListsDialog";
+import { ConfirmReplaceDialog } from "../dialogs/ConfirmReplaceDialog";
+import { BuildsPane } from "./BuildsPane";
+import { FilesContextMenu } from "./FilesContextMenu";
+import { FilesPanelHeader } from "./FilesPanelHeader";
+import { LocalDiskSection } from "./LocalDiskSection";
+import { OpfsFilesSection } from "./OpfsFilesSection";
+import { isMegacrowTreeDragActive, MEGACROW_TREE_PATH_MIME } from "./treeUtils";
+import { useBuildOutputs } from "./useBuildOutputs";
+import { useDiskFileOps } from "./useDiskFileOps";
+import { useFilesPanelContextMenu } from "./useFilesPanelContextMenu";
+import { useLocalDiskRefresh } from "./useLocalDiskRefresh";
+import { useOpfsFileOps } from "./useOpfsFileOps";
+
+interface Props {
+  activeFileName: string | null;
+  localDiskRevision: number;
+  objectListNames?: readonly string[];
+  onAddWorkspace?: () => void;
+  onClearEditor?: () => void;
+  onDeleteWorkspace?: (id: string) => void;
+  onEditWorkspace?: (workspace: StoredWorkspace) => void;
+  onFileDeleted: (name: string) => void;
+  onFileRenamed: (
+    oldName: string,
+    newName: string,
+    absoluteFilePath: string
+  ) => void;
+  onMissingObjectListNamesChange?: (names: readonly string[]) => void;
+  onOpenSource: (
+    source: string,
+    name: string,
+    includeRoot?: MegaloIncludeRoot
+  ) => void;
+  onSelectMegaloVersion?: (version: MegaloVersionId) => void;
+  onSelectWorkspace?: (id: string) => void;
+  onWorkspaceObjectListsChange?: (
+    lists: import("@megacrow/megalo").ObjectLists | null
+  ) => void;
+  opfsRevision: number;
+  workspace: Workspace | null;
+  workspaceSwitcher?: boolean;
+  workspaces?: StoredWorkspace[];
+}
+
+export function FilesPanel({
+  workspace,
+  workspaces = [],
+  onSelectWorkspace,
+  onSelectMegaloVersion,
+  onAddWorkspace,
+  onEditWorkspace,
+  onDeleteWorkspace,
+  workspaceSwitcher = false,
+  onOpenSource,
+  onFileDeleted,
+  onFileRenamed,
+  activeFileName,
+  objectListNames = [],
+  onWorkspaceObjectListsChange,
+  onMissingObjectListNamesChange,
+  onClearEditor,
+  opfsRevision,
+  localDiskRevision,
+}: Props) {
+  const t = useT();
+  const [renamingPathKey, setRenamingPathKey] = useState<string | null>(null);
+
+  const localRootPath =
+    workspace?.type === "tauri" ? workspace.inputPath : null;
+  const localRoot = localRootPath ? { path: localRootPath } : null;
+  const outputPath =
+    workspace?.type === "tauri" && workspace.outputPath?.trim()
+      ? workspace.outputPath.trim()
+      : null;
+  const megaloVersion = workspace?.megaloVersion ?? "107-mcc";
+
+  const {
+    ensureExpandedKeys,
+    localDiskAvailable,
+    localError,
+    localTree,
+    refreshLocal,
+    setEnsureExpandedKeys,
+    setLocalError,
+    tauriAvailable,
+  } = useLocalDiskRefresh({
+    localDiskRevision,
+    localRoot,
+    localRootPath,
+    objectListNames,
+    onMissingObjectListNamesChange,
+    onWorkspaceObjectListsChange,
+  });
+
+  const opfsOps = useOpfsFileOps({
+    megaloVersion,
+    objectListNames,
+    onFileDeleted,
+    onFileRenamed,
+    onOpenSource,
+    opfsRevision,
+    setEnsureExpandedKeys,
+    setRenamingPathKey,
+    tauriAvailable,
+  });
+
+  const diskOps = useDiskFileOps({
+    activeFileName,
+    localRoot,
+    localRootPath,
+    localTree,
+    megaloVersion,
+    onFileDeleted,
+    onFileRenamed,
+    onOpenSource,
+    outputPath,
+    refreshLocal,
+    setEnsureExpandedKeys,
+    setLocalError,
+    setRenamingPathKey,
+    tauriAvailable,
+  });
+
+  const { buildOutputs, buildsError, refreshBuilds, setBuildsError } =
+    useBuildOutputs(outputPath, localDiskRevision);
+
+  const contextMenu = useFilesPanelContextMenu({
+    diskOps,
+    localRoot,
+    localTree,
+    opfsOps,
+    outputPath,
+    refreshBuilds,
+    setBuildsError,
+    setLocalError,
+    setRenamingPathKey,
+    tauriAvailable,
+  });
+
+  useEffect(() => {
+    setRenamingPathKey(null);
+    opfsOps.resetOnRootChange();
+    diskOps.resetOnRootChange();
+    contextMenu.resetOnRootChange();
+  }, [localRootPath]);
+
+  useEffect(() => {
+    const next = [
+      ...flattenSourceFileNodes(localTree).map((node) => {
+        const dir = node.path.slice(0, -1);
+        return {
+          id: `local:${pathKey(node.path)}`,
+          label: node.name,
+          description:
+            dir.length > 0
+              ? formatLocalDiskPath(dir)
+              : (workspace?.name ?? "Workspace"),
+          open: () => void diskOps.openLocalFile(node.path),
+        };
+      }),
+      ...flattenSourceFileNodes(opfsOps.browserTree).map((node) => ({
+        id: `browser:${pathKey(node.path)}`,
+        label: node.name,
+        description: isObjectListsPath(node.path)
+          ? t("files_object_lists")
+          : t("files_browser_saves"),
+        open: () => opfsOps.openBrowserTreeFile(node.path),
+      })),
+    ];
+    setSourceFileQuickOpenEntries(next);
+    return () => setSourceFileQuickOpenEntries([]);
+  }, [
+    diskOps.openLocalFile,
+    localTree,
+    opfsOps.browserTree,
+    opfsOps.openBrowserTreeFile,
+    t,
+    workspace?.name,
+  ]);
+
+  return (
+    <section
+      aria-label={t("files_aria_label")}
+      className={`files-panel${opfsOps.dragActive ? " files-panel--drag" : ""}`}
+      onDragLeave={(event) => {
+        if (
+          isMegacrowTreeDragActive() ||
+          Array.from(event.dataTransfer.types).includes(MEGACROW_TREE_PATH_MIME)
+        ) {
+          return;
+        }
+        opfsOps.setDragActive(false);
+      }}
+      onDragOver={(event) => {
+        if (
+          isMegacrowTreeDragActive() ||
+          Array.from(event.dataTransfer.types).includes(MEGACROW_TREE_PATH_MIME)
+        ) {
+          return;
+        }
+        event.preventDefault();
+        opfsOps.setDragActive(true);
+      }}
+      onDrop={(event) => {
+        if (
+          isMegacrowTreeDragActive() ||
+          Array.from(event.dataTransfer.types).includes(MEGACROW_TREE_PATH_MIME)
+        ) {
+          return;
+        }
+        event.preventDefault();
+        opfsOps.setDragActive(false);
+        opfsOps.handleDroppedFiles(event.dataTransfer.files);
+      }}
+    >
+      <FilesPanelHeader
+        onAddWorkspace={onAddWorkspace}
+        onDeleteWorkspace={onDeleteWorkspace}
+        onEditWorkspace={onEditWorkspace}
+        onSelectMegaloVersion={onSelectMegaloVersion}
+        onSelectWorkspace={onSelectWorkspace}
+        workspace={workspace}
+        workspaceSwitcher={workspaceSwitcher}
+        workspaces={workspaces}
+      />
+
+      <div className="files-panel-body">
+        {opfsOps.opfsAvailable ? (
+          <OpfsFilesSection
+            activeFileName={activeFileName}
+            browserTree={opfsOps.browserTree}
+            ensureExpandedKeys={ensureExpandedKeys}
+            megaloVersion={megaloVersion}
+            objectListNames={objectListNames}
+            onBeginRename={(path) => setRenamingPathKey(pathKey(path))}
+            onCancelRename={() => setRenamingPathKey(null)}
+            onCommitRename={(fromName, newName) =>
+              void opfsOps.commitOpfsRename(fromName, newName)
+            }
+            onContextMenu={(event, name) =>
+              contextMenu.openContextMenu(
+                opfsOps.onOpfsContextMenu(event, name)
+              )
+            }
+            onCreateFile={() => void opfsOps.createOpfsFile()}
+            onOpenFile={opfsOps.openBrowserTreeFile}
+            opfsError={opfsOps.opfsError}
+            opfsFileCount={opfsOps.opfsFiles.length}
+            renamingPathKey={renamingPathKey}
+          />
+        ) : null}
+
+        {localDiskAvailable ? (
+          <LocalDiskSection
+            activeFileName={activeFileName}
+            canRegenerateObjectLists={diskOps.canRegenerateObjectLists}
+            ensureExpandedKeys={ensureExpandedKeys}
+            localError={localError}
+            localRoot={localRoot}
+            localRootPath={localRootPath}
+            localTree={localTree}
+            objectListNames={objectListNames}
+            onAddWorkspace={onAddWorkspace}
+            onBeginRename={(path) => setRenamingPathKey(pathKey(path))}
+            onCancelRename={() => setRenamingPathKey(null)}
+            onCommitRename={(path, name) =>
+              void diskOps.commitRename(path, name)
+            }
+            onContextMenu={(event, target, selectedTargets) =>
+              contextMenu.openContextMenu(
+                diskOps.onTreeContextMenu(event, target, selectedTargets)
+              )
+            }
+            onCreateFile={() => void diskOps.createLocalFile([])}
+            onCreateFolder={() => void diskOps.createLocalFolder([])}
+            onMoveEntries={(fromPaths, toParentPath) =>
+              void diskOps.moveLocalEntries(fromPaths, toParentPath)
+            }
+            onOpenFile={(path) => void diskOps.openLocalFile(path)}
+            onRegenerateObjectLists={diskOps.requestRegenerateObjectLists}
+            renamingPathKey={renamingPathKey}
+            workspaceId={workspace?.id}
+          />
+        ) : null}
+
+        {outputPath ? (
+          <BuildsPane
+            buildOutputs={buildOutputs}
+            buildsError={buildsError}
+            onClearEditor={onClearEditor}
+            onContextMenu={(event, name) => {
+              event.preventDefault();
+              contextMenu.openContextMenu({
+                x: event.clientX,
+                y: event.clientY,
+                source: "builds",
+                target: { type: "file", path: [name] },
+              });
+            }}
+          />
+        ) : null}
+
+        {opfsOps.opfsAvailable || localDiskAvailable ? null : (
+          <div className="files-empty">
+            <p>{t("files_no_file_sources")}</p>
+            <span>{t("files_drop_gametype_hint")}</span>
+          </div>
+        )}
+      </div>
+
+      <FilesContextMenu {...contextMenu.contextMenuProps} />
+
+      <ConfirmDeleteDialog
+        count={contextMenu.activePendingDelete?.paths.length ?? 1}
+        name={
+          contextMenu.activePendingDelete
+            ? (contextMenu.activePendingDelete.paths[0]?.at(-1) ??
+              formatLocalDiskPath(
+                contextMenu.activePendingDelete.paths[0] ?? []
+              ))
+            : ""
+        }
+        onCancel={contextMenu.handleCancelDelete}
+        onConfirm={contextMenu.handleConfirmDelete}
+        open={contextMenu.activePendingDelete !== null}
+        targetKind={
+          contextMenu.activePendingDelete &&
+          contextMenu.activePendingDelete.targets.length > 1
+            ? "mixed"
+            : (contextMenu.activePendingDelete?.targets[0]?.type ?? "file")
+        }
+      />
+
+      <ConfirmRegenerateObjectListsDialog
+        onCancel={diskOps.cancelRegenerateObjectLists}
+        onConfirm={diskOps.confirmRegenerateObjectLists}
+        open={diskOps.pendingRegenerateObjectLists}
+      />
+
+      <ConfirmReplaceDialog
+        name={diskOps.pendingReplace?.displayName ?? ""}
+        onCancel={diskOps.cancelReplace}
+        onConfirm={diskOps.confirmReplace}
+        open={diskOps.pendingReplace !== null}
+        targetKind={diskOps.pendingReplace?.targetKind ?? "file"}
+      />
+    </section>
+  );
+}

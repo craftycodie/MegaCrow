@@ -1,6 +1,5 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { docsPageUrl, listenDocsNavigate } from "../lib/openDocs";
-import { isTauriRuntime } from "../lib/tauriRuntime";
+import { docsPageUrl, isTauriRuntime, listenDocsNavigate } from "../desktop";
 import "./styles.css";
 
 const DEFAULT_TITLE = "MegaCrow Docs";

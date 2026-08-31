@@ -1,10 +1,10 @@
-import { decodeTextFile } from "../lib/decodeTextFile";
-import { buildIncludeHostCallbacks } from "../lib/includeDiagnostics";
 import {
+  buildIncludeHostCallbacks,
   findMegaloIncludeDirectives,
   sourceHasIncludeDirectives,
   tryExpandMegaloIncludes,
-} from "../lib/megaloIncludeScan";
+} from "../compile";
+import { decodeTextFile } from "../files";
 import type { CliFilesystem } from "./filesystem";
 
 function storeCached(

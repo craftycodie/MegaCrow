@@ -7,15 +7,15 @@ import {
   useRef,
   useState,
 } from "react";
-import { dismissIfBackdropMouseDown } from "../lib/dismissIfBackdrop";
 import {
   getMonacoCommandPaletteEntries,
   getSourceFileQuickOpenEntries,
   type IdePaletteCommand,
   type IdePaletteMode,
   type SourceFileQuickOpenEntry,
-} from "../lib/sourceFileQuickOpen";
+} from "../editor";
 import { useT } from "../localization";
+import { dismissIfBackdropMouseDown } from "./dialogs/dismissIfBackdrop";
 
 interface Props {
   mode: IdePaletteMode;

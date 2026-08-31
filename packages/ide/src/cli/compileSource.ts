@@ -1,6 +1,7 @@
-import { decodeTextFile } from "../lib/decodeTextFile";
-import type { FileProvider } from "../lib/fileProvider";
-import { compileMgloFromMegaloSourceAsync } from "../lib/megaloCompile";
+import { compileMgloFromMegaloSourceAsync } from "../compile";
+import { decodeTextFile } from "../files";
+import type { FileProvider } from "../files/fileProvider";
+import { isAbsoluteFilesystemPath } from "../files/fileProvider/paths";
 import type { CliFilesystem } from "./filesystem";
 
 export type CompileOutputFormat = "mglo" | "bin";
@@ -41,11 +42,6 @@ function inferFormat(outputPath: string): CompileOutputFormat {
   return "mglo";
 }
 
-function isAbsolutePath(path: string): boolean {
-  const normalized = path.replace(/\\/g, "/");
-  return /^[A-Za-z]:\//.test(normalized) || normalized.startsWith("/");
-}
-
 export async function compileMegaloFile(
   options: CompileFileOptions
 ): Promise<CompileFileResult> {
@@ -75,24 +71,32 @@ export async function compileMegaloFile(
     return fs.dirname(fromUri);
   };
 
+  const readProviderBytes = fileProvider.readBytes;
+  if (!readProviderBytes) {
+    throw new Error("File provider cannot read binary files for compile");
+  }
+
   const bytes = await compileMgloFromMegaloSourceAsync(
     source,
     scriptBasename,
     undefined,
     {
       fromUri: sourcePath,
-      resolveInclude: async (includePath, ctx) => {
+      resolveInclude: async (
+        includePath: string,
+        ctx: { kind: "include" | "localized_include"; fromUri?: string }
+      ) => {
         const fromDir = await resolveFromDir(ctx.fromUri);
-        const absolute = isAbsolutePath(includePath)
+        const absolute = isAbsoluteFilesystemPath(includePath)
           ? includePath
           : fileProvider.resolvePath(includePath, fromDir);
-        const includeBytes = await fileProvider.readBytes(absolute);
+        const includeBytes = await readProviderBytes(absolute);
         if (!includeBytes) {
           return null;
         }
         return { text: decodeTextFile(includeBytes), uri: absolute };
       },
-      resolveBaseFile: async (basePath, ctx) => {
+      resolveBaseFile: async (basePath: string, ctx: { fromUri?: string }) => {
         const fromDir = await resolveFromDir(ctx.fromUri);
         const candidates = [
           fileProvider.resolvePath(basePath, fromDir),
@@ -104,7 +108,7 @@ export async function compileMegaloFile(
           ),
         ];
         for (const candidate of [...new Set(candidates)]) {
-          const baseBytes = await fileProvider.readBytes(candidate);
+          const baseBytes = await readProviderBytes(candidate);
           if (baseBytes) {
             return baseBytes;
           }

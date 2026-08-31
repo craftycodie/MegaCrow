@@ -1,1819 +1,168 @@
-import type { ObjectLists } from "@megacrow/megalo";
 import {
-  isMccMegaloVersion,
   MEGACROW_BUILD_STRING,
   MEGACROW_SHOW_WATERMARK,
-  MEGALO_VERSIONS,
-  type MegaloVersionId,
-  resolveGameBuildNumber,
-  setLocale,
 } from "@megacrow/megalo";
-import {
-  type CSSProperties,
-  startTransition,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import {
-  AddWorkspaceModal,
-  type WorkspaceDraft,
-} from "./components/AddWorkspaceModal";
-import { DiagnosticsTray } from "./components/DiagnosticsTray";
-import { Editor } from "./components/Editor";
-import { EditorEmptyState } from "./components/EditorEmptyState";
-import { FilesPanel } from "./components/FilesPanel";
-import { IdePalette } from "./components/IdePalette";
-import { MotdDialog } from "./components/MotdDialog";
-import { PreReleaseWatermark } from "./components/PreReleaseWatermark";
-import { SidebarVariantHeader } from "./components/SidebarVariantHeader";
-import { StatusBar } from "./components/StatusBar";
-import { Toolbar } from "./components/Toolbar";
-import { UpdateAvailableDialog } from "./components/UpdateAvailableDialog";
-import {
-  analyzeMegaloSource,
-  type CompileState,
-  type SourceAnalysis,
-} from "./lib/analyzeSource";
-import type { AppSettings } from "./lib/appSettings";
-import {
-  type MegaloDiagnostic,
-  type MegaloObjectListTarget,
-  megaloDiagnosticFromLsp,
-} from "./lib/diagnostics";
-import {
-  setDiscordPresenceEnabled,
-  updateDiscordPresence,
-} from "./lib/discordRpc";
-import {
-  canNavigateFileNavBack,
-  canNavigateFileNavForward,
-  EMPTY_FILE_NAV,
-  type FileNavEntry,
-  type FileNavState,
-  navigateFileNavBack,
-  navigateFileNavForward,
-  pushFileNavEntry,
-  renameFileNavEntries,
-  sourceNavEntry,
-} from "./lib/fileNavigation";
-import { installFileNavShortcuts } from "./lib/fileNavShortcuts";
-import { createPlatformFileProvider } from "./lib/fileProvider";
-import { joinLogicalPaths } from "./lib/fileProvider/paths";
-import type { GametypeSaveFormat } from "./lib/gametypeSaveFormat";
-import {
-  includeCompileFailureAnalysis,
-  type MegaloIncludeFileCache,
-  megaloCompileOptionsFromWorkspace,
-} from "./lib/includeDiagnostics";
-import {
-  lspAnalyzeObjectList,
-  lspConfigureResolveContext,
-  lspResetSession,
-  lspSetMegaloVersion,
-  lspSetObjectLists,
-  lspVersionConfiguration,
-} from "./lib/lspClient";
-import { writeMccHotReloadMglo } from "./lib/mccHotReload";
-import {
-  appSettingsFromMegacrow,
-  bootstrapMegacrowSettings,
-  createWorkspaceId,
-  defaultMegacrowSettings,
-  isPathInWorkspaceInput,
-  type MegacrowSettings,
-  mergeAppSettings,
-  persistMegacrowSettings,
-  type StoredWorkspace,
-} from "./lib/megacrowSettings";
-import { compilerSettingsFromApp } from "./lib/megaloCompilerSettings";
-import type { MegaloIncludeRoot } from "./lib/megaloIncludes";
-import { type MegaloProgram, tryParse } from "./lib/megaloProgram";
-import {
-  initMegaloWorkerContext,
-  postMegaloWorker,
-  preloadMegaloWorker,
-  requestCompileDownloadInWorker,
-  requestSourceOnlyCompileViaLsp,
-  setMegaloWorkerObjectLists,
-  subscribeMegaloWorker,
-  syncMegaloCompilerSettings,
-  syncMegaloWorkspace,
-} from "./lib/megaloWorkerClient";
-import {
-  CURRENT_MOTD,
-  recordMotdView,
-  shouldShowMotdOnStartup,
-} from "./lib/motd";
-import { isObjectListDocument, isObjectListsPath } from "./lib/objectListsPath";
-import { resolveOpenablePathReference } from "./lib/openPathReference";
-import {
-  gametypeSaveFileName,
-  saveGametypeBytes,
-  writeBuildOutputsToWorkspace,
-} from "./lib/saveGametypeFile";
-import { persistOpenSourceFile } from "./lib/saveSourceFile";
-import {
-  type IdePaletteMode,
-  setIdePaletteOpener,
-} from "./lib/sourceFileQuickOpen";
-import { isTauriRuntime } from "./lib/tauriRuntime";
-import { checkForAppUpdate, type GithubReleaseInfo } from "./lib/updateCheck";
+import type { CSSProperties } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useMotd } from "./app/useMotd";
 import {
   PROBLEMS_PANE_MAX_HEIGHT,
   PROBLEMS_PANE_MIN_HEIGHT,
   useProblemsPaneHeight,
-} from "./lib/useProblemsPaneHeight";
+} from "./app/useProblemsPaneHeight";
 import {
   SIDEBAR_MAX_WIDTH,
   SIDEBAR_MIN_WIDTH,
   useSidebarWidth,
-} from "./lib/useSidebarWidth";
+} from "./app/useSidebarWidth";
+import { useUpdateCheck } from "./app/useUpdateCheck";
+import type { MegaloIncludeRoot } from "./compile";
+import {
+  type ActiveDocumentCompileBridge,
+  useCompileOrchestration,
+} from "./compile/useCompileOrchestration";
+import { useDiagnostics } from "./compile/useDiagnostics";
+import { DiagnosticsTray } from "./components/DiagnosticsTray";
+import { AddWorkspaceModal } from "./components/dialogs/AddWorkspaceModal";
+import { MotdDialog } from "./components/dialogs/MotdDialog";
+import { UpdateAvailableDialog } from "./components/dialogs/UpdateAvailableDialog";
+import { Editor } from "./components/Editor";
+import { EditorEmptyState } from "./components/EditorEmptyState";
+import { FilesPanel } from "./components/files/FilesPanel";
+import { IdePalette } from "./components/IdePalette";
+import { PreReleaseWatermark } from "./components/PreReleaseWatermark";
+import { SidebarVariantHeader } from "./components/SidebarVariantHeader";
+import { StatusBar } from "./components/StatusBar";
+import { Toolbar } from "./components/Toolbar";
+import { isTauriRuntime } from "./desktop";
+import { useDiscordPresence } from "./desktop/useDiscordPresence";
+import { useActiveDocument } from "./document/useActiveDocument";
+import type { FileNavEntry } from "./editor";
+import { type IdePaletteMode, setIdePaletteOpener } from "./editor";
+import { useFileNav } from "./editor/useFileNav";
 import {
   VARIANT_CAPACITY_BY_MEGALO_VERSION,
   VARIANT_STORAGE_CAPACITY,
-} from "./lib/variantCapacity";
-import {
-  resolveActiveWorkspace,
-  setActiveWorkspace,
-  storedToWorkspace,
-  type Workspace,
-} from "./lib/workspace";
-import { workspaceUnexpectedFailure } from "./lib/workspaceBase";
-import { prepareWorkspaceCompileContext } from "./lib/workspaceCompileContext";
-import {
-  defaultObjectListText,
-  materializeObjectListsOnFirstSave,
-} from "./lib/workspaceObjectLists";
+} from "./gametype";
 import {
   failedToCompileStatus,
   IdeLocaleProvider,
-  setIdeLocale,
   translate,
 } from "./localization";
-import {
-  setMegaloDefinitionOpenHandler,
-  setMegaloPathOpenHandler,
-} from "./monaco/megalo-language";
-
-const idleAnalysis = (): SourceAnalysis => ({
-  compileState: "idle",
-  errorCount: 0,
-  message: translate("status_no_gametype_loaded"),
-  byteIdentical: null,
-  byteDiffCount: null,
-  compiledByteLength: null,
-  mgloBytes: null,
-  compileTiming: null,
-  diagnostics: [],
-});
+import { useMegacrowSettings } from "./workspace/useMegacrowSettings";
+import { useWorkspaces } from "./workspace/useWorkspaces";
 
 export function App() {
-  const [megacrowSettings, setMegacrowSettings] =
-    useState<MegacrowSettings | null>(null);
-  const [activeWorkspace, setActiveWorkspaceState] = useState<Workspace | null>(
-    null
-  );
-  const [workspacesReady, setWorkspacesReady] = useState(false);
-  const [addWorkspaceOpen, setAddWorkspaceOpen] = useState(false);
-  const [addWorkspaceRequired, setAddWorkspaceRequired] = useState(false);
-  const [editingWorkspaceId, setEditingWorkspaceId] = useState<string | null>(
-    null
-  );
-  const settings = useMemo(
-    () =>
-      megacrowSettings
-        ? appSettingsFromMegacrow(megacrowSettings)
-        : appSettingsFromMegacrow(defaultMegacrowSettings()),
-    [megacrowSettings]
-  );
+  const {
+    activeWorkspace,
+    applyWorkspace,
+    bootstrapNeedsAddWorkspace,
+    commitSettings,
+    handleSettingsChange,
+    megacrowSettings,
+    objectListNames,
+    setObjectListNames,
+    settings,
+    workspacesReady,
+  } = useMegacrowSettings();
 
-  const applyWorkspace = useCallback((workspace: Workspace | null) => {
-    setActiveWorkspace(workspace);
-    setActiveWorkspaceState(workspace);
-  }, []);
-
-  const commitSettings = useCallback(
-    async (next: MegacrowSettings, workspaceOverride?: Workspace | null) => {
-      const normalized = next;
-      setMegacrowSettings(normalized);
-      const workspace =
-        workspaceOverride === undefined
-          ? resolveActiveWorkspace(
-              normalized.workspaces,
-              normalized.activeWorkspaceId
-            )
-          : workspaceOverride;
-      applyWorkspace(workspace);
-      try {
-        await persistMegacrowSettings(normalized);
-      } catch (error) {
-        console.error("Failed to persist MegaCrow settings:", error);
-        throw error;
-      }
-    },
-    [applyWorkspace]
-  );
-
-  useEffect(() => {
-    let cancelled = false;
-    void lspVersionConfiguration()
-      .then((result) => {
-        if (!cancelled) {
-          setObjectListNames(result.objectListNames);
-        }
-      })
-      .catch((error) => {
-        console.error("Failed to load Megalo version configuration:", error);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    void bootstrapMegacrowSettings()
-      .then(({ settings: bootstrapped, needsAddWorkspace }) => {
-        if (cancelled) {
-          return;
-        }
-        setMegacrowSettings(bootstrapped);
-        applyWorkspace(
-          resolveActiveWorkspace(
-            bootstrapped.workspaces,
-            bootstrapped.activeWorkspaceId
-          )
-        );
-        setAddWorkspaceRequired(needsAddWorkspace);
-        setAddWorkspaceOpen(needsAddWorkspace);
-        setWorkspacesReady(true);
-      })
-      .catch((error) => {
-        console.error("Failed to bootstrap MegaCrow settings:", error);
-        if (!cancelled) {
-          const fallback = defaultMegacrowSettings();
-          setMegacrowSettings(fallback);
-          applyWorkspace(null);
-          setAddWorkspaceRequired(isTauriRuntime());
-          setAddWorkspaceOpen(isTauriRuntime());
-          setWorkspacesReady(true);
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [applyWorkspace]);
-
-  const [documentContent, setDocumentContent] = useState(
+  const clearWorkspaceRef = useRef<() => void>(() => {});
+  const compileBridgeRef = useRef<ActiveDocumentCompileBridge | null>(null);
+  const loadMegaloSourceRef = useRef<
+    (text: string, name: string, includeRoot?: MegaloIncludeRoot) => void
+  >(() => {});
+  const readFileForNavRef = useRef<
+    (entry: FileNavEntry) => Promise<{
+      text: string;
+      name: string;
+      includeRoot?: MegaloIncludeRoot;
+    } | null>
+  >(() => Promise.resolve(null));
+  const sourceRef = useRef(
     "; MegaCrow — edit Megalo source and compile to .mglo\n"
   );
-  const [syncRevision, setSyncRevision] = useState(0);
-  const [outlineSource, setOutlineSource] = useState(documentContent);
-  const [fileName, setFileName] = useState<string | null>(null);
-  const [includeRoot, setIncludeRoot] = useState<MegaloIncludeRoot | null>(
-    null
-  );
-  const [fileNav, setFileNav] = useState<FileNavState>(EMPTY_FILE_NAV);
   const suppressFileNavRef = useRef(false);
-  const [includeFileCache, setIncludeFileCache] = useState<
-    MegaloIncludeFileCache | undefined
-  >();
-  const [originalBytes, setOriginalBytes] = useState<Uint8Array | null>(null);
-  const [baseProgram, setBaseProgram] = useState<MegaloProgram | null>(null);
-  const [baselineSource, setBaselineSource] = useState<string | null>(null);
-  const [analysis, setAnalysis] = useState<SourceAnalysis>(idleAnalysis());
-  const [objectListNames, setObjectListNames] = useState<readonly string[]>([]);
-  const [missingObjectListNames, setMissingObjectListNames] = useState<
-    readonly string[]
-  >([]);
-  const [objectListsEpoch, setObjectListsEpoch] = useState(0);
-  const [compileState, setCompileState] = useState<CompileState>("idle");
-  const [cursorLine, setCursorLine] = useState(1);
-  const [cursorColumn, setCursorColumn] = useState(1);
-  const [loadError, setLoadError] = useState<string | null>(null);
-  const [opfsRevision, setOpfsRevision] = useState(0);
-  const [localDiskRevision, setLocalDiskRevision] = useState(0);
-  const [compiledSize, setCompiledSize] = useState<number | null>(null);
-  const initialMotdOpen = shouldShowMotdOnStartup();
-  const motdCountsViewRef = useRef(initialMotdOpen);
-  const [motdOpen, setMotdOpen] = useState(initialMotdOpen);
+
+  const workspaces = useWorkspaces({
+    activeWorkspace,
+    applyWorkspace,
+    bootstrapNeedsAddWorkspace,
+    clearWorkspace: () => clearWorkspaceRef.current(),
+    commitSettings,
+    megacrowSettings,
+    setObjectListNames,
+    workspacesReady,
+  });
+
+  const fileNav = useFileNav({
+    activeWorkspaceId: activeWorkspace?.id ?? null,
+    loadMegaloSource: (...args) => loadMegaloSourceRef.current(...args),
+    readFileForNav: (entry) => readFileForNavRef.current(entry),
+    sourceRef,
+    suppressFileNavRef,
+  });
+
+  const document = useActiveDocument({
+    activeWorkspace,
+    bumpLocalDiskRevision: workspaces.bumpLocalDiskRevision,
+    commitSettings,
+    compileBridgeRef,
+    megacrowSettings,
+    objectListNames,
+    recordFileNavOpen: fileNav.recordFileNavOpen,
+    setFileNav: fileNav.setFileNav,
+    sourceRef,
+    suppressFileNavRef,
+    workspacesReady,
+  });
+
+  loadMegaloSourceRef.current = document.loadMegaloSource;
+  readFileForNavRef.current = document.readFileForNav;
+  clearWorkspaceRef.current = document.clearWorkspace;
+
+  const compile = useCompileOrchestration({
+    activeWorkspace,
+    baseProgram: document.baseProgram,
+    baselineSource: document.baselineSource,
+    bumpLocalDiskRevision: workspaces.bumpLocalDiskRevision,
+    compileBridgeRef,
+    fileName: document.fileName,
+    getEditorSource: document.getEditorSource,
+    includeRoot: document.includeRoot,
+    isPlainTextDocument: document.isPlainTextDocument,
+    objectListNames,
+    originalBytes: document.originalBytes,
+    setIncludeFileCache: document.setIncludeFileCache,
+    skipBaselineCompileRef: document.skipBaselineCompileRef,
+    sourceLoadInProgressRef: document.sourceLoadInProgressRef,
+    sourceRef,
+  });
+
+  const { displayDiagnostics, warningCount } = useDiagnostics(
+    compile.analysis.diagnostics,
+    compile.missingObjectListNames
+  );
+
+  const { handleMotdDismiss, motdOpen, showMotdPreview } = useMotd();
+
+  const { handleUpdateDismiss, handleUpdateSkip, updateOpen, updateRelease } =
+    useUpdateCheck({
+      commitSettings,
+      megacrowSettings,
+      motdOpen,
+      workspacesReady,
+    });
+
+  useDiscordPresence({
+    compileState: compile.compileState,
+    enabled: settings.discordRichPresence,
+    fileName: document.fileName,
+    locale: settings.locale,
+  });
+
+  const [diagnosticsOpen, setDiagnosticsOpen] = useState(true);
   const [idePaletteOpen, setIdePaletteOpen] = useState(false);
   const [idePaletteMode, setIdePaletteMode] = useState<IdePaletteMode>("files");
-  const [updateRelease, setUpdateRelease] = useState<GithubReleaseInfo | null>(
-    null
-  );
-  const [updateOpen, setUpdateOpen] = useState(false);
-  const updateCheckDoneRef = useRef(false);
-  const [diagnosticsOpen, setDiagnosticsOpen] = useState(true);
-  const editorNavigateRef = useRef<
-    ((line: number, column?: number) => void) | null
-  >(null);
-  const getEditorSourceRef = useRef<() => string>(() => documentContent);
-  const compileRunRef = useRef(0);
-  const loadRunRef = useRef(0);
-  const downloadRunRef = useRef(0);
-  const saveRunRef = useRef(0);
-  const sourceRef = useRef(documentContent);
-  const lastPersistedSourceRef = useRef<string | null>(null);
-  const includeRootRef = useRef(includeRoot);
-  const fileNameRef = useRef(fileName);
-  const activeWorkspaceRef = useRef(activeWorkspace);
-  const objectListNamesRef = useRef(objectListNames);
-  includeRootRef.current = includeRoot;
-  fileNameRef.current = fileName;
-  activeWorkspaceRef.current = activeWorkspace;
-  objectListNamesRef.current = objectListNames;
-  const compileParsingRef = useRef(false);
-  const sourceLoadInProgressRef = useRef(false);
-  /** Skip the next baseline-compile effect after loadMegaloSource already compiled. */
-  const skipBaselineCompileRef = useRef(false);
-
-  const resolveCompileContext = useCallback(
-    async (
-      text: string,
-      name: string | null,
-      root: MegaloIncludeRoot | null
-    ) => {
-      try {
-        const result = await prepareWorkspaceCompileContext(
-          text,
-          name,
-          root,
-          activeWorkspace,
-          {
-            onStatus: (message) => {
-              setCompileState("parsing");
-              setAnalysis((current) => ({
-                ...current,
-                compileState: "parsing",
-                message,
-              }));
-            },
-          }
-        );
-        if (!result.ok) {
-          return {
-            ok: false as const,
-            analysis: includeCompileFailureAnalysis(result),
-          };
-        }
-        setAnalysis((current) =>
-          current.message.startsWith("Compiling base file")
-            ? {
-                ...current,
-                compileState: "parsing",
-                message: translate("status_compiling_megalo_source"),
-              }
-            : current
-        );
-        return {
-          ok: true as const,
-          includeCache: result.includeCache,
-          resolvedBaseProgram: result.resolvedBaseProgram,
-          resolvedBaseCustomVariant: result.resolvedBaseCustomVariant,
-          resolvedBaseCustomVariantMgloBytes:
-            result.resolvedBaseCustomVariantMgloBytes,
-          baseJitDiagnostics: result.baseJitDiagnostics,
-        };
-      } catch (error) {
-        const failure = workspaceUnexpectedFailure(error);
-        return {
-          ok: false as const,
-          analysis: includeCompileFailureAnalysis(failure),
-        };
-      }
-    },
-    [activeWorkspace]
-  );
-
-  const handleSettingsChange = useCallback(
-    (patch: Partial<AppSettings>) => {
-      if (!megacrowSettings) {
-        return;
-      }
-      const next = mergeAppSettings(megacrowSettings, patch);
-      void commitSettings(next);
-    },
-    [commitSettings, megacrowSettings]
-  );
-
-  const handleAddWorkspace = useCallback(() => {
-    setEditingWorkspaceId(null);
-    setAddWorkspaceRequired(false);
-    setAddWorkspaceOpen(true);
-  }, []);
-
-  const handleEditWorkspace = useCallback((workspace: StoredWorkspace) => {
-    setEditingWorkspaceId(workspace.id);
-    setAddWorkspaceRequired(false);
-    setAddWorkspaceOpen(true);
-  }, []);
-
-  useEffect(() => {
-    preloadMegaloWorker();
-  }, []);
-
-  useEffect(() => {
-    void setDiscordPresenceEnabled(settings.discordRichPresence);
-  }, [settings.discordRichPresence]);
-
-  useEffect(() => {
-    syncMegaloWorkspace(activeWorkspace);
-  }, [activeWorkspace]);
-
-  // Keep LSP + object lists on the workspace Megalo version (not the 107-mcc default).
-  useEffect(() => {
-    const version = activeWorkspace?.megaloVersion;
-    if (!version) {
-      return;
-    }
-    let cancelled = false;
-    void (async () => {
-      try {
-        await lspSetMegaloVersion(version);
-        const config = await lspVersionConfiguration();
-        if (!cancelled) {
-          setObjectListNames(config.objectListNames);
-        }
-      } catch (error) {
-        console.error("Failed to sync Megalo version to LSP:", error);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [activeWorkspace?.megaloVersion]);
-
-  // Workspace changes must drop file history (back/forward starts fresh).
-  const activeWorkspaceId = activeWorkspace?.id ?? null;
-  const fileNavWorkspaceIdRef = useRef<string | null>(activeWorkspaceId);
-  useEffect(() => {
-    if (fileNavWorkspaceIdRef.current === activeWorkspaceId) {
-      return;
-    }
-    fileNavWorkspaceIdRef.current = activeWorkspaceId;
-    suppressFileNavRef.current = false;
-    setFileNav(EMPTY_FILE_NAV);
-  }, [activeWorkspaceId]);
-
-  useEffect(() => {
-    void import("./lib/lspClient").then(({ lspConfigureResolveContext }) => {
-      lspConfigureResolveContext({
-        workspace: activeWorkspace,
-        filePath: includeRoot?.absoluteFilePath ?? null,
-      });
-    });
-  }, [activeWorkspace, includeRoot]);
-
-  useEffect(() => {
-    const compilerSettings = compilerSettingsFromApp(settings);
-    syncMegaloCompilerSettings(compilerSettings);
-    const locale = settings.locale === "ja" ? "ja" : "en";
-    setLocale(locale);
-    setIdeLocale(locale);
-    void import("./lib/lspClient").then(
-      ({ lspSetLocale, lspSetMegacrowExtensions, lspSetCompilerSettings }) => {
-        void lspSetLocale(locale);
-        void lspSetMegacrowExtensions(compilerSettings.megacrowExtensions);
-        void lspSetCompilerSettings({
-          strictStringLiterals: compilerSettings.strictStringLiterals,
-          creatorGamertag: compilerSettings.creatorGamertag,
-        });
-      }
-    );
-  }, [
-    settings.gamertag,
-    settings.compilerStrictness,
-    settings.compilerProfile,
-    settings.locale,
-    settings,
-  ]);
-
-  useEffect(() => {
-    if (!settings.discordRichPresence) {
-      return;
-    }
-
-    const details = fileName ?? "MegaCrow";
-    let state = translate("discord_editing_halo_reach");
-    if (fileName) {
-      if (compileState === "ok" || compileState === "warn") {
-        state =
-          compileState === "warn"
-            ? translate("discord_compile_warning")
-            : translate("discord_script_compiled");
-      } else if (compileState === "error") {
-        state = translate("discord_compile_errors");
-      } else if (compileState === "parsing") {
-        state = translate("discord_compiling");
-      } else {
-        state = translate("discord_editing_gametype");
-      }
-    }
-    void updateDiscordPresence({ details, state });
-  }, [compileState, fileName, settings.discordRichPresence, settings.locale]);
-
-  const handleCursorChange = useCallback((line: number, column: number) => {
-    setCursorLine(line);
-    setCursorColumn(column);
-  }, []);
-
-  const handleRegisterNavigate = useCallback(
-    (navigate: (line: number, column?: number) => void) => {
-      editorNavigateRef.current = navigate;
-    },
-    []
-  );
-
-  const handleToggleDiagnostics = useCallback(() => {
-    setDiagnosticsOpen((open) => !open);
-  }, []);
-
-  const objectListDiagnostics = useMemo((): MegaloDiagnostic[] => {
-    if (missingObjectListNames.length === 0) {
-      return [];
-    }
-    const listed = missingObjectListNames.join(", ");
-    return [
-      {
-        line: 0,
-        column: 0,
-        severity: "warning",
-        trayOnly: true,
-        message:
-          missingObjectListNames.length === 1
-            ? translate("status_missing_object_list_one", { names: listed })
-            : translate("status_missing_object_lists", { names: listed }),
-      },
-    ];
-  }, [missingObjectListNames]);
-
-  const displayDiagnostics = useMemo(
-    () => [...analysis.diagnostics, ...objectListDiagnostics],
-    [analysis.diagnostics, objectListDiagnostics]
-  );
-
-  const warningCount = useMemo(
-    () => displayDiagnostics.filter((d) => d.severity === "warning").length,
-    [displayDiagnostics]
-  );
-
-  const openDocumentPath = includeRoot?.absoluteFilePath ?? fileName;
-
-  /** Any file under `object_lists/` — plaintext editor, not Megalo. */
-  const isPlainTextDocument = useMemo(
-    () => isObjectListsPath(openDocumentPath),
-    [openDocumentPath]
-  );
-
-  /** Version-recognized object list only (e.g. `objects.txt`). */
-  const isObjectListDocumentOpen = useMemo(
-    () => isObjectListDocument(openDocumentPath, objectListNames),
-    [openDocumentPath, objectListNames]
-  );
-
-  const handleRegisterGetValue = useCallback((getValue: () => string) => {
-    getEditorSourceRef.current = getValue;
-  }, []);
-
-  const applyDocument = useCallback((text: string) => {
-    setDocumentContent(text);
-    setOutlineSource(text);
-    sourceRef.current = text;
-    setSyncRevision((n) => n + 1);
-    compileParsingRef.current = false;
-  }, []);
-
-  const rememberLastOpenFile = useCallback(
-    (absoluteFilePath: string | null) => {
-      if (!(megacrowSettings && activeWorkspace)) {
-        return;
-      }
-      const pathToStore =
-        absoluteFilePath &&
-        isPathInWorkspaceInput(absoluteFilePath, activeWorkspace.inputPath)
-          ? absoluteFilePath
-          : null;
-      const current = megacrowSettings.workspaces.find(
-        (workspace) => workspace.id === activeWorkspace.id
-      );
-      if ((current?.lastOpenFilePath ?? null) === pathToStore) {
-        return;
-      }
-      void commitSettings({
-        ...megacrowSettings,
-        workspaces: megacrowSettings.workspaces.map((workspace) =>
-          workspace.id === activeWorkspace.id
-            ? { ...workspace, lastOpenFilePath: pathToStore }
-            : workspace
-        ),
-      });
-    },
-    [activeWorkspace, commitSettings, megacrowSettings]
-  );
-
-  const clearWorkspace = useCallback(() => {
-    loadRunRef.current += 1;
-    compileRunRef.current += 1;
-    saveRunRef.current += 1;
-    downloadRunRef.current += 1;
-    sourceLoadInProgressRef.current = false;
-    skipBaselineCompileRef.current = false;
-    suppressFileNavRef.current = false;
-    setOriginalBytes(null);
-    setBaseProgram(null);
-    setBaselineSource(null);
-    setFileName(null);
-    setIncludeRoot(null);
-    setIncludeFileCache(undefined);
-    setDocumentContent("");
-    setOutlineSource("");
-    sourceRef.current = "";
-    lastPersistedSourceRef.current = null;
-    setSyncRevision((n) => n + 1);
-    compileParsingRef.current = false;
-    setLoadError(null);
-    setAnalysis(idleAnalysis());
-    setCompileState("idle");
-    setCompiledSize(null);
-    setFileNav(EMPTY_FILE_NAV);
-    setMissingObjectListNames([]);
-    void lspResetSession();
-  }, []);
-
-  const recordFileNavOpen = useCallback((entry: FileNavEntry) => {
-    if (suppressFileNavRef.current) {
-      return;
-    }
-    setFileNav((prev) => pushFileNavEntry(prev, entry, sourceRef.current));
-  }, []);
-
-  const handleSelectWorkspace = useCallback(
-    (id: string) => {
-      if (!megacrowSettings) {
-        return;
-      }
-      if (megacrowSettings.activeWorkspaceId === id) {
-        return;
-      }
-      const next = {
-        ...megacrowSettings,
-        activeWorkspaceId: id,
-      };
-      clearWorkspace();
-      void commitSettings(next);
-      setLocalDiskRevision((value) => value + 1);
-    },
-    [clearWorkspace, commitSettings, megacrowSettings]
-  );
-
-  const handleSelectMegaloVersion = useCallback(
-    async (version: MegaloVersionId) => {
-      if (!activeWorkspace || activeWorkspace.megaloVersion === version) {
-        return;
-      }
-      const nextBuildNumber =
-        resolveGameBuildNumber(version, activeWorkspace.gameBuildNumber) ??
-        null;
-      const nextLaunchCommand = isMccMegaloVersion(version)
-        ? null
-        : activeWorkspace.gameLaunchCommand;
-      const nextWorkspace = {
-        ...activeWorkspace,
-        megaloVersion: version,
-        gameBuildNumber: nextBuildNumber,
-        gameLaunchCommand: nextLaunchCommand,
-      };
-      applyWorkspace(nextWorkspace);
-      if (megacrowSettings) {
-        const next: MegacrowSettings = {
-          ...megacrowSettings,
-          workspaces: megacrowSettings.workspaces.map((workspace) =>
-            workspace.id === activeWorkspace.id
-              ? {
-                  ...workspace,
-                  megaloVersion: version,
-                  gameBuildNumber: nextBuildNumber,
-                  gameLaunchCommand: nextLaunchCommand,
-                }
-              : workspace
-          ),
-        };
-        void commitSettings(next, nextWorkspace);
-      }
-      try {
-        await lspSetMegaloVersion(version);
-        const config = await lspVersionConfiguration();
-        setObjectListNames(config.objectListNames);
-      } catch (error) {
-        console.error("Failed to switch Megalo version:", error);
-      }
-    },
-    [activeWorkspace, applyWorkspace, commitSettings, megacrowSettings]
-  );
-
-  const handleDeleteWorkspace = useCallback(
-    (id: string) => {
-      if (!megacrowSettings) {
-        return;
-      }
-      const remaining = megacrowSettings.workspaces.filter(
-        (workspace) => workspace.id !== id
-      );
-      const wasActive = megacrowSettings.activeWorkspaceId === id;
-      const nextActiveId = wasActive
-        ? (remaining[0]?.id ?? null)
-        : megacrowSettings.activeWorkspaceId;
-      const next: MegacrowSettings = {
-        ...megacrowSettings,
-        workspaces: remaining,
-        activeWorkspaceId: nextActiveId,
-      };
-      if (wasActive) {
-        clearWorkspace();
-      }
-      void commitSettings(next).then(() => {
-        setLocalDiskRevision((value) => value + 1);
-        if (remaining.length === 0 && isTauriRuntime()) {
-          setEditingWorkspaceId(null);
-          setAddWorkspaceRequired(true);
-          setAddWorkspaceOpen(true);
-        }
-      });
-    },
-    [clearWorkspace, commitSettings, megacrowSettings]
-  );
-
-  const handleSaveWorkspace = useCallback(
-    (draft: WorkspaceDraft) => {
-      const base = megacrowSettings ?? defaultMegacrowSettings();
-      const nextOutputPath = draft.outputPath.trim() || null;
-      const nextLaunchCommand = draft.gameLaunchCommand.trim() || null;
-      const nextBuildNumber = draft.gameBuildNumber;
-      const editingId = editingWorkspaceId;
-
-      // Close immediately — don't wait on disk persist.
-      setAddWorkspaceOpen(false);
-      setAddWorkspaceRequired(false);
-      setEditingWorkspaceId(null);
-
-      if (editingId) {
-        let updated: StoredWorkspace | null = null;
-        const workspaces = base.workspaces.map((workspace) => {
-          if (workspace.id !== editingId) {
-            return workspace;
-          }
-          updated = {
-            ...workspace,
-            name: draft.name,
-            megaloVersion: draft.megaloVersion,
-            gameBuildNumber: nextBuildNumber,
-            gameLaunchCommand: nextLaunchCommand,
-            inputPath: draft.inputPath,
-            outputPath: nextOutputPath,
-            lastOpenFilePath:
-              workspace.lastOpenFilePath &&
-              isPathInWorkspaceInput(
-                workspace.lastOpenFilePath,
-                draft.inputPath
-              )
-                ? workspace.lastOpenFilePath
-                : null,
-          };
-          return updated;
-        });
-        const next: MegacrowSettings = {
-          ...base,
-          workspaces,
-          activeWorkspaceId: base.activeWorkspaceId ?? editingId,
-        };
-        const activeUpdated =
-          next.activeWorkspaceId === editingId ? updated : null;
-        if (activeUpdated) {
-          clearWorkspace();
-        }
-        setLocalDiskRevision((value) => value + 1);
-        void commitSettings(
-          next,
-          activeUpdated ? storedToWorkspace(activeUpdated, "tauri") : undefined
-        ).catch(() => {
-          // Error already logged in commitSettings.
-        });
-        return;
-      }
-
-      const stored: StoredWorkspace = {
-        id: createWorkspaceId(),
-        name: draft.name,
-        megaloVersion: draft.megaloVersion,
-        gameBuildNumber: nextBuildNumber,
-        gameLaunchCommand: nextLaunchCommand,
-        inputPath: draft.inputPath,
-        outputPath: nextOutputPath,
-        lastOpenFilePath: null,
-      };
-      const next: MegacrowSettings = {
-        ...base,
-        workspaces: [...base.workspaces, stored],
-        activeWorkspaceId: stored.id,
-      };
-      clearWorkspace();
-      setLocalDiskRevision((value) => value + 1);
-      void commitSettings(next, storedToWorkspace(stored, "tauri")).catch(
-        () => {
-          // Error already logged in commitSettings.
-        }
-      );
-    },
-    [clearWorkspace, commitSettings, editingWorkspaceId, megacrowSettings]
-  );
-
-  const handleFileDeleted = useCallback(
-    (name: string) => {
-      setOpfsRevision((n) => n + 1);
-      setLocalDiskRevision((n) => n + 1);
-      if (
-        fileName !== null &&
-        fileName.localeCompare(name, undefined, { sensitivity: "accent" }) === 0
-      ) {
-        rememberLastOpenFile(null);
-        clearWorkspace();
-      }
-    },
-    [clearWorkspace, fileName, rememberLastOpenFile]
-  );
-
-  const handleFileRenamed = useCallback(
-    (oldName: string, newName: string, absoluteFilePath: string) => {
-      setLocalDiskRevision((n) => n + 1);
-      setFileNav((prev) =>
-        renameFileNavEntries(prev, oldName, newName, absoluteFilePath)
-      );
-      if (
-        fileName !== null &&
-        fileName.localeCompare(oldName, undefined, {
-          sensitivity: "accent",
-        }) === 0
-      ) {
-        setFileName(newName);
-        setIncludeRoot({ absoluteFilePath });
-        rememberLastOpenFile(absoluteFilePath);
-      }
-    },
-    [fileName, rememberLastOpenFile]
-  );
-
-  const analyzeObjectListDocument = useCallback(async (text: string) => {
-    const result = await lspAnalyzeObjectList(text);
-    const diagnostics = result.diagnostics.map((d) =>
-      megaloDiagnosticFromLsp(d)
-    );
-    const errorCount = diagnostics.filter((d) => d.severity === "error").length;
-    return {
-      ...idleAnalysis(),
-      compileState: (errorCount > 0 ? "error" : "ok") as CompileState,
-      errorCount,
-      message:
-        errorCount > 0
-          ? translate(
-              errorCount === 1
-                ? "status_object_list_errors_one"
-                : "status_object_list_errors_other",
-              { count: errorCount }
-            )
-          : translate("status_object_list"),
-      diagnostics,
-    } satisfies SourceAnalysis;
-  }, []);
-
-  const loadMegaloSource = useCallback(
-    (text: string, name: string, includeRootArg?: MegaloIncludeRoot) => {
-      const runId = ++loadRunRef.current;
-      saveRunRef.current += 1;
-      const openPath = includeRootArg?.absoluteFilePath ?? name;
-      const underObjectLists = isObjectListsPath(openPath);
-      const objectListDoc = isObjectListDocument(
-        openPath,
-        objectListNamesRef.current
-      );
-
-      rememberLastOpenFile(includeRootArg?.absoluteFilePath ?? null);
-      recordFileNavOpen(sourceNavEntry(text, name, includeRootArg));
-      applyDocument(text);
-      setBaselineSource(text);
-      lastPersistedSourceRef.current = text;
-      setFileName(name);
-      setIncludeRoot(includeRootArg ?? null);
-      setIncludeFileCache(undefined);
-      setOriginalBytes(null);
-      setCompiledSize(null);
-      setBaseProgram(null);
-      setLoadError(null);
-
-      if (objectListDoc) {
-        sourceLoadInProgressRef.current = false;
-        skipBaselineCompileRef.current = true;
-        setCompileState("parsing");
-        setAnalysis({
-          ...idleAnalysis(),
-          compileState: "parsing",
-          message: translate("status_analyzing_object_list"),
-        });
-        initMegaloWorkerContext(null, null, text);
-        void (async () => {
-          const next = await analyzeObjectListDocument(text);
-          if (runId !== loadRunRef.current) {
-            return;
-          }
-          setAnalysis(next);
-          setCompileState(next.compileState);
-        })();
-        return;
-      }
-
-      if (underObjectLists) {
-        sourceLoadInProgressRef.current = false;
-        skipBaselineCompileRef.current = true;
-        setCompileState("ok");
-        setAnalysis({
-          ...idleAnalysis(),
-          compileState: "ok",
-          message: translate("status_text_file"),
-        });
-        initMegaloWorkerContext(null, null, text);
-        return;
-      }
-
-      sourceLoadInProgressRef.current = true;
-      // Invalidate any in-flight edit compile so it cannot overwrite this load.
-      const compileId = ++compileRunRef.current;
-      setCompileState("parsing");
-      setAnalysis({
-        ...idleAnalysis(),
-        compileState: "parsing",
-        message: translate("status_parsing_megalo_source"),
-      });
-      initMegaloWorkerContext(null, null, text);
-      lspConfigureResolveContext({
-        workspace: activeWorkspace,
-        filePath: includeRootArg?.absoluteFilePath ?? null,
-      });
-
-      void (async () => {
-        const compileContext = await resolveCompileContext(
-          text,
-          name,
-          includeRootArg ?? null
-        );
-
-        if (runId !== loadRunRef.current) {
-          return;
-        }
-
-        if (!compileContext.ok) {
-          sourceLoadInProgressRef.current = false;
-          setIncludeFileCache(undefined);
-          setBaseProgram(null);
-          setLoadError(compileContext.analysis.message);
-          setAnalysis(compileContext.analysis);
-          setCompileState("error");
-          return;
-        }
-
-        setIncludeFileCache(compileContext.includeCache);
-
-        // One LSP compile on open (diagnostics + semantic tokens + mglo).
-        // Do not also run the baseline / settings recompile effects below.
-        const parsed = tryParse(text);
-        const program = parsed.ok ? parsed.program : null;
-        if (program || compileContext.resolvedBaseProgram) {
-          setBaseProgram(compileContext.resolvedBaseProgram ?? program);
-          setLoadError(null);
-        } else {
-          setBaseProgram(null);
-        }
-
-        skipBaselineCompileRef.current = true;
-        sourceLoadInProgressRef.current = false;
-
-        const analysis = await requestSourceOnlyCompileViaLsp(text);
-
-        if (
-          runId !== loadRunRef.current ||
-          compileId !== compileRunRef.current
-        ) {
-          return;
-        }
-
-        setAnalysis(analysis);
-        setCompileState(analysis.compileState);
-      })();
-    },
-    [
-      activeWorkspace,
-      analyzeObjectListDocument,
-      applyDocument,
-      rememberLastOpenFile,
-      recordFileNavOpen,
-      resolveCompileContext,
-    ]
-  );
-
-  const openObjectListFromDiagnostic = useCallback(
-    async (target: MegaloObjectListTarget) => {
-      const fileNameForType = `${target.objectType}.txt`;
-      const relativePath = `object_lists/${fileNameForType}`;
-      const absoluteCandidate = target.file
-        ? target.file
-        : activeWorkspace?.inputPath
-          ? joinLogicalPaths(activeWorkspace.inputPath, relativePath)
-          : relativePath;
-
-      const resolved = await resolveOpenablePathReference(
-        "include",
-        target.file ?? relativePath,
-        {
-          workspace: activeWorkspace,
-          currentFilePath: includeRoot?.absoluteFilePath ?? null,
-          includeCache: includeFileCache,
-        }
-      );
-
-      if (resolved) {
-        loadMegaloSource(resolved.text, resolved.displayName, {
-          absoluteFilePath: resolved.absoluteFilePath,
-        });
-      } else {
-        const versionId = activeWorkspace?.megaloVersion ?? "107-mcc";
-        const text = defaultObjectListText(fileNameForType, versionId);
-        loadMegaloSource(text, relativePath, {
-          absoluteFilePath: absoluteCandidate,
-        });
-      }
-
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          editorNavigateRef.current?.(target.line, 1);
-        });
-      });
-    },
-    [
-      activeWorkspace,
-      includeFileCache,
-      includeRoot?.absoluteFilePath,
-      loadMegaloSource,
-    ]
-  );
-
-  const handleNavigateToDiagnostic = useCallback(
-    (diagnostic: MegaloDiagnostic) => {
-      if (diagnostic.objectList) {
-        void openObjectListFromDiagnostic(diagnostic.objectList);
-        return;
-      }
-      if (diagnostic.trayOnly) {
-        return;
-      }
-      editorNavigateRef.current?.(diagnostic.line, diagnostic.column);
-    },
-    [openObjectListFromDiagnostic]
-  );
-
-  const restoredForWorkspaceIdRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (!(workspacesReady && megacrowSettings && activeWorkspace)) {
-      return;
-    }
-    if (restoredForWorkspaceIdRef.current === activeWorkspace.id) {
-      return;
-    }
-    restoredForWorkspaceIdRef.current = activeWorkspace.id;
-
-    const stored = megacrowSettings.workspaces.find(
-      (workspace) => workspace.id === activeWorkspace.id
-    );
-    const absoluteFilePath = stored?.lastOpenFilePath ?? null;
-    if (
-      !(
-        absoluteFilePath &&
-        isPathInWorkspaceInput(absoluteFilePath, activeWorkspace.inputPath)
-      )
-    ) {
-      if (absoluteFilePath) {
-        rememberLastOpenFile(null);
-      }
-      return;
-    }
-
-    const fileProvider = createPlatformFileProvider(activeWorkspace);
-    if (!fileProvider) {
-      return;
-    }
-    void (async () => {
-      const text = await fileProvider.readText(absoluteFilePath);
-      if (text === null) {
-        rememberLastOpenFile(null);
-        return;
-      }
-      if (restoredForWorkspaceIdRef.current !== activeWorkspace.id) {
-        return;
-      }
-      const fileForward = absoluteFilePath.replace(/\\/g, "/");
-      const rootForward = activeWorkspace.inputPath
-        .replace(/\\/g, "/")
-        .replace(/\/+$/, "");
-      const relative = fileForward
-        .toLowerCase()
-        .startsWith(`${rootForward.toLowerCase()}/`)
-        ? fileForward.slice(rootForward.length + 1)
-        : null;
-      const slash = fileForward.lastIndexOf("/");
-      const displayName =
-        relative ??
-        (slash >= 0 ? fileForward.slice(slash + 1) : absoluteFilePath);
-      loadMegaloSource(text, displayName, { absoluteFilePath });
-    })();
-  }, [
-    activeWorkspace,
-    loadMegaloSource,
-    megacrowSettings,
-    rememberLastOpenFile,
-    workspacesReady,
-  ]);
-
-  const openFileNavEntry = useCallback(
-    async (entry: FileNavEntry) => {
-      suppressFileNavRef.current = true;
-      try {
-        if (entry.absoluteFilePath) {
-          const fileProvider = createPlatformFileProvider(activeWorkspace);
-          const fresh = fileProvider
-            ? await fileProvider.readText(entry.absoluteFilePath)
-            : null;
-          if (fresh !== null) {
-            loadMegaloSource(fresh, entry.displayName, {
-              absoluteFilePath: entry.absoluteFilePath,
-            });
-            return;
-          }
-        }
-        loadMegaloSource(
-          entry.text,
-          entry.displayName,
-          entry.absoluteFilePath
-            ? { absoluteFilePath: entry.absoluteFilePath }
-            : undefined
-        );
-      } finally {
-        queueMicrotask(() => {
-          suppressFileNavRef.current = false;
-        });
-      }
-    },
-    [activeWorkspace, loadMegaloSource]
-  );
-
-  const handleNavigateBack = useCallback(() => {
-    const result = navigateFileNavBack(fileNav, sourceRef.current);
-    if (!result) {
-      return;
-    }
-    setFileNav(result.state);
-    void openFileNavEntry(result.entry);
-  }, [fileNav, openFileNavEntry]);
-
-  const handleNavigateForward = useCallback(() => {
-    const result = navigateFileNavForward(fileNav, sourceRef.current);
-    if (!result) {
-      return;
-    }
-    setFileNav(result.state);
-    void openFileNavEntry(result.entry);
-  }, [fileNav, openFileNavEntry]);
-
-  const navigateBackRef = useRef(handleNavigateBack);
-  const navigateForwardRef = useRef(handleNavigateForward);
-  const canNavigateBackRef = useRef(false);
-  const canNavigateForwardRef = useRef(false);
-  navigateBackRef.current = handleNavigateBack;
-  navigateForwardRef.current = handleNavigateForward;
-  canNavigateBackRef.current = canNavigateFileNavBack(fileNav);
-  canNavigateForwardRef.current = canNavigateFileNavForward(fileNav);
-
-  useEffect(
-    () =>
-      installFileNavShortcuts({
-        canGoBack: () => canNavigateBackRef.current,
-        canGoForward: () => canNavigateForwardRef.current,
-        goBack: () => navigateBackRef.current(),
-        goForward: () => navigateForwardRef.current(),
-      }),
-    []
-  );
-
-  const handleSourceDebounced = useCallback((text: string) => {
-    sourceRef.current = text;
-    startTransition(() => setOutlineSource(text));
-
-    const absoluteFilePath = includeRootRef.current?.absoluteFilePath ?? null;
-    const name = fileNameRef.current;
-    const opfs = activeWorkspaceRef.current?.type === "opfs";
-    if (!(absoluteFilePath || (opfs && name))) {
-      return;
-    }
-    // Browser bundled object lists are read-only — never write into OPFS.
-    if (!isTauriRuntime() && isObjectListsPath(absoluteFilePath ?? name)) {
-      return;
-    }
-    if (text === lastPersistedSourceRef.current) {
-      return;
-    }
-
-    const runId = ++saveRunRef.current;
-    void (async () => {
-      try {
-        let saved = false;
-        if (absoluteFilePath?.trim() && isObjectListsPath(absoluteFilePath)) {
-          saved = await materializeObjectListsOnFirstSave({
-            absoluteFilePath: absoluteFilePath.trim(),
-            text,
-            objectListNames: objectListNamesRef.current,
-            megaloVersionId:
-              activeWorkspaceRef.current?.megaloVersion ?? "107-mcc",
-          });
-        }
-        if (!saved) {
-          saved = await persistOpenSourceFile({
-            absoluteFilePath,
-            fileName: name,
-            opfs,
-            text,
-          });
-        }
-        if (
-          !saved ||
-          runId !== saveRunRef.current ||
-          text !== sourceRef.current
-        ) {
-          return;
-        }
-        lastPersistedSourceRef.current = text;
-        if (isObjectListsPath(absoluteFilePath ?? name)) {
-          setLocalDiskRevision((n) => n + 1);
-        }
-      } catch (error) {
-        console.error("Failed to save source file:", error);
-      }
-    })();
-  }, []);
-
-  const handleObjectListAnalyzeDebounced = useCallback(
-    (text: string) => {
-      sourceRef.current = text;
-      const runId = ++compileRunRef.current;
-      void (async () => {
-        const next = await analyzeObjectListDocument(text);
-        if (runId === compileRunRef.current && text === sourceRef.current) {
-          setAnalysis(next);
-          setCompileState(next.compileState);
-        }
-      })();
-    },
-    [analyzeObjectListDocument]
-  );
-
-  const handleCompileDebounced = useCallback(
-    (text: string) => {
-      sourceRef.current = text;
-
-      if (
-        isObjectListDocument(
-          includeRoot?.absoluteFilePath ?? fileName,
-          objectListNames
-        )
-      ) {
-        handleObjectListAnalyzeDebounced(text);
-        return;
-      }
-
-      if (isObjectListsPath(includeRoot?.absoluteFilePath ?? fileName)) {
-        return;
-      }
-
-      const isSourceOnly = originalBytes === null;
-      if (!(isSourceOnly || baseProgram)) {
-        return;
-      }
-
-      compileParsingRef.current = true;
-      setCompileState("parsing");
-
-      const runId = ++compileRunRef.current;
-
-      void (async () => {
-        const compileContext = await resolveCompileContext(
-          text,
-          fileName,
-          includeRoot
-        );
-        if (!compileContext.ok) {
-          if (runId === compileRunRef.current) {
-            compileParsingRef.current = false;
-            setIncludeFileCache(undefined);
-            setAnalysis(compileContext.analysis);
-            setCompileState("error");
-          }
-          return;
-        }
-
-        setIncludeFileCache(compileContext.includeCache);
-
-        // Source-only edits: one LSP artifacts call (shared snapshot with highlighting).
-        if (originalBytes === null) {
-          const result = await requestSourceOnlyCompileViaLsp(text);
-          if (runId === compileRunRef.current && text === sourceRef.current) {
-            compileParsingRef.current = false;
-            setAnalysis(result);
-            setCompileState(result.compileState);
-          }
-          return;
-        }
-
-        const compileOptions = megaloCompileOptionsFromWorkspace(
-          activeWorkspace,
-          compileContext.includeCache,
-          compileContext.resolvedBaseProgram,
-          compileContext.resolvedBaseCustomVariant,
-          compileContext.resolvedBaseCustomVariantMgloBytes
-        );
-
-        const posted = postMegaloWorker({
-          kind: "compile",
-          id: runId,
-          source: text,
-          includeCache: compileContext.includeCache,
-          resolvedBaseProgram: compileContext.resolvedBaseProgram,
-          resolvedBaseCustomVariant: compileContext.resolvedBaseCustomVariant,
-          resolvedBaseCustomVariantMgloBytes:
-            compileContext.resolvedBaseCustomVariantMgloBytes,
-          baseJitDiagnostics: compileContext.baseJitDiagnostics,
-        });
-        if (!posted) {
-          const result = await analyzeMegaloSource(
-            text,
-            originalBytes,
-            baseProgram,
-            baselineSource,
-            compileOptions,
-            compileContext.includeCache,
-            compilerSettingsFromApp(settings)
-          );
-          if (runId === compileRunRef.current && text === sourceRef.current) {
-            compileParsingRef.current = false;
-            setAnalysis(result);
-            setCompileState(result.compileState);
-          }
-        }
-      })();
-    },
-    [
-      originalBytes,
-      baseProgram,
-      baselineSource,
-      fileName,
-      includeRoot,
-      resolveCompileContext,
-      activeWorkspace,
-      settings.gamertag,
-      settings.compilerStrictness,
-      settings,
-      objectListNames,
-      handleObjectListAnalyzeDebounced,
-    ]
-  );
-
-  useEffect(() => {
-    // Recompile when compiler settings or workspace object lists change.
-    // File open compiles once in loadMegaloSource — skip that follow-up here.
-    if (isPlainTextDocument) {
-      return;
-    }
-    if (baselineSource === null && baseProgram === null) {
-      return;
-    }
-    if (sourceLoadInProgressRef.current) {
-      return;
-    }
-    if (skipBaselineCompileRef.current) {
-      skipBaselineCompileRef.current = false;
-      return;
-    }
-    handleCompileDebounced(sourceRef.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- settings / object lists only
-  }, [
-    isPlainTextDocument,
-    handleCompileDebounced,
-    baseProgram,
-    baselineSource,
-    objectListsEpoch,
-  ]);
-
-  const handleWorkspaceObjectListsChange = useCallback(
-    (lists: ObjectLists | null) => {
-      void lspSetObjectLists(lists);
-      setMegaloWorkerObjectLists(lists);
-      setObjectListsEpoch((value) => value + 1);
-    },
-    []
-  );
-
-  const handleMissingObjectListNamesChange = useCallback(
-    (names: readonly string[]) => {
-      setMissingObjectListNames((prev) => {
-        if (
-          prev.length === names.length &&
-          prev.every((name, index) => name === names[index])
-        ) {
-          return prev;
-        }
-        return names;
-      });
-    },
-    []
-  );
-  useEffect(() => {
-    initMegaloWorkerContext(originalBytes, baseProgram, baselineSource);
-  }, [originalBytes, baseProgram, baselineSource]);
-
-  useEffect(
-    () =>
-      subscribeMegaloWorker((response) => {
-        if (response.kind !== "compile") {
-          return;
-        }
-        if (response.id !== compileRunRef.current) {
-          return;
-        }
-        compileParsingRef.current = false;
-        setAnalysis(response.analysis);
-        setCompileState(response.analysis.compileState);
-      }),
-    []
-  );
-
-  useEffect(() => {
-    const versionId = activeWorkspace?.megaloVersion ?? "107-mcc";
-    const flavour = MEGALO_VERSIONS[versionId]?.flavour;
-    const isWindows =
-      typeof navigator !== "undefined" &&
-      /Win/i.test(navigator.platform || navigator.userAgent);
-    if (
-      flavour !== "mcc" ||
-      !isWindows ||
-      (analysis.compileState !== "ok" && analysis.compileState !== "warn") ||
-      analysis.compiledByteLength === null ||
-      !analysis.mgloBytes
-    ) {
-      return;
-    }
-    setCompiledSize(analysis.compiledByteLength);
-    void writeMccHotReloadMglo(analysis.mgloBytes).catch((error) => {
-      console.error("Failed to write MCC hot-reload .mglo:", error);
-    });
-  }, [analysis, activeWorkspace?.megaloVersion]);
-
-  const compileDownload = useCallback(
-    (format: GametypeSaveFormat) => {
-      const source = getEditorSourceRef.current();
-      const isSourceOnly = originalBytes === null;
-      if (!((isSourceOnly || baseProgram) && (fileName || source.trim()))) {
-        setAnalysis({
-          ...idleAnalysis(),
-          compileState: "error",
-          message: translate("status_load_gametype_or_source_first"),
-          errorCount: 1,
-        });
-        setCompileState("error");
-        return;
-      }
-
-      const runId = ++downloadRunRef.current;
-      setCompileState("parsing");
-      setAnalysis((current) => ({
-        ...current,
-        compileState: "parsing",
-        message: translate("status_compiling_for_export"),
-      }));
-
-      void (async () => {
-        const compileContext = await resolveCompileContext(
-          source,
-          fileName,
-          includeRoot
-        );
-        if (!compileContext.ok) {
-          setIncludeFileCache(undefined);
-          setAnalysis(compileContext.analysis);
-          setCompileState("error");
-          return;
-        }
-
-        setIncludeFileCache(compileContext.includeCache);
-
-        const result = await requestCompileDownloadInWorker(
-          source,
-          runId,
-          format,
-          originalBytes,
-          baseProgram,
-          baselineSource,
-          {
-            includeCache: compileContext.includeCache,
-            resolvedBaseProgram: compileContext.resolvedBaseProgram,
-            resolvedBaseCustomVariant: compileContext.resolvedBaseCustomVariant,
-            resolvedBaseCustomVariantMgloBytes:
-              compileContext.resolvedBaseCustomVariantMgloBytes,
-            baseJitDiagnostics: compileContext.baseJitDiagnostics,
-          }
-        );
-
-        if (runId !== downloadRunRef.current) {
-          return;
-        }
-        const { output, analysis } = result;
-        if (output) {
-          const downloadName = gametypeSaveFileName(fileName, format);
-          const saveResult = await saveGametypeBytes(
-            output,
-            format,
-            downloadName
-          );
-          if (saveResult.saved) {
-            setCompiledSize(
-              analysis.compiledByteLength ??
-                (format === "mglo" ? output.length : null)
-            );
-            setAnalysis({
-              ...analysis,
-              message: saveResult.path
-                ? translate("status_saved_to_path", { path: saveResult.path })
-                : translate("status_saved_to_downloads", {
-                    name: downloadName,
-                  }),
-            });
-          } else {
-            setAnalysis({
-              ...analysis,
-              compileState: "idle",
-              message: translate("status_save_cancelled"),
-            });
-          }
-          setCompileState(saveResult.saved ? analysis.compileState : "idle");
-          return;
-        }
-        setAnalysis(analysis);
-        setCompileState(analysis.compileState);
-      })();
-    },
-    [
-      baseProgram,
-      baselineSource,
-      fileName,
-      includeRoot,
-      originalBytes,
-      resolveCompileContext,
-    ]
-  );
-
-  const buildVariant = useCallback(() => {
-    if (
-      !activeWorkspace ||
-      activeWorkspace.type !== "tauri" ||
-      !activeWorkspace.outputPath?.trim() ||
-      !fileName
-    ) {
-      return;
-    }
-
-    const runId = ++downloadRunRef.current;
-    const source = getEditorSourceRef.current();
-    setCompileState("parsing");
-    setAnalysis((current) => ({
-      ...current,
-      compileState: "parsing",
-      message: translate("status_building_mglo_bin"),
-    }));
-
-    void (async () => {
-      const compileContext = await resolveCompileContext(
-        source,
-        fileName,
-        includeRoot
-      );
-      if (!compileContext.ok) {
-        setIncludeFileCache(undefined);
-        setAnalysis(compileContext.analysis);
-        setCompileState("error");
-        return;
-      }
-
-      setIncludeFileCache(compileContext.includeCache);
-
-      const result = await requestCompileDownloadInWorker(
-        source,
-        runId,
-        "mglo",
-        originalBytes,
-        baseProgram,
-        baselineSource,
-        {
-          includeCache: compileContext.includeCache,
-          resolvedBaseProgram: compileContext.resolvedBaseProgram,
-          resolvedBaseCustomVariant: compileContext.resolvedBaseCustomVariant,
-          resolvedBaseCustomVariantMgloBytes:
-            compileContext.resolvedBaseCustomVariantMgloBytes,
-          baseJitDiagnostics: compileContext.baseJitDiagnostics,
-        }
-      );
-
-      if (runId !== downloadRunRef.current) {
-        return;
-      }
-
-      const { output, analysis } = result;
-      if (!output) {
-        setAnalysis(analysis);
-        setCompileState(analysis.compileState);
-        return;
-      }
-
-      try {
-        await writeBuildOutputsToWorkspace(
-          activeWorkspace,
-          fileName,
-          output,
-          megaloVersionId
-        );
-        setCompiledSize(analysis.compiledByteLength ?? output.length);
-        setAnalysis({
-          ...analysis,
-          message: translate("status_built_outputs", {
-            mglo: gametypeSaveFileName(fileName, "mglo"),
-            gvar: gametypeSaveFileName(fileName, "gvar"),
-          }),
-        });
-        setCompileState(analysis.compileState);
-        setLocalDiskRevision((value) => value + 1);
-      } catch (error) {
-        setAnalysis({
-          ...analysis,
-          compileState: "error",
-          errorCount: 1,
-          message: String(error),
-        });
-        setCompileState("error");
-      }
-    })();
-  }, [
-    activeWorkspace,
-    baseProgram,
-    baselineSource,
-    fileName,
-    includeRoot,
-    originalBytes,
-    resolveCompileContext,
-  ]);
-
-  const megaloVersionId = activeWorkspace?.megaloVersion ?? "107-mcc";
-
-  const variantCapacity = activeWorkspace
-    ? VARIANT_STORAGE_CAPACITY
-    : VARIANT_CAPACITY_BY_MEGALO_VERSION["107-mcc"];
-
-  const statusMessage =
-    compileState === "error" && analysis.diagnostics.length > 0
-      ? failedToCompileStatus(analysis.errorCount)
-      : (loadError ?? analysis.message);
-
-  const variantBytes =
-    analysis.compiledByteLength ??
-    compiledSize ??
-    (originalBytes === null ? null : originalBytes.length);
-
-  const variantLimitUsage = analysis.limitUsage ?? null;
-
-  useEffect(() => {
-    setMegaloPathOpenHandler(async ({ kind, path }) => {
-      const resolved = await resolveOpenablePathReference(kind, path, {
-        workspace: activeWorkspace,
-        currentFilePath: includeRoot?.absoluteFilePath ?? null,
-        includeCache: includeFileCache,
-      });
-      if (!resolved) {
-        console.warn(
-          `[megacrow] could not open ${kind} path: ${path}` +
-            (kind === "base" ? " (source .txt not found)" : "")
-        );
-        return;
-      }
-      loadMegaloSource(resolved.text, resolved.displayName, {
-        absoluteFilePath: resolved.absoluteFilePath,
-      });
-    });
-    return () => setMegaloPathOpenHandler(null);
-  }, [activeWorkspace, includeRoot, includeFileCache, loadMegaloSource]);
-
-  useEffect(() => {
-    setMegaloDefinitionOpenHandler(async ({ file, line, column }) => {
-      const resolved = await resolveOpenablePathReference("include", file, {
-        workspace: activeWorkspace,
-        currentFilePath: includeRoot?.absoluteFilePath ?? null,
-        includeCache: includeFileCache,
-      });
-      if (!resolved) {
-        console.warn(`[megacrow] could not open definition file: ${file}`);
-        return;
-      }
-      loadMegaloSource(resolved.text, resolved.displayName, {
-        absoluteFilePath: resolved.absoluteFilePath,
-      });
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          editorNavigateRef.current?.(line, column);
-        });
-      });
-    });
-    return () => setMegaloDefinitionOpenHandler(null);
-  }, [activeWorkspace, includeRoot, includeFileCache, loadMegaloSource]);
-
-  const handleMotdDismiss = () => {
-    if (motdCountsViewRef.current) {
-      recordMotdView(CURRENT_MOTD.id);
-    }
-    motdCountsViewRef.current = false;
-    setMotdOpen(false);
-  };
-
-  const showMotdPreview = () => {
-    motdCountsViewRef.current = false;
-    setMotdOpen(true);
-  };
-
-  useEffect(() => {
-    if (updateCheckDoneRef.current || !workspacesReady || !megacrowSettings) {
-      return;
-    }
-    if (!isTauriRuntime()) {
-      updateCheckDoneRef.current = true;
-      return;
-    }
-
-    let cancelled = false;
-    updateCheckDoneRef.current = true;
-    void checkForAppUpdate({
-      currentBuildString: MEGACROW_BUILD_STRING,
-      skippedUpdateVersion: megacrowSettings.skippedUpdateVersion,
-    }).then((result) => {
-      if (cancelled || result.kind !== "available") {
-        return;
-      }
-      setUpdateRelease(result.release);
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [megacrowSettings, workspacesReady]);
-
-  useEffect(() => {
-    if (!updateRelease || motdOpen) {
-      setUpdateOpen(false);
-      return;
-    }
-    setUpdateOpen(true);
-  }, [motdOpen, updateRelease]);
-
-  const handleUpdateDismiss = useCallback(() => {
-    setUpdateOpen(false);
-    setUpdateRelease(null);
-  }, []);
-
-  const handleUpdateSkip = useCallback(() => {
-    if (!(megacrowSettings && updateRelease)) {
-      setUpdateOpen(false);
-      setUpdateRelease(null);
-      return;
-    }
-    const next = mergeAppSettings(megacrowSettings, {
-      skippedUpdateVersion: updateRelease.tagName,
-    });
-    setUpdateOpen(false);
-    setUpdateRelease(null);
-    void commitSettings(next);
-  }, [commitSettings, megacrowSettings, updateRelease]);
 
   const {
     width: sidebarWidth,
@@ -1834,6 +183,39 @@ export function App() {
     return () => setIdePaletteOpener(null);
   }, []);
 
+  const handleFileDeleted = useCallback(
+    (name: string) => {
+      workspaces.handleFileDeleted(() =>
+        document.handleActiveFileDeleted(name)
+      );
+    },
+    [document, workspaces]
+  );
+
+  const handleFileRenamed = useCallback(
+    (oldName: string, newName: string, absoluteFilePath: string) => {
+      workspaces.bumpLocalDiskRevision();
+      fileNav.handleFileRenamed(oldName, newName, absoluteFilePath);
+      document.handleFileRenamedUpdate(oldName, newName, absoluteFilePath);
+    },
+    [document, fileNav, workspaces]
+  );
+
+  const megaloVersionId = activeWorkspace?.megaloVersion ?? "107-mcc";
+  const variantCapacity = activeWorkspace
+    ? VARIANT_STORAGE_CAPACITY
+    : VARIANT_CAPACITY_BY_MEGALO_VERSION["107-mcc"];
+
+  const statusMessage =
+    compile.compileState === "error" && compile.analysis.diagnostics.length > 0
+      ? failedToCompileStatus(compile.analysis.errorCount)
+      : (document.loadError ?? compile.analysis.message);
+
+  const variantBytes =
+    compile.analysis.compiledByteLength ??
+    compile.compiledSize ??
+    (document.originalBytes === null ? null : document.originalBytes.length);
+
   return (
     <IdeLocaleProvider locale={settings.locale}>
       <div className="app">
@@ -1853,36 +235,36 @@ export function App() {
         />
         <AddWorkspaceModal
           initialWorkspace={
-            editingWorkspaceId
+            workspaces.editingWorkspaceId
               ? (megacrowSettings?.workspaces.find(
-                  (workspace) => workspace.id === editingWorkspaceId
+                  (workspace) => workspace.id === workspaces.editingWorkspaceId
                 ) ?? null)
               : null
           }
           onCancel={() => {
-            setAddWorkspaceOpen(false);
-            setAddWorkspaceRequired(false);
-            setEditingWorkspaceId(null);
+            workspaces.setAddWorkspaceOpen(false);
+            workspaces.setAddWorkspaceRequired(false);
+            workspaces.setEditingWorkspaceId(null);
           }}
-          onSave={handleSaveWorkspace}
-          open={addWorkspaceOpen && workspacesReady}
-          required={addWorkspaceRequired}
+          onSave={workspaces.handleSaveWorkspace}
+          open={workspaces.addWorkspaceOpen && workspacesReady}
+          required={workspaces.addWorkspaceRequired}
         />
         <Toolbar
           canBuild={
-            !!fileName &&
+            !!document.fileName &&
             activeWorkspace?.type === "tauri" &&
             !!activeWorkspace.outputPath?.trim() &&
-            !isPlainTextDocument
+            !document.isPlainTextDocument
           }
-          canExport={!isPlainTextDocument}
-          canNavigateBack={canNavigateFileNavBack(fileNav)}
-          canNavigateForward={canNavigateFileNavForward(fileNav)}
-          fileName={fileName}
-          onBuild={buildVariant}
-          onCompile={compileDownload}
-          onNavigateBack={handleNavigateBack}
-          onNavigateForward={handleNavigateForward}
+          canExport={!document.isPlainTextDocument}
+          canNavigateBack={fileNav.canNavigateBack}
+          canNavigateForward={fileNav.canNavigateForward}
+          fileName={document.fileName}
+          onBuild={compile.buildVariant}
+          onCompile={compile.compileDownload}
+          onNavigateBack={fileNav.handleNavigateBack}
+          onNavigateForward={fileNav.handleNavigateForward}
           onSettingsChange={handleSettingsChange}
           onShowMotd={showMotdPreview}
           onToggleSidebar={toggleSidebar}
@@ -1900,37 +282,41 @@ export function App() {
             inert={sidebarOpen ? undefined : true}
           >
             <SidebarVariantHeader
-              absoluteFilePath={includeRoot?.absoluteFilePath ?? null}
-              baselineSource={baselineSource}
-              baseProgram={baseProgram}
-              compiledMetadata={analysis.compiledMetadata}
-              fileBytes={originalBytes}
-              fileName={fileName}
-              includeCache={includeFileCache}
+              absoluteFilePath={document.includeRoot?.absoluteFilePath ?? null}
+              baselineSource={document.baselineSource}
+              baseProgram={document.baseProgram}
+              compiledMetadata={compile.analysis.compiledMetadata}
+              fileBytes={document.originalBytes}
+              fileName={document.fileName}
+              includeCache={document.includeFileCache}
               objectListNames={objectListNames}
-              source={outlineSource}
+              source={document.outlineSource}
             />
             <div className="sidebar-body">
               <FilesPanel
-                activeFileName={fileName}
-                localDiskRevision={localDiskRevision}
+                activeFileName={document.fileName}
+                localDiskRevision={workspaces.localDiskRevision}
                 objectListNames={objectListNames}
-                onAddWorkspace={handleAddWorkspace}
-                onClearEditor={clearWorkspace}
-                onDeleteWorkspace={handleDeleteWorkspace}
-                onEditWorkspace={handleEditWorkspace}
+                onAddWorkspace={workspaces.handleAddWorkspace}
+                onClearEditor={document.clearWorkspace}
+                onDeleteWorkspace={workspaces.handleDeleteWorkspace}
+                onEditWorkspace={workspaces.handleEditWorkspace}
                 onFileDeleted={handleFileDeleted}
                 onFileRenamed={handleFileRenamed}
                 onMissingObjectListNamesChange={
-                  handleMissingObjectListNamesChange
+                  compile.handleMissingObjectListNamesChange
                 }
-                onOpenSource={loadMegaloSource}
+                onOpenSource={document.loadMegaloSource}
                 onSelectMegaloVersion={
-                  isTauriRuntime() ? undefined : handleSelectMegaloVersion
+                  isTauriRuntime()
+                    ? undefined
+                    : workspaces.handleSelectMegaloVersion
                 }
-                onSelectWorkspace={handleSelectWorkspace}
-                onWorkspaceObjectListsChange={handleWorkspaceObjectListsChange}
-                opfsRevision={opfsRevision}
+                onSelectWorkspace={workspaces.handleSelectWorkspace}
+                onWorkspaceObjectListsChange={
+                  compile.handleWorkspaceObjectListsChange
+                }
+                opfsRevision={workspaces.opfsRevision}
                 workspace={activeWorkspace}
                 workspaceSwitcher={isTauriRuntime()}
                 workspaces={megacrowSettings?.workspaces ?? []}
@@ -1951,35 +337,37 @@ export function App() {
           />
           <section className="editor-pane">
             <div className="editor-pane-main">
-              {fileName ? (
+              {document.fileName ? (
                 <Editor
-                  diagnostics={analysis.diagnostics}
-                  documentContent={documentContent}
+                  diagnostics={compile.analysis.diagnostics}
+                  documentContent={document.documentContent}
                   editorTheme={settings.editorTheme}
                   editorWordWrap={settings.editorWordWrap}
                   onCompileDebounced={
-                    isObjectListDocumentOpen
-                      ? handleObjectListAnalyzeDebounced
-                      : isPlainTextDocument
+                    document.isObjectListDocumentOpen
+                      ? compile.handleObjectListAnalyzeDebounced
+                      : document.isPlainTextDocument
                         ? undefined
-                        : handleCompileDebounced
+                        : compile.handleCompileDebounced
                   }
-                  onCursorChange={handleCursorChange}
+                  onCursorChange={document.handleCursorChange}
                   onEditorWordWrapChange={(wordWrap) =>
                     handleSettingsChange({ editorWordWrap: wordWrap })
                   }
-                  onRegisterGetValue={handleRegisterGetValue}
-                  onRegisterNavigate={handleRegisterNavigate}
-                  onSourceDebounced={handleSourceDebounced}
-                  plainText={isPlainTextDocument}
-                  readOnly={!isTauriRuntime() && isObjectListDocumentOpen}
-                  syncRevision={syncRevision}
+                  onRegisterGetValue={document.handleRegisterGetValue}
+                  onRegisterNavigate={document.handleRegisterNavigate}
+                  onSourceDebounced={document.handleSourceDebounced}
+                  plainText={document.isPlainTextDocument}
+                  readOnly={
+                    !isTauriRuntime() && document.isObjectListDocumentOpen
+                  }
+                  syncRevision={document.syncRevision}
                 />
               ) : (
                 <EditorEmptyState />
               )}
             </div>
-            {fileName && diagnosticsOpen && (
+            {document.fileName && diagnosticsOpen && (
               <>
                 <div
                   aria-label={translate("app_resize_problems_pane")}
@@ -1995,27 +383,27 @@ export function App() {
                   diagnostics={displayDiagnostics}
                   height={problemsPaneHeight}
                   onClose={() => setDiagnosticsOpen(false)}
-                  onNavigate={handleNavigateToDiagnostic}
+                  onNavigate={document.handleNavigateToDiagnostic}
                 />
               </>
             )}
           </section>
         </div>
         <StatusBar
-          byteDiffCount={analysis.byteDiffCount}
-          byteIdentical={analysis.byteIdentical}
-          column={cursorColumn}
-          compileState={compileState}
+          byteDiffCount={compile.analysis.byteDiffCount}
+          byteIdentical={compile.analysis.byteIdentical}
+          column={document.cursorColumn}
+          compileState={compile.compileState}
           diagnosticsOpen={diagnosticsOpen}
-          errorCount={analysis.errorCount}
-          line={cursorLine}
+          errorCount={compile.analysis.errorCount}
+          line={document.cursorLine}
           megaCrowVersion={MEGACROW_BUILD_STRING}
           megaloVersionId={megaloVersionId}
           message={statusMessage}
-          onToggleDiagnostics={handleToggleDiagnostics}
+          onToggleDiagnostics={() => setDiagnosticsOpen((open) => !open)}
           variantBytes={variantBytes}
           variantCapacity={variantCapacity}
-          variantLimitUsage={variantLimitUsage}
+          variantLimitUsage={compile.analysis.limitUsage ?? null}
           warningCount={warningCount}
         />
       </div>

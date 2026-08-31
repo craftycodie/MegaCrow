@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import type { AppSettings, CompilerProfile } from "../lib/appSettings";
-import { dismissIfBackdropMouseDown } from "../lib/dismissIfBackdrop";
-import { isTauriRuntime } from "../lib/tauriRuntime";
+import { DOCS_PATHS, isTauriRuntime, openDocs } from "../desktop";
 import { useT } from "../localization";
 import { EDITOR_THEME_OPTIONS } from "../monaco/theme";
-import { DOCS_PATHS, DocsHelpButton } from "./DocsHelpButton";
+import type { AppSettings, CompilerProfile } from "../workspace";
+import { DocsHelpButton } from "./DocsHelpButton";
+import { dismissIfBackdropMouseDown } from "./dialogs/dismissIfBackdrop";
 
 interface Props {
   onChange: (patch: Partial<AppSettings>) => void;
@@ -126,6 +126,29 @@ export function SettingsMenu({ settings, onChange }: Props) {
                     <option value="megaloedit">MegaloEdit</option>
                   </select>
                 </label>
+
+                {settings.compilerProfile === "megaloedit" ? (
+                  <div className="settings-warning-card" role="note">
+                    <p className="settings-warning-card-text">
+                      {t("settings_megaloedit_warning_before")}
+                      <button
+                        aria-label={t("docs_open_megalo_headaches")}
+                        className="settings-warning-card-link"
+                        onClick={() => {
+                          void openDocs(DOCS_PATHS.megaloHeadaches).catch(
+                            () => {
+                              // Best-effort docs link.
+                            }
+                          );
+                        }}
+                        type="button"
+                      >
+                        {t("settings_megaloedit_warning_link")}
+                      </button>
+                      {t("settings_megaloedit_warning_after")}
+                    </p>
+                  </div>
+                ) : null}
 
                 <label className="settings-toggle">
                   <input

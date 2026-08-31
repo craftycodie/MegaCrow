@@ -1888,7 +1888,6 @@ var VersionConfiguration49 = class _VersionConfiguration49 extends VersionConfig
     "vehicle_sets.txt",
     "strings.txt"
   ];
-  /** Derived from omaha_alpha variable metadata bit-widths. */
   static VARIABLE_LIMITS = {
     [0 /* Global */]: {
       [1 /* Number */]: 12,
@@ -1909,14 +1908,14 @@ var VersionConfiguration49 = class _VersionConfiguration49 extends VersionConfig
       [0 /* Timer */]: 4,
       [2 /* Team */]: 3,
       [3 /* Player */]: 3,
-      [4 /* Object */]: 6
+      [4 /* Object */]: 4
     },
     [3 /* Object */]: {
       [1 /* Number */]: 8,
       [0 /* Timer */]: 4,
-      [2 /* Team */]: 3,
+      [2 /* Team */]: 2,
       [3 /* Player */]: 4,
-      [4 /* Object */]: 6
+      [4 /* Object */]: 4
     },
     [4 /* Temporary */]: {
       [1 /* Number */]: 0,
@@ -1929,7 +1928,7 @@ var VersionConfiguration49 = class _VersionConfiguration49 extends VersionConfig
     return {
       variables: _VersionConfiguration49.VARIABLE_LIMITS,
       objectsUsed: 2048,
-      triggers: 320,
+      triggers: 256,
       conditions: 512,
       actions: 1024,
       userDefinedOptions: 16,
@@ -1975,7 +1974,6 @@ var VersionConfiguration73 = class _VersionConfiguration73 extends VersionConfig
     "vehicle_sets.txt",
     "strings.txt"
   ];
-  /** Derived from omaha_delta variable metadata bit-widths. */
   static VARIABLE_LIMITS = {
     [0 /* Global */]: {
       [1 /* Number */]: 12,
@@ -1996,14 +1994,14 @@ var VersionConfiguration73 = class _VersionConfiguration73 extends VersionConfig
       [0 /* Timer */]: 4,
       [2 /* Team */]: 4,
       [3 /* Player */]: 4,
-      [4 /* Object */]: 6
+      [4 /* Object */]: 4
     },
     [3 /* Object */]: {
       [1 /* Number */]: 8,
       [0 /* Timer */]: 4,
-      [2 /* Team */]: 3,
+      [2 /* Team */]: 2,
       [3 /* Player */]: 4,
-      [4 /* Object */]: 6
+      [4 /* Object */]: 4
     },
     [4 /* Temporary */]: {
       [1 /* Number */]: 0,
@@ -2016,7 +2014,7 @@ var VersionConfiguration73 = class _VersionConfiguration73 extends VersionConfig
     return {
       variables: _VersionConfiguration73.VARIABLE_LIMITS,
       objectsUsed: 2048,
-      triggers: 320,
+      triggers: 256,
       conditions: 512,
       actions: 1024,
       userDefinedOptions: 16,

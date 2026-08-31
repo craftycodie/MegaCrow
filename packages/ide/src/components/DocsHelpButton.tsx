@@ -1,4 +1,4 @@
-import { DOCS_PATHS, openDocs } from "../lib/openDocs";
+import { DOCS_PATHS, openDocs } from "../desktop";
 import { useT } from "../localization";
 
 function InfoIcon() {

@@ -1343,6 +1343,45 @@ body {
   background-color: #1e1e1e;
 }
 
+.settings-warning-card {
+  padding: 10px 12px;
+  margin-top: 4px;
+  background: rgba(204, 167, 0, 0.08);
+  border: 1px solid rgba(204, 167, 0, 0.35);
+  border-radius: 6px;
+}
+
+.settings-warning-card-text {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-primary);
+}
+
+.settings-warning-card-link {
+  display: inline;
+  padding: 0;
+  font: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: #cca700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+.settings-warning-card-link:hover {
+  color: #e0bc00;
+}
+
+.settings-warning-card-link:focus-visible {
+  outline: 1px solid #cca700;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
 .settings-input:focus,
 .settings-select:focus {
   outline: none;

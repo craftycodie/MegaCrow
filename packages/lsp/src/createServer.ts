@@ -1,32 +1,28 @@
 import type { ObjectLists, SupportedLocale } from "@megacrow/megalo";
-import { setLocale } from "@megacrow/megalo";
+import { getQuotedPathCompletionQuery, setLocale } from "@megacrow/megalo";
+import type { Connection } from "vscode-languageserver";
 import type {
-  Connection,
   DidChangeTextDocumentParams,
   InitializeParams,
   InitializeResult,
-} from "vscode-languageserver/browser";
+} from "vscode-languageserver-protocol";
 import { TextDocumentSyncKind } from "vscode-languageserver-protocol";
 import { TextDocument } from "vscode-languageserver-textdocument";
-import type { Diagnostic } from "vscode-languageserver-types";
-import type { AnalysisSnapshot } from "./core";
+import { requestArtifactsFromSnapshot } from "./artifacts";
+import { createCoalescer, createPromiseCoalescer } from "./coalesce";
 import {
-  analyzeAndCompile,
-  analyzeDocumentSnapshot,
-  analyzeObjectListFor,
-  type CompileResolvers,
   completionsFromSnapshot,
-  definitionFromSnapshot,
-  getQuotedPathCompletionQuery,
-  getSessionMegaloVersion,
   hoverFromSnapshot,
+  pathCompletionsFromEntries,
+} from "./completions";
+import { definitionFromSnapshot } from "./definition";
+import { analyzeObjectListFor, versionConfigurationFor } from "./diagnostics";
+import { DocumentStore } from "./documentStore";
+import {
   MEGACROW_ANALYZE_OBJECT_LIST_METHOD,
-  MEGACROW_COMPILE_METHOD,
   MEGACROW_LIST_DIRECTORY_METHOD,
   MEGACROW_REQUEST_ARTIFACTS_METHOD,
   MEGACROW_RESET_SESSION_METHOD,
-  MEGACROW_RESOLVE_BASE_FILE_METHOD,
-  MEGACROW_RESOLVE_INCLUDE_METHOD,
   MEGACROW_SET_COMPILER_SETTINGS_METHOD,
   MEGACROW_SET_LOCALE_METHOD,
   MEGACROW_SET_MEGACROW_EXTENSIONS_METHOD,
@@ -36,16 +32,10 @@ import {
   MEGACROW_VERSION_CONFIGURATION_METHOD,
   type MegacrowAnalyzeObjectListParams,
   type MegacrowAnalyzeObjectListResult,
-  type MegacrowCompileParams,
-  type MegacrowCompileResult,
   type MegacrowListDirectoryParams,
   type MegacrowListDirectoryResult,
   type MegacrowRequestArtifactsParams,
   type MegacrowRequestArtifactsResult,
-  type MegacrowResolveBaseFileParams,
-  type MegacrowResolveBaseFileResult,
-  type MegacrowResolveIncludeParams,
-  type MegacrowResolveIncludeResult,
   type MegacrowSetCompilerSettingsParams,
   type MegacrowSetLocaleParams,
   type MegacrowSetMegacrowExtensionsParams,
@@ -53,55 +43,20 @@ import {
   type MegacrowSetObjectListsParams,
   type MegacrowSetResolveBaseFileParams,
   type MegacrowVersionConfigurationResult,
-  pathCompletionsFromEntries,
-  requestArtifactsFromSnapshot,
   SEMANTIC_TOKENS_LEGEND,
-  semanticTokensFromSnapshot,
-  setSessionCompilerSettings,
-  setSessionMegacrowExtensions,
-  setSessionMegaloVersion,
-  versionConfigurationFor,
-} from "./core";
+} from "./protocol";
+import { createResolvers } from "./resolvers";
+import { MegacrowSession } from "./sessionSettings";
+import { SnapshotCache } from "./snapshotCache";
 
-/**
- * Bind Megalo language-server handlers to an already-created LSP connection
- * (browser worker or Node stdio/IPC).
- */
 export const startMegacrowLanguageServer = (connection: Connection): void => {
-  const documents = new Map<string, TextDocument>();
+  const session = new MegacrowSession();
+  const documents = new DocumentStore();
+  const snapshotCache = new SnapshotCache();
 
-  /** Workspace object lists from the IDE; `undefined` → bundled defaults. */
   let workspaceObjectLists: ObjectLists | undefined;
-
-  /**
-   * When false (no workspace output folder), omit `resolveBaseFile` so sibling
-   * `.txt` JIT runs without a "compiled from source" warning.
-   */
   let resolveBaseFileEnabled = true;
-
-  interface SnapshotCacheEntry {
-    semanticTokens: number[];
-    snapshot: AnalysisSnapshot;
-    version: number;
-  }
-
-  const snapshotCache = new Map<string, SnapshotCacheEntry>();
-  const snapshotInflight = new Map<string, Promise<SnapshotCacheEntry>>();
-
-  /** Coalesce didChange analyzes: one in flight; always process the newest pending. */
-  let publishPending: { uri: string; text: string; version: number } | null =
-    null;
-  let publishBusy = false;
-  /** Bumped on session reset so in-flight publishes discard their results. */
   let sessionEpoch = 0;
-
-  /** Coalesce requestArtifacts: one in flight; newest params win. */
-  let artifactsPending: {
-    params: MegacrowRequestArtifactsParams;
-    resolve: (value: MegacrowRequestArtifactsResult) => void;
-    reject: (reason: unknown) => void;
-  } | null = null;
-  let artifactsBusy = false;
 
   const staleArtifactsResult = (
     version: number
@@ -112,213 +67,64 @@ export const startMegacrowLanguageServer = (connection: Connection): void => {
     diagnostics: [],
   });
 
-  const clearDocumentState = (uri: string): void => {
-    documents.delete(uri);
-    snapshotCache.delete(uri);
-    connection.sendDiagnostics({
-      uri,
-      diagnostics: [],
-    });
-  };
+  const resolverOptions = () => ({
+    objectLists: workspaceObjectLists,
+    resolvers: createResolvers(connection, resolveBaseFileEnabled),
+  });
 
-  const resetSession = (): void => {
-    sessionEpoch += 1;
-    publishPending = null;
-    if (artifactsPending) {
-      artifactsPending.resolve(
-        staleArtifactsResult(
-          documents.get(artifactsPending.params.textDocument.uri)?.version ?? 0
-        )
-      );
-      artifactsPending = null;
+  const publishCoalescer = createCoalescer<{
+    uri: string;
+    text: string;
+    version: number;
+  }>(async (job) => {
+    const epoch = sessionEpoch;
+    const entry = await snapshotCache.refresh(
+      job.uri,
+      job.text,
+      job.version,
+      session,
+      resolverOptions()
+    );
+    if (epoch !== sessionEpoch) {
+      return;
     }
-    const uris = [...documents.keys()];
-    documents.clear();
-    snapshotCache.clear();
-    snapshotInflight.clear();
-    for (const uri of uris) {
-      connection.sendDiagnostics({
-        uri,
-        diagnostics: [],
-      });
+    const doc = documents.get(job.uri);
+    if (!doc || doc.version !== job.version) {
+      return;
     }
-  };
-
-  const decodeBase64 = (dataBase64: string): Uint8Array => {
-    const binary = atob(dataBase64);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) {
-      bytes[i] = binary.charCodeAt(i);
-    }
-    return bytes;
-  };
-
-  const createResolvers = (): CompileResolvers => {
-    const resolvers: CompileResolvers = {
-      resolveInclude: async (
-        path: string,
-        ctx: { kind: "include" | "localized_include"; fromUri?: string }
-      ) => {
-        const result = (await connection.sendRequest(
-          MEGACROW_RESOLVE_INCLUDE_METHOD,
-          {
-            path,
-            kind: ctx.kind,
-            fromUri: ctx.fromUri,
-          } satisfies MegacrowResolveIncludeParams
-        )) as MegacrowResolveIncludeResult;
-
-        if ("error" in result) {
-          // Missing files return null so callers can fall back / emit DX.
-          return null;
-        }
-        return { text: result.text, uri: result.uri };
-      },
-    };
-
-    if (resolveBaseFileEnabled) {
-      resolvers.resolveBaseFile = async (
-        path: string,
-        ctx: { fromUri?: string }
-      ) => {
-        const result = (await connection.sendRequest(
-          MEGACROW_RESOLVE_BASE_FILE_METHOD,
-          {
-            path,
-            fromUri: ctx.fromUri,
-          } satisfies MegacrowResolveBaseFileParams
-        )) as MegacrowResolveBaseFileResult;
-
-        if ("error" in result) {
-          // Missing .mglo must be null so JIT can compile the sibling .txt.
-          return null;
-        }
-        return decodeBase64(result.dataBase64);
-      };
-    }
-
-    return resolvers;
-  };
-
-  const refreshSnapshot = (
-    uri: string,
-    text: string,
-    version: number
-  ): Promise<SnapshotCacheEntry> => {
-    const cached = snapshotCache.get(uri);
-    if (cached && cached.version === version) {
-      return Promise.resolve(cached);
-    }
-
-    const inflightKey = `${uri}:${version}`;
-    const existing = snapshotInflight.get(inflightKey);
-    if (existing) {
-      return existing;
-    }
-
-    const promise = (async () => {
-      const snapshot = await analyzeDocumentSnapshot(text, {
-        version: getSessionMegaloVersion(),
+    const artifacts = await requestArtifactsFromSnapshot(
+      entry.snapshot,
+      session,
+      {
+        artifacts: ["diagnostics"],
+        documentVersion: job.version,
+        fromUri: job.uri,
         objectLists: workspaceObjectLists,
-        fromUri: uri,
-        resolvers: createResolvers(),
-      });
-      const entry: SnapshotCacheEntry = {
-        snapshot,
-        semanticTokens: semanticTokensFromSnapshot(snapshot),
-        version,
-      };
-      snapshotCache.set(uri, entry);
-      return entry;
-    })().finally(() => {
-      snapshotInflight.delete(inflightKey);
-    });
-
-    snapshotInflight.set(inflightKey, promise);
-    return promise;
-  };
-
-  const getCachedSnapshot = async (
-    uri: string,
-    doc: TextDocument
-  ): Promise<SnapshotCacheEntry> => {
-    const cached = snapshotCache.get(uri);
-    if (cached && cached.version === doc.version) {
-      return cached;
-    }
-    return await refreshSnapshot(uri, doc.getText(), doc.version);
-  };
-
-  /** Lex+parse, then compile for diagnostics (coalesced via drainPublish). */
-  const publishFor = async (
-    uri: string,
-    text: string,
-    version: number,
-    epoch: number
-  ): Promise<void> => {
-    const entry = await refreshSnapshot(uri, text, version);
+        resolvers: createResolvers(connection, resolveBaseFileEnabled),
+      }
+    );
     if (epoch !== sessionEpoch) {
       return;
     }
-    const doc = documents.get(uri);
-    if (!doc || doc.version !== version) {
-      return;
-    }
-    const artifacts = await requestArtifactsFromSnapshot(entry.snapshot, {
-      artifacts: ["diagnostics"],
-      documentVersion: version,
-      fromUri: uri,
-      objectLists: workspaceObjectLists,
-      resolvers: createResolvers(),
-    });
-    if (epoch !== sessionEpoch) {
-      return;
-    }
-    const latest = documents.get(uri);
-    if (!latest || latest.version !== version) {
+    const latest = documents.get(job.uri);
+    if (!latest || latest.version !== job.version) {
       return;
     }
     connection.sendDiagnostics({
-      uri,
+      uri: job.uri,
       diagnostics: artifacts.diagnostics ?? [],
     });
-  };
+  });
 
-  /**
-   * One analyze at a time. Intermediate keystrokes are dropped; only the newest
-   * pending document is processed after the current run finishes.
-   */
-  const drainPublish = async (): Promise<void> => {
-    if (publishBusy) {
-      return;
+  const invalidateAndRepublishAll = (): void => {
+    snapshotCache.clear();
+    for (const [uri, doc] of documents.entries()) {
+      publishCoalescer.schedule({
+        uri,
+        text: doc.getText(),
+        version: doc.version,
+      });
     }
-    publishBusy = true;
-    try {
-      while (publishPending) {
-        const job = publishPending;
-        const epoch = sessionEpoch;
-        publishPending = null;
-        const doc = documents.get(job.uri);
-        if (!doc || doc.version > job.version) {
-          continue;
-        }
-        await publishFor(job.uri, job.text, job.version, epoch);
-      }
-    } finally {
-      publishBusy = false;
-      if (publishPending) {
-        void drainPublish();
-      }
-    }
-  };
-
-  const schedulePublish = (
-    uri: string,
-    text: string,
-    version: number
-  ): void => {
-    publishPending = { uri, text, version };
-    void drainPublish();
   };
 
   const runRequestArtifacts = async (
@@ -344,16 +150,26 @@ export const startMegacrowLanguageServer = (connection: Connection): void => {
 
     const doc = documents.get(uri);
     const entry = doc
-      ? await getCachedSnapshot(uri, doc)
-      : await refreshSnapshot(uri, text, version);
+      ? await snapshotCache.getOrRefresh(uri, doc, session, resolverOptions())
+      : await snapshotCache.refresh(
+          uri,
+          text,
+          version,
+          session,
+          resolverOptions()
+        );
 
-    const artifacts = await requestArtifactsFromSnapshot(entry.snapshot, {
-      artifacts: params.artifacts,
-      documentVersion: entry.version,
-      fromUri: uri,
-      objectLists: params.objectLists ?? workspaceObjectLists,
-      resolvers: createResolvers(),
-    });
+    const artifacts = await requestArtifactsFromSnapshot(
+      entry.snapshot,
+      session,
+      {
+        artifacts: params.artifacts,
+        documentVersion: entry.version,
+        fromUri: uri,
+        objectLists: params.objectLists ?? workspaceObjectLists,
+        resolvers: createResolvers(connection, resolveBaseFileEnabled),
+      }
+    );
 
     if (
       params.artifacts.includes("semanticTokens") &&
@@ -376,66 +192,31 @@ export const startMegacrowLanguageServer = (connection: Connection): void => {
     return artifacts;
   };
 
-  /**
-   * Serialize artifact requests and keep only the newest. Callers whose work was
-   * superseded receive a cheap stub (IDE ignores via run id).
-   */
-  const drainArtifacts = async (): Promise<void> => {
-    if (artifactsBusy) {
-      return;
-    }
-    artifactsBusy = true;
-    try {
-      while (artifactsPending) {
-        const job = artifactsPending;
-        const epoch = sessionEpoch;
-        artifactsPending = null;
-        try {
-          const result = await runRequestArtifacts(job.params);
-          if (epoch !== sessionEpoch || artifactsPending) {
-            job.resolve(
-              staleArtifactsResult(
-                documents.get(job.params.textDocument.uri)?.version ?? 0
-              )
-            );
-          } else {
-            job.resolve(result);
-          }
-        } catch (error) {
-          if (epoch !== sessionEpoch || artifactsPending) {
-            job.resolve(
-              staleArtifactsResult(
-                documents.get(job.params.textDocument.uri)?.version ?? 0
-              )
-            );
-          } else {
-            job.reject(error);
-          }
-        }
-      }
-    } finally {
-      artifactsBusy = false;
-      if (artifactsPending) {
-        void drainArtifacts();
-      }
-    }
-  };
+  const artifactsCoalescer = createPromiseCoalescer<
+    MegacrowRequestArtifactsParams,
+    MegacrowRequestArtifactsResult
+  >(runRequestArtifacts, {
+    onSuperseded: (previous) => {
+      previous.resolve(
+        staleArtifactsResult(
+          documents.get(
+            (previous.job as MegacrowRequestArtifactsParams).textDocument.uri
+          )?.version ?? 0
+        )
+      );
+    },
+    captureEpoch: () => sessionEpoch,
+    isEpochStale: (epoch) => epoch !== sessionEpoch,
+    staleResult: () => staleArtifactsResult(0),
+  });
 
-  const enqueueRequestArtifacts = (
-    params: MegacrowRequestArtifactsParams
-  ): Promise<MegacrowRequestArtifactsResult> =>
-    new Promise((resolve, reject) => {
-      if (artifactsPending) {
-        artifactsPending.resolve(
-          staleArtifactsResult(
-            documents.get(artifactsPending.params.textDocument.uri)?.version ??
-              0
-          )
-        );
-      }
-      artifactsPending = { params, resolve, reject };
-      void drainArtifacts();
-    });
+  const resetSession = (): void => {
+    sessionEpoch += 1;
+    publishCoalescer.clearPending();
+    artifactsCoalescer.clearPending(staleArtifactsResult(0));
+    snapshotCache.clear();
+    documents.clearAllDiagnostics(connection);
+  };
 
   connection.onInitialize(
     (_params: InitializeParams): InitializeResult => ({
@@ -464,7 +245,7 @@ export const startMegacrowLanguageServer = (connection: Connection): void => {
     const { uri, languageId, version, text } = params.textDocument;
     const doc = TextDocument.create(uri, languageId, version, text);
     documents.set(uri, doc);
-    schedulePublish(uri, text, version);
+    publishCoalescer.schedule({ uri, text, version });
   });
 
   connection.onDidChangeTextDocument((params: DidChangeTextDocumentParams) => {
@@ -482,11 +263,13 @@ export const startMegacrowLanguageServer = (connection: Connection): void => {
       change.text
     );
     documents.set(uri, doc);
-    schedulePublish(uri, change.text, version);
+    publishCoalescer.schedule({ uri, text: change.text, version });
   });
 
   connection.onDidCloseTextDocument((params) => {
-    clearDocumentState(params.textDocument.uri);
+    const uri = params.textDocument.uri;
+    snapshotCache.delete(uri);
+    documents.clearDiagnostics(connection, uri);
   });
 
   connection.onNotification(MEGACROW_RESET_SESSION_METHOD, () => {
@@ -499,7 +282,12 @@ export const startMegacrowLanguageServer = (connection: Connection): void => {
     if (!doc) {
       return { data: [] };
     }
-    const entry = await getCachedSnapshot(uri, doc);
+    const entry = await snapshotCache.getOrRefresh(
+      uri,
+      doc,
+      session,
+      resolverOptions()
+    );
     return { data: entry.semanticTokens };
   });
 
@@ -509,7 +297,12 @@ export const startMegacrowLanguageServer = (connection: Connection): void => {
     if (!doc) {
       return null;
     }
-    const entry = await getCachedSnapshot(uri, doc);
+    const entry = await snapshotCache.getOrRefresh(
+      uri,
+      doc,
+      session,
+      resolverOptions()
+    );
     return definitionFromSnapshot(entry.snapshot, uri, params.position);
   });
 
@@ -519,7 +312,12 @@ export const startMegacrowLanguageServer = (connection: Connection): void => {
     if (!doc) {
       return null;
     }
-    const entry = await getCachedSnapshot(uri, doc);
+    const entry = await snapshotCache.getOrRefresh(
+      uri,
+      doc,
+      session,
+      resolverOptions()
+    );
     const hover = hoverFromSnapshot(entry.snapshot, params.position);
     if (!hover) {
       return null;
@@ -539,7 +337,12 @@ export const startMegacrowLanguageServer = (connection: Connection): void => {
     if (!doc) {
       return [];
     }
-    const entry = await getCachedSnapshot(uri, doc);
+    const entry = await snapshotCache.getOrRefresh(
+      uri,
+      doc,
+      session,
+      resolverOptions()
+    );
     const pathQuery = getQuotedPathCompletionQuery(
       entry.snapshot,
       params.position
@@ -566,16 +369,14 @@ export const startMegacrowLanguageServer = (connection: Connection): void => {
 
   connection.onRequest(
     MEGACROW_REQUEST_ARTIFACTS_METHOD,
-    (
-      params: MegacrowRequestArtifactsParams
-    ): Promise<MegacrowRequestArtifactsResult> =>
-      enqueueRequestArtifacts(params)
+    (params: MegacrowRequestArtifactsParams) =>
+      artifactsCoalescer.enqueue(params)
   );
 
   connection.onRequest(
     MEGACROW_VERSION_CONFIGURATION_METHOD,
     (): MegacrowVersionConfigurationResult =>
-      versionConfigurationFor(getSessionMegaloVersion())
+      versionConfigurationFor(session.megaloVersion)
   );
 
   connection.onRequest(
@@ -583,74 +384,14 @@ export const startMegacrowLanguageServer = (connection: Connection): void => {
     (
       params: MegacrowAnalyzeObjectListParams
     ): MegacrowAnalyzeObjectListResult =>
-      analyzeObjectListFor(params.text, getSessionMegaloVersion())
-  );
-
-  connection.onRequest(
-    MEGACROW_COMPILE_METHOD,
-    async (params: MegacrowCompileParams): Promise<MegacrowCompileResult> => {
-      const uri = params.textDocument.uri;
-      const text = params.text ?? documents.get(uri)?.getText() ?? "";
-      const existing = documents.get(uri);
-      const version = existing?.version ?? 0;
-      const epoch = sessionEpoch;
-      const objectLists = params.objectLists ?? workspaceObjectLists;
-
-      const publishIfCurrent = (diagnostics: Diagnostic[]): void => {
-        if (epoch !== sessionEpoch) {
-          return;
-        }
-        const latest = documents.get(uri);
-        if (!latest || latest.version !== version) {
-          return;
-        }
-        connection.sendDiagnostics({ uri, diagnostics });
-      };
-
-      // Prefer shared snapshot cache when text matches the synced document.
-      const cached = snapshotCache.get(uri);
-      if (
-        cached &&
-        cached.version === version &&
-        (params.text === undefined || params.text === cached.snapshot.source)
-      ) {
-        const artifacts = await requestArtifactsFromSnapshot(cached.snapshot, {
-          artifacts: ["diagnostics", "mglo"],
-          documentVersion: version,
-          fromUri: uri,
-          objectLists,
-          resolvers: createResolvers(),
-        });
-        publishIfCurrent(artifacts.diagnostics ?? []);
-        return {
-          ok: artifacts.ok === true,
-          diagnostics: artifacts.diagnostics ?? [],
-          dataBase64: artifacts.dataBase64,
-          metadata: artifacts.metadata,
-          error: artifacts.error,
-        };
-      }
-
-      const result = await analyzeAndCompile(text, {
-        version: getSessionMegaloVersion(),
-        objectLists,
-        fromUri: uri,
-        resolvers: createResolvers(),
-      });
-      publishIfCurrent(result.diagnostics);
-      return result;
-    }
+      analyzeObjectListFor(params.text, session.megaloVersion)
   );
 
   connection.onNotification(
     MEGACROW_SET_OBJECT_LISTS_METHOD,
     (params: MegacrowSetObjectListsParams) => {
       workspaceObjectLists = params.objectLists ?? undefined;
-      snapshotCache.clear();
-      snapshotInflight.clear();
-      for (const [uri, doc] of documents) {
-        schedulePublish(uri, doc.getText(), doc.version);
-      }
+      invalidateAndRepublishAll();
     }
   );
 
@@ -662,11 +403,7 @@ export const startMegacrowLanguageServer = (connection: Connection): void => {
         return;
       }
       resolveBaseFileEnabled = next;
-      snapshotCache.clear();
-      snapshotInflight.clear();
-      for (const [uri, doc] of documents) {
-        schedulePublish(uri, doc.getText(), doc.version);
-      }
+      invalidateAndRepublishAll();
     }
   );
 
@@ -675,52 +412,36 @@ export const startMegacrowLanguageServer = (connection: Connection): void => {
     (params: MegacrowSetLocaleParams) => {
       const next = (params.locale === "ja" ? "ja" : "en") as SupportedLocale;
       setLocale(next);
-      snapshotCache.clear();
-      snapshotInflight.clear();
-      for (const [uri, doc] of documents) {
-        schedulePublish(uri, doc.getText(), doc.version);
-      }
+      invalidateAndRepublishAll();
     }
   );
 
   connection.onNotification(
     MEGACROW_SET_MEGACROW_EXTENSIONS_METHOD,
     (params: MegacrowSetMegacrowExtensionsParams) => {
-      setSessionMegacrowExtensions(params.megacrowExtensions);
-      snapshotCache.clear();
-      snapshotInflight.clear();
-      for (const [uri, doc] of documents) {
-        schedulePublish(uri, doc.getText(), doc.version);
-      }
+      session.setMegacrowExtensions(params.megacrowExtensions);
+      invalidateAndRepublishAll();
     }
   );
 
   connection.onNotification(
     MEGACROW_SET_COMPILER_SETTINGS_METHOD,
     (params: MegacrowSetCompilerSettingsParams) => {
-      setSessionCompilerSettings(params.compilerSettings);
-      snapshotCache.clear();
-      snapshotInflight.clear();
-      for (const [uri, doc] of documents) {
-        schedulePublish(uri, doc.getText(), doc.version);
-      }
+      session.setCompilerSettings(params.compilerSettings);
+      invalidateAndRepublishAll();
     }
   );
 
   connection.onNotification(
     MEGACROW_SET_MEGALO_VERSION_METHOD,
     (params: MegacrowSetMegaloVersionParams) => {
-      if (!setSessionMegaloVersion(params.megaloVersion)) {
+      if (!session.setMegaloVersion(params.megaloVersion)) {
         console.warn(
           `[megacrow-lsp] ignored unknown megaloVersion: ${params.megaloVersion}`
         );
         return;
       }
-      snapshotCache.clear();
-      snapshotInflight.clear();
-      for (const [uri, doc] of documents) {
-        schedulePublish(uri, doc.getText(), doc.version);
-      }
+      invalidateAndRepublishAll();
     }
   );
 

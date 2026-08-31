@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { decodeTextFile } from "../lib/decodeTextFile";
-import type { FileProvider } from "../lib/fileProvider";
+import { decodeTextFile } from "../files";
+import type { FileProvider } from "../files/fileProvider";
 
 export function createNodeFileProvider(): FileProvider {
   return {

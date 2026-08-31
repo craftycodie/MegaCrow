@@ -15,7 +15,7 @@ import {
 import { isTriggerStatementBoundary } from "src/frontend/abstract-syntax-tree/parameters";
 import { variableTypeFromName } from "src/frontend/language-configuration/omni/variables";
 import { VariableScope } from "src/frontend/symbol-table";
-import { TokenKind } from "src/frontend/tokens";
+import { type Token, TokenKind } from "src/frontend/tokens";
 
 export const TEMPORARY_STORAGE_NAMES = [
   "number",

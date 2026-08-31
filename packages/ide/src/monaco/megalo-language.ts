@@ -3,23 +3,26 @@ import {
   SEMANTIC_TOKEN_TYPES,
 } from "@megacrow/megalo";
 import type { Monaco } from "@monaco-editor/react";
+import { diagnosticHasEditorSpan, type MegaloDiagnostic } from "../compile";
 import {
-  diagnosticHasEditorSpan,
-  type MegaloDiagnostic,
-} from "../lib/diagnostics";
+  findPathReferences,
+  getMegaloFoldRanges,
+  REGION_END,
+  REGION_START,
+} from "../editor";
 import {
   lspCompletions,
   lspDefinition,
   lspHover,
   lspSemanticTokens,
-} from "../lib/lspClient";
-import { getMegaloFoldRanges } from "../lib/megaloBlockFolding";
-import { findPathReferences } from "../lib/pathReferences";
-import { REGION_END, REGION_START } from "../lib/regionComments";
+} from "../lsp";
 import { applyEditorTheme } from "./theme";
 
 const MEGALO_LANGUAGE_ID = "megalo";
 type MegaloCodeEditor = ReturnType<Monaco["editor"]["getEditors"]>[number];
+type MegaloTextModel = Monaco["editor"]["ITextModel"];
+type MegaloPosition = Monaco["IPosition"];
+type MegaloUri = Monaco["Uri"];
 let languageBasicsRegistered = false;
 let semanticTokensDisposable: { dispose(): void } | undefined;
 let hoverDisposable: { dispose(): void } | undefined;
@@ -195,7 +198,7 @@ function clipSemanticTokenDataToModel(
   return relative;
 }
 
-export type { MegaloDiagnostic } from "../lib/diagnostics";
+export type { MegaloDiagnostic } from "../compile";
 
 function diagnosticToMarker(
   monaco: Monaco,
@@ -381,7 +384,7 @@ export function registerMegaloLanguage(monaco: Monaco): void {
     });
 
     monaco.languages.registerFoldingRangeProvider(MEGALO_LANGUAGE_ID, {
-      provideFoldingRanges(model) {
+      provideFoldingRanges(model: MegaloTextModel) {
         const lines = model.getLinesContent();
         return getMegaloFoldRanges(lines).map((range) => ({
           start: range.start,
@@ -399,7 +402,9 @@ export function registerMegaloLanguage(monaco: Monaco): void {
       () => {
         const editor =
           activeMegaloEditor ??
-          monaco.editor.getEditors().find((item) => item.hasTextFocus()) ??
+          monaco.editor
+            .getEditors()
+            .find((item: MegaloCodeEditor) => item.hasTextFocus()) ??
           monaco.editor.getEditors().at(-1);
         if (!editor) {
           return;
@@ -425,7 +430,7 @@ export function registerMegaloLanguage(monaco: Monaco): void {
             tokenModifiers: [...SEMANTIC_TOKEN_MODIFIERS],
           };
         },
-        async provideDocumentSemanticTokens(model) {
+        async provideDocumentSemanticTokens(model: MegaloTextModel) {
           const data = await lspSemanticTokens(model.getValue());
           return {
             data: new Uint32Array(clipSemanticTokenDataToModel(model, data)),
@@ -439,7 +444,7 @@ export function registerMegaloLanguage(monaco: Monaco): void {
 
   hoverDisposable?.dispose();
   hoverDisposable = monaco.languages.registerHoverProvider(MEGALO_LANGUAGE_ID, {
-    async provideHover(model, position) {
+    async provideHover(model: MegaloTextModel, position: MegaloPosition) {
       try {
         const hover = await lspHover(model.getValue(), {
           line: position.lineNumber - 1,
@@ -474,7 +479,10 @@ export function registerMegaloLanguage(monaco: Monaco): void {
   definitionDisposable = monaco.languages.registerDefinitionProvider(
     MEGALO_LANGUAGE_ID,
     {
-      async provideDefinition(model, position) {
+      async provideDefinition(
+        model: MegaloTextModel,
+        position: MegaloPosition
+      ) {
         try {
           const locations = await lspDefinition(model.getValue(), {
             line: position.lineNumber - 1,
@@ -515,7 +523,10 @@ export function registerMegaloLanguage(monaco: Monaco): void {
     MEGALO_LANGUAGE_ID,
     {
       triggerCharacters: [" ", ".", "_", '"', "/"],
-      async provideCompletionItems(model, position) {
+      async provideCompletionItems(
+        model: MegaloTextModel,
+        position: MegaloPosition
+      ) {
         try {
           const items = await lspCompletions(model.getValue(), {
             line: position.lineNumber - 1,
@@ -617,7 +628,7 @@ export function registerMegaloLanguage(monaco: Monaco): void {
 
   linkDisposable?.dispose();
   linkDisposable = monaco.languages.registerLinkProvider(MEGALO_LANGUAGE_ID, {
-    provideLinks(model) {
+    provideLinks(model: MegaloTextModel) {
       const references = findPathReferences(model.getValue());
       return {
         links: references.map((ref) => ({
@@ -634,7 +645,7 @@ export function registerMegaloLanguage(monaco: Monaco): void {
 
   if (!linkOpenerDisposable) {
     linkOpenerDisposable = monaco.editor.registerLinkOpener({
-      async open(resource) {
+      async open(resource: MegaloUri) {
         const pathDecoded = decodePathLinkUrl(resource);
         if (pathDecoded && pathOpenHandler) {
           await pathOpenHandler(pathDecoded);
@@ -652,7 +663,7 @@ export function registerMegaloLanguage(monaco: Monaco): void {
 
   if (!editorOpenerDisposable) {
     editorOpenerDisposable = monaco.editor.registerEditorOpener({
-      async openCodeEditor(_source, resource) {
+      async openCodeEditor(_source: MegaloCodeEditor, resource: MegaloUri) {
         const definitionDecoded = decodeDefinitionUrl(resource);
         if (!(definitionDecoded && definitionOpenHandler)) {
           return false;

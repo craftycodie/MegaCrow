@@ -109,6 +109,7 @@ const workspacePackagePlugin = {
         "../lsp/src/browser/index.ts"
       ),
       "@megacrow/lsp/core": path.resolve(rootDir, "../lsp/src/core.ts"),
+      "@megacrow/lsp/protocol": path.resolve(rootDir, "../lsp/src/protocol.ts"),
       "@megacrow/lsp": path.resolve(rootDir, "../lsp/src/node/index.ts"),
       "@megacrow/megalo": path.resolve(rootDir, "../megalo/src/index.ts"),
     };

@@ -1,18 +1,13 @@
-import {
-  type MouseEvent,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { type MouseEvent, useState } from "react";
 import { createPortal } from "react-dom";
-import { writeClipboardText } from "../lib/clipboard";
 import {
   diagnosticCanNavigate,
   type MegaloDiagnostic,
   objectListDisplayName,
-} from "../lib/diagnostics";
+} from "../compile";
+import { writeClipboardText } from "../desktop";
 import { translate, useT } from "../localization";
+import { useContextMenuPosition } from "../ui/useContextMenuPosition";
 
 interface Props {
   diagnostics: MegaloDiagnostic[];
@@ -103,48 +98,7 @@ function DiagnosticsContextMenu({
   onClose: () => void;
 }) {
   const t = useT();
-  const panelRef = useRef<HTMLDivElement>(null);
-
-  useLayoutEffect(() => {
-    if (!(menu && panelRef.current)) {
-      return;
-    }
-    const rect = panelRef.current.getBoundingClientRect();
-    const maxLeft = Math.max(8, window.innerWidth - rect.width - 8);
-    const maxTop = Math.max(8, window.innerHeight - rect.height - 8);
-    panelRef.current.style.left = `${Math.min(menu.x, maxLeft)}px`;
-    panelRef.current.style.top = `${Math.min(menu.y, maxTop)}px`;
-  }, [menu]);
-
-  useEffect(() => {
-    if (!menu) {
-      return;
-    }
-
-    const onPointerDown = (event: globalThis.MouseEvent) => {
-      if (panelRef.current?.contains(event.target as Node)) {
-        return;
-      }
-      onClose();
-    };
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    };
-
-    window.addEventListener("pointerdown", onPointerDown);
-    window.addEventListener("keydown", onKeyDown);
-    window.addEventListener("scroll", onClose, true);
-    window.addEventListener("resize", onClose);
-    return () => {
-      window.removeEventListener("pointerdown", onPointerDown);
-      window.removeEventListener("keydown", onKeyDown);
-      window.removeEventListener("scroll", onClose, true);
-      window.removeEventListener("resize", onClose);
-    };
-  }, [menu, onClose]);
+  const panelRef = useContextMenuPosition(menu, onClose);
 
   if (!menu) {
     return null;

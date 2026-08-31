@@ -42,6 +42,8 @@ import type {
 
 type SuggestCtx = CompletionContextBase;
 
+export type { SuggestCtx };
+
 /** Sentinel ends (and starts) mean "open" — visible through EOF / from file start. */
 const isOpenEnded = (offset: number): boolean =>
   offset === OPEN_ENDED_POSITION.localOffset;

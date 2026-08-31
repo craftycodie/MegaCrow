@@ -1,6 +1,6 @@
 import type { VariantLimitUsage } from "@megacrow/megalo";
 import { useRef } from "react";
-import type { CompileState } from "../lib/analyzeSource";
+import type { CompileState } from "../compile";
 import { type IdeMessageKey, useT } from "../localization";
 import { StatusIcon } from "./StatusIcon";
 import { VariantCapacityMeter } from "./VariantCapacityMeter";

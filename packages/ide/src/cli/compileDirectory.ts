@@ -1,4 +1,4 @@
-import { decodeTextFile } from "../lib/decodeTextFile";
+import { decodeTextFile } from "../files";
 import { readBaseDirective } from "./baseDirective";
 import {
   type CompileFileResult,

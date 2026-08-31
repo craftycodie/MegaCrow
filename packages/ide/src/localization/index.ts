@@ -44,6 +44,35 @@ export const failedToCompileStatus = (errorCount: number): string => {
   );
 };
 
+const DISK_ERROR_KEYS = {
+  "Cannot rename the workspace root": "disk_error_rename_root",
+  "Invalid folder name": "disk_error_invalid_folder_name",
+  "Invalid file name": "disk_error_invalid_file_name",
+  "Cannot move the workspace root": "disk_error_move_root",
+  "Cannot move a folder into itself": "disk_error_move_into_self",
+  "Cannot delete the workspace root": "disk_error_delete_root",
+  "Cannot duplicate the workspace root": "disk_error_duplicate_root",
+} as const satisfies Record<string, IdeMessageKey>;
+
+const LAUNCH_ERROR_KEYS = {
+  "Launching Halo MCC is only available in the desktop app":
+    "launch_mcc_desktop_only",
+  "Launching the game is only available in the desktop app":
+    "launch_game_desktop_only",
+} as const satisfies Record<string, IdeMessageKey>;
+
+export const translateDiskError = (error: unknown): string => {
+  const message = error instanceof Error ? error.message : String(error);
+  const key = DISK_ERROR_KEYS[message as keyof typeof DISK_ERROR_KEYS];
+  return key ? translate(key) : message;
+};
+
+export const translateLaunchError = (error: unknown): string => {
+  const message = error instanceof Error ? error.message : String(error);
+  const key = LAUNCH_ERROR_KEYS[message as keyof typeof LAUNCH_ERROR_KEYS];
+  return key ? translate(key) : message;
+};
+
 interface IdeLocaleContextValue {
   locale: IdeLocale;
   setLocale: (locale: IdeLocale) => void;

@@ -4,15 +4,10 @@ import {
   MEGALO_VERSIONS,
   type MegaloVersionId,
 } from "@megacrow/megalo";
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useT } from "../localization";
+import { usePopoverPosition } from "../ui/usePopoverPosition";
 
 const PANEL_WIDTH = 340;
 
@@ -81,38 +76,8 @@ export function MegaloVersionMenu({
 }: Props) {
   const t = useT();
   const [open, setOpen] = useState(false);
-  const [panelPos, setPanelPos] = useState<{ top: number; left: number }>({
-    top: 0,
-    left: 0,
-  });
-  const rootRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
-
-  const updatePanelPosition = useCallback(() => {
-    const trigger = triggerRef.current;
-    if (!trigger) {
-      return;
-    }
-    const rect = trigger.getBoundingClientRect();
-    const nextLeft = Math.min(
-      rect.left,
-      Math.max(8, window.innerWidth - PANEL_WIDTH - 8)
-    );
-    const nextTop = rect.bottom + 4;
-    setPanelPos((prev) =>
-      prev.top === nextTop && prev.left === nextLeft
-        ? prev
-        : { top: nextTop, left: nextLeft }
-    );
-  }, []);
-
-  useLayoutEffect(() => {
-    if (!open) {
-      return;
-    }
-    updatePanelPosition();
-  }, [open, updatePanelPosition]);
+  const { panelPos, panelRef, rootRef, triggerRef, updatePanelPosition } =
+    usePopoverPosition(open, { panelWidth: PANEL_WIDTH });
 
   useEffect(() => {
     if (!open) {
@@ -138,13 +103,9 @@ export function MegaloVersionMenu({
 
     window.addEventListener("pointerdown", onPointerDown);
     window.addEventListener("keydown", onKeyDown);
-    window.addEventListener("resize", updatePanelPosition);
-    window.addEventListener("scroll", updatePanelPosition, true);
     return () => {
       window.removeEventListener("pointerdown", onPointerDown);
       window.removeEventListener("keydown", onKeyDown);
-      window.removeEventListener("resize", updatePanelPosition);
-      window.removeEventListener("scroll", updatePanelPosition, true);
     };
   }, [open, updatePanelPosition]);
 

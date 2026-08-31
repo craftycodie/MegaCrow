@@ -1,8 +1,10 @@
 import { useMemo } from "react";
-import type { SourceAnalysis } from "../lib/analyzeSource";
-import { buildVariantIdentity } from "../lib/gametypeMetadata";
-import type { MegaloIncludeFileCache } from "../lib/includeDiagnostics";
-import type { MegaloProgram } from "../lib/megaloProgram";
+import type {
+  MegaloIncludeFileCache,
+  MegaloProgram,
+  SourceAnalysis,
+} from "../compile";
+import { buildVariantIdentity } from "../gametype";
 import { useIdeLocale, useT } from "../localization";
 
 interface Props {

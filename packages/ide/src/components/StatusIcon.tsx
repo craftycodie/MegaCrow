@@ -1,4 +1,4 @@
-import type { CompileState } from "../lib/analyzeSource";
+import type { CompileState } from "../compile";
 
 interface Props {
   state: CompileState;

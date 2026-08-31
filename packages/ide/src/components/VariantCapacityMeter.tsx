@@ -1,17 +1,9 @@
 import type { VariantLimitItem, VariantLimitUsage } from "@megacrow/megalo";
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import {
-  formatVariantBytes,
-  variantCapacityLevel,
-} from "../lib/variantCapacity";
+import { formatVariantBytes, variantCapacityLevel } from "../gametype";
 import { type IdeMessageKey, useT } from "../localization";
+import { usePopoverPosition } from "../ui/usePopoverPosition";
 
 const PANEL_WIDTH = 360;
 const PANEL_MAX_HEIGHT = 520;
@@ -196,38 +188,12 @@ export function VariantCapacityMeter({
 }: Props) {
   const t = useT();
   const [open, setOpen] = useState(false);
-  const [panelPos, setPanelPos] = useState<{ bottom: number; left: number }>({
-    bottom: 0,
-    left: 0,
+  const { panelPos, panelRef, rootRef, triggerRef } = usePopoverPosition(open, {
+    panelWidth: PANEL_WIDTH,
+    direction: "up",
+    offsetY: 6,
+    alignRight: true,
   });
-  const rootRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
-
-  const updatePanelPosition = useCallback(() => {
-    const trigger = triggerRef.current;
-    if (!trigger) {
-      return;
-    }
-    const rect = trigger.getBoundingClientRect();
-    const nextLeft = Math.min(
-      Math.max(8, rect.right - PANEL_WIDTH),
-      Math.max(8, window.innerWidth - PANEL_WIDTH - 8)
-    );
-    const nextBottom = Math.max(8, window.innerHeight - rect.top + 6);
-    setPanelPos((prev) =>
-      prev.bottom === nextBottom && prev.left === nextLeft
-        ? prev
-        : { bottom: nextBottom, left: nextLeft }
-    );
-  }, []);
-
-  useLayoutEffect(() => {
-    if (!open) {
-      return;
-    }
-    updatePanelPosition();
-  }, [open, updatePanelPosition]);
 
   useEffect(() => {
     if (!open) {
@@ -253,15 +219,11 @@ export function VariantCapacityMeter({
 
     window.addEventListener("pointerdown", onPointerDown);
     window.addEventListener("keydown", onKeyDown);
-    window.addEventListener("resize", updatePanelPosition);
-    window.addEventListener("scroll", updatePanelPosition, true);
     return () => {
       window.removeEventListener("pointerdown", onPointerDown);
       window.removeEventListener("keydown", onKeyDown);
-      window.removeEventListener("resize", updatePanelPosition);
-      window.removeEventListener("scroll", updatePanelPosition, true);
     };
-  }, [open, updatePanelPosition]);
+  }, [open, panelRef, rootRef]);
 
   if (usedBytes === null) {
     return null;

@@ -5,7 +5,6 @@ import {
   OverrideValueKind,
 } from "src/frontend/abstract-syntax-tree/elements/game_options";
 import { dxAssertionScope } from "src/frontend/intermediate-representation/diagnostics";
-import { assertNotErrorNode } from "src/frontend/intermediate-representation/diagnostics/assertNotErrorNode";
 import { applyBuiltinLockHide } from "src/frontend/intermediate-representation/elements/game_options/override/helpers";
 import { lowerLoadoutPaletteOverride } from "src/frontend/intermediate-representation/elements/game_options/override/loadoutPalette";
 import { tryLowerMapOverride } from "src/frontend/intermediate-representation/elements/game_options/override/map";
@@ -48,7 +47,12 @@ export const lowerOverride = (
       entry.location
     );
 
-    assertNotErrorNode(entry.value);
+    if (entry.value.kind === SyntaxKind.INVALID) {
+      throw new LowerError(
+        diagnosticMessages.expectedOneOf(["identifier"], "invalid"),
+        entry.value.location
+      );
+    }
 
     if (entry.value.kind !== OverrideValueKind.SIMPLE) {
       throw new LowerError(

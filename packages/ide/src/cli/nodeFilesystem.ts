@@ -8,26 +8,7 @@ import {
 import path from "node:path";
 import { createNodeFileProvider } from "./fileProvider";
 import type { CliFilesystem } from "./filesystem";
-
-function listTxtFilesSync(rootDir: string, recursive: boolean): string[] {
-  const results: string[] = [];
-  const walk = (dir: string) => {
-    for (const entry of readdirSync(dir, { withFileTypes: true })) {
-      const absolutePath = path.join(dir, entry.name);
-      if (entry.isDirectory()) {
-        if (recursive) {
-          walk(absolutePath);
-        }
-        continue;
-      }
-      if (entry.isFile() && entry.name.toLowerCase().endsWith(".txt")) {
-        results.push(absolutePath);
-      }
-    }
-  };
-  walk(path.resolve(rootDir));
-  return results.sort();
-}
+import { listTxtFilesSync } from "./listTxtFiles";
 
 export function createNodeFilesystem(): CliFilesystem {
   const fileProvider = createNodeFileProvider();
@@ -47,6 +28,12 @@ export function createNodeFilesystem(): CliFilesystem {
     },
     isDirectory: async (targetPath) => statSync(targetPath).isDirectory(),
     listTxtFiles: async (rootDir, recursive) =>
-      listTxtFilesSync(rootDir, recursive),
+      listTxtFilesSync(
+        (dir) => readdirSync(dir, { withFileTypes: true }),
+        path.join,
+        path.resolve,
+        rootDir,
+        recursive
+      ),
   };
 }

@@ -1,6 +1,6 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useEffect, useState } from "react";
-import { isTauriRuntime } from "../lib/tauriRuntime";
+import { isTauriRuntime } from "../desktop";
 import { useT } from "../localization";
 
 export function WindowControls() {

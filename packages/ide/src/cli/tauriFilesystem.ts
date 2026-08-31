@@ -6,38 +6,9 @@ import {
   normalize,
 } from "@tauri-apps/api/path";
 import { mkdir, readDir, readFile, writeFile } from "@tauri-apps/plugin-fs";
-import { createTauriFileProvider } from "../lib/fileProvider";
+import { createTauriFileProvider } from "../files/fileProvider";
 import type { CliFilesystem } from "./filesystem";
-
-function _cacheKey(filePath: string): string {
-  return filePath.replace(/\//g, "\\");
-}
-
-async function listTxtFilesRecursive(
-  rootDir: string,
-  recursive: boolean
-): Promise<string[]> {
-  const results: string[] = [];
-
-  async function walk(dir: string): Promise<void> {
-    const entries = await readDir(dir);
-    for (const entry of entries) {
-      const absolutePath = await join(dir, entry.name);
-      if (entry.isDirectory) {
-        if (recursive) {
-          await walk(absolutePath);
-        }
-        continue;
-      }
-      if (entry.isFile && entry.name.toLowerCase().endsWith(".txt")) {
-        results.push(absolutePath);
-      }
-    }
-  }
-
-  await walk(await normalize(rootDir));
-  return results.sort();
-}
+import { listTxtFilesAsync } from "./listTxtFiles";
 
 export function createTauriFilesystem(): CliFilesystem {
   const fileProvider = createTauriFileProvider();
@@ -79,6 +50,20 @@ export function createTauriFilesystem(): CliFilesystem {
         return false;
       }
     },
-    listTxtFiles: listTxtFilesRecursive,
+    listTxtFiles: (rootDir, recursive) =>
+      listTxtFilesAsync(
+        async (dir) => {
+          const entries = await readDir(dir);
+          return entries.map((entry) => ({
+            name: entry.name,
+            isDirectory: () => entry.isDirectory,
+            isFile: () => entry.isFile,
+          }));
+        },
+        join,
+        normalize,
+        rootDir,
+        recursive
+      ),
   };
 }

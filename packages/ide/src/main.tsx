@@ -1,9 +1,11 @@
-import "./lib/monacoBootstrap";
+import "./editor/monacoBootstrap";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
-import { installNativeContextMenuBlocker } from "./lib/nativeContextMenu";
-import { installPrintShortcutBlocker } from "./lib/printShortcut";
+import {
+  installNativeContextMenuBlocker,
+  installPrintShortcutBlocker,
+} from "./desktop";
 import "./styles.css";
 
 installPrintShortcutBlocker();

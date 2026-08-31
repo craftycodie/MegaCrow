@@ -1,4 +1,4 @@
-import type { FileProvider } from "../lib/fileProvider";
+import type { FileProvider } from "../files/fileProvider";
 
 export interface CliFilesystem {
   basename(filePath: string, ext?: string): Promise<string>;

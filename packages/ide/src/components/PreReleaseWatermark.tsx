@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getDiscordUsername } from "../lib/discordRpc";
+import { getDiscordUsername } from "../desktop";
 
 function pad2(value: number): string {
   return String(value).padStart(2, "0");

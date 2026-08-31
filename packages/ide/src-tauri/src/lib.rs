@@ -112,7 +112,7 @@ fn discover_hrek_workspaces() -> Vec<DiscoveredWorkspace> {
 
 fn create_main_window(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
   WebviewWindowBuilder::new(app, "main", WebviewUrl::App("index.html".into()))
-    .title("MegaCrow")
+    .title("MegaloEvolved")
     .inner_size(1440.0, 900.0)
     .min_inner_size(960.0, 600.0)
     .resizable(true)
@@ -182,7 +182,7 @@ pub fn run() {
       Ok(())
     })
     .build(tauri::generate_context!())
-    .expect("error while building MegaCrow")
+    .expect("error while building MegaloEvolved")
     .run(|_app_handle, event| {
       if let RunEvent::Exit = event {
         // CLI exit code is read after the run loop returns.

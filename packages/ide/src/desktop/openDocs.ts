@@ -94,7 +94,7 @@ export async function openDocs(path?: string | null): Promise<void> {
 
   const webview = new WebviewWindow(DOCS_LABEL, {
     url: docsShellUrl(path),
-    title: "MegaCrow Docs",
+    title: "MegaloEvolved Docs",
     width: 1100,
     height: 800,
     minWidth: 640,

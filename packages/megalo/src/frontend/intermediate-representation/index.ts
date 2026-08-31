@@ -152,13 +152,13 @@ export class Lowerer {
           creationHistory: {
             timestamp: new Date(),
             xuid: BigInt(0),
-            name: "MegaCrow",
+            name: "MegaloEvolved",
             isOnline: false,
           },
           modificationHistory: {
             timestamp: new Date(),
             xuid: BigInt(0),
-            name: "MegaCrow",
+            name: "MegaloEvolved",
             isOnline: false,
           },
         },

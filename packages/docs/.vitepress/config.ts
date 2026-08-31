@@ -63,7 +63,7 @@ const ui = {
   en: {
     nav: {
       guide: "Guide",
-      megacrow: "MegaCrow",
+      megacrow: "MegaloEvolved",
       language: "Language",
       changelog: "Changelog",
     },
@@ -71,7 +71,7 @@ const ui = {
       introduction: "Introduction",
       whatIsMegalo: "What is megalo?",
       installQuickStart: "Install & quick start",
-      megacrow: "MegaCrow",
+      megacrow: "MegaloEvolved",
       overview: "Overview",
       workspaces: "Workspaces",
       export: "Export",
@@ -123,7 +123,7 @@ const ui = {
   ja: {
     nav: {
       guide: "ガイド",
-      megacrow: "MegaCrow",
+      megacrow: "MegaloEvolved",
       language: "言語",
       changelog: "変更履歴",
     },
@@ -131,7 +131,7 @@ const ui = {
       introduction: "はじめに",
       whatIsMegalo: "megalo とは？",
       installQuickStart: "インストールとクイックスタート",
-      megacrow: "MegaCrow",
+      megacrow: "MegaloEvolved",
       overview: "概要",
       workspaces: "ワークスペース",
       export: "エクスポート",
@@ -613,8 +613,8 @@ export default defineConfig(async () => {
   );
 
   return {
-    title: "MegaCrow Docs",
-    description: "Documentation for the Megalo language and the MegaCrow IDE.",
+    title: "MegaloEvolved Docs",
+    description: "Documentation for the Megalo language and the MegaloEvolved IDE.",
     base: docsBase,
     cleanUrls: true,
     appearance: "force-dark",
@@ -669,7 +669,7 @@ export default defineConfig(async () => {
         lang: "ja",
         link: "/ja/",
         description:
-          "Megalo 言語と MegaCrow IDE のドキュメントです。",
+          "Megalo 言語と MegaloEvolved IDE のドキュメントです。",
         themeConfig: {
           ...japaneseThemeUi,
           nav: buildNav("/ja", "ja"),
@@ -704,7 +704,7 @@ export default defineConfig(async () => {
         },
       ],
       footer: {
-        message: `MegaCrow ${MEGACROW_BUILD_STRING}`,
+        message: `MegaloEvolved ${MEGACROW_BUILD_STRING}`,
         copyright:
           'Copyright © <a href="https://discord.gg/77ZAgXv8a6" target="_blank" rel="noopener noreferrer">Blam Network</a>',
       },

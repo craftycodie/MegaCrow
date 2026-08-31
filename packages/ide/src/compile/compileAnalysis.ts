@@ -33,3 +33,32 @@ export const idleAnalysis = (): SourceAnalysis => ({
   compileTiming: null,
   diagnostics: [],
 });
+
+/**
+ * While editing, failed / in-progress compiles should not wipe sidebar
+ * identity, capacity meters, or size from the last successful compile.
+ */
+export function withPreservedCompileArtifacts(
+  previous: SourceAnalysis,
+  next: SourceAnalysis
+): SourceAnalysis {
+  if (next.compileState === "ok" || next.compileState === "warn") {
+    return next;
+  }
+  if (next.compileState === "idle") {
+    return next;
+  }
+  const hadArtifacts =
+    previous.compiledMetadata != null ||
+    previous.compiledByteLength != null ||
+    previous.limitUsage != null;
+  if (!hadArtifacts) {
+    return next;
+  }
+  return {
+    ...next,
+    compiledMetadata: next.compiledMetadata ?? previous.compiledMetadata,
+    compiledByteLength: next.compiledByteLength ?? previous.compiledByteLength,
+    limitUsage: next.limitUsage ?? previous.limitUsage,
+  };
+}

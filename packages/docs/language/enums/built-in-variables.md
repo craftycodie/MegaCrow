@@ -7,7 +7,7 @@ Read-only engine globals that appear in conditions and [`set`](/language/actions
 
 <DocsBlock type="warning" title="target_team is not available in MegaloEdit">
 
-MegaloEdit autocomplete lists `target_team` but does not parse it ([Megalo Headache #2](/language/megalo-headaches#2-inaccessible-target_team)). Enable MegaCrow’s [`targetTeam`](/language/compiler-settings#megacrow-extensions) extension to use it; the wire slot works at runtime.
+MegaloEdit autocomplete lists `target_team` but does not parse it ([Megalo Headache #2](/language/megalo-headaches#2-inaccessible-target_team)). Enable MegaloEvolved’s [`targetTeam`](/language/compiler-settings#megacrow-extensions) extension to use it; the wire slot works at runtime.
 
 </DocsBlock>
 

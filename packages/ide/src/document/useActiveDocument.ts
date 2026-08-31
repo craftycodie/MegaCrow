@@ -74,7 +74,7 @@ export function useActiveDocument({
   workspacesReady,
 }: UseActiveDocumentOptions) {
   const [documentContent, setDocumentContent] = useState(
-    "; MegaCrow — edit Megalo source and compile to .mglo\n"
+    "; MegaloEvolved — edit Megalo source and compile to .mglo\n"
   );
   const [syncRevision, setSyncRevision] = useState(0);
   const [outlineSource, setOutlineSource] = useState(documentContent);

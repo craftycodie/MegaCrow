@@ -7,7 +7,7 @@
 
 <DocsBlock type="warning" title="target_team は MegaloEdit では利用不可">
 
-MegaloEdit のオートコンプリートは `target_team` を一覧表示しますが、パースしません（[Megalo Headache #2](/ja/language/megalo-headaches#2-inaccessible-target_team)）。使うには MegaCrow の [`targetTeam`](/ja/language/compiler-settings#megacrow-extensions) 拡張を有効にしてください。ワイヤ上のスロットは実行時に動作します。
+MegaloEdit のオートコンプリートは `target_team` を一覧表示しますが、パースしません（[Megalo Headache #2](/ja/language/megalo-headaches#2-inaccessible-target_team)）。使うには MegaloEvolved の [`targetTeam`](/ja/language/compiler-settings#megacrow-extensions) 拡張を有効にしてください。ワイヤ上のスロットは実行時に動作します。
 
 </DocsBlock>
 

@@ -7,7 +7,7 @@
 
 Sets the navpoint icon displayed above an object.
 
-The ME name table ends with `coop spawning` (space). MegaloEdit cannot parse it ([Megalo Headache #3](/language/megalo-headaches#3-unparseable-coop-spawning-navpoint-icon)); enable MegaCrow’s [`coopSpawning`](/language/compiler-settings#megacrow-extensions) extension to accept the two-token form.
+The ME name table ends with `coop spawning` (space). MegaloEdit cannot parse it ([Megalo Headache #3](/language/megalo-headaches#3-unparseable-coop-spawning-navpoint-icon)); enable MegaloEvolved’s [`coopSpawning`](/language/compiler-settings#megacrow-extensions) extension to accept the two-token form.
 
 <ActionParameters />
 

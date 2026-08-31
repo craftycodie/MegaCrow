@@ -59,7 +59,7 @@ export interface EditorThemeOption {
 export const EDITOR_THEME_OPTIONS: EditorThemeOption[] = [
   {
     id: "megacrow-dark",
-    label: "MegaCrow Dark",
+    label: "MegaloEvolved Dark",
     data: megacrowDark as MonacoThemeData,
   },
   { id: "vs-dark", label: "VS Dark", data: vsDark as MonacoThemeData },

@@ -1108,7 +1108,7 @@
         "summary": "スプリントを許可するか。"
       },
       "double_jump": {
-        "summary": "二段ジャンプ特性（MegaCrow 拡張）: disabled / enabled / triple。"
+        "summary": "二段ジャンプ特性（MegaloEvolved 拡張）: disabled / enabled / triple。"
       },
       "equipment_usage": {
         "summary": "装備使用を有効にするか。"

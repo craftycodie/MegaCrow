@@ -57,7 +57,7 @@ export async function getConnection(): Promise<MessageConnection> {
   if (!connectionPromise) {
     connectionPromise = (async () => {
       const worker = new Worker(
-        new URL("../../workers/megaloLspWorker.ts", import.meta.url),
+        new URL("../workers/megaloLspWorker.ts", import.meta.url),
         { type: "module" }
       );
       const reader = new BrowserMessageReader(worker);

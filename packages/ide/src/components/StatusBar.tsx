@@ -142,8 +142,8 @@ export function StatusBar({
           usedBytes={variantBytes}
         />
         <span>{t("status_ln_col", { line, column })}</span>
-        <span title={`MegaCrow ${megaCrowVersion}`}>
-          MegaCrow {megaCrowVersion}
+        <span title={`MegaloEvolved ${megaCrowVersion}`}>
+          MegaloEvolved {megaCrowVersion}
         </span>
         <span title={`Megalo ${megaloVersionId}`}>
           Megalo {megaloVersionId}

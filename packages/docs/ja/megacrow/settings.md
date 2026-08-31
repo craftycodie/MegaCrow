@@ -21,8 +21,8 @@
 
 | プロファイル | 動作 |
 |--------------|------|
-| **MegaCrow**（デフォルト） | 標準 Megalo の上に MegaCrow 製品拡張を有効化 |
-| **MegaloEdit** | 標準の MegaloEdit に合わせる — MegaCrow 専用の言語拡張は無効 |
+| **MegaloEvolved**（デフォルト） | 標準 Megalo の上に MegaloEvolved 製品拡張を有効化 |
+| **MegaloEdit** | 標準の MegaloEdit に合わせる — MegaloEvolved 専用の言語拡張は無効 |
 
 HREK の MegaloEdit コンパイラに近いスクリプト／ツール挙動が必要なときは **MegaloEdit** を使ってください。
 
@@ -54,11 +54,11 @@ IDE の UI、診断、ホバーヘルプの言語です。
 
 Megalo（Monaco）エディタ専用のカラーテーマです。IDE のその他の UI には適用されません。
 
-利用可能なテーマには、MegaCrow Dark、VS Dark、Clouds Midnight、Cobalt2、Dracula、GitHub Dark / Light、Monokai、Night Owl、Nord、Oceanic Next、Solarized Dark / Light、Tomorrow Night、Twilight があります。
+利用可能なテーマには、MegaloEvolved Dark、VS Dark、Clouds Midnight、Cobalt2、Dracula、GitHub Dark / Light、Monokai、Night Owl、Nord、Oceanic Next、Solarized Dark / Light、Tomorrow Night、Twilight があります。
 
 ### Discord rich presence
 
-有効にすると、Discord に MegaCrow で編集中であること（例: 現在のファイル）を表示できます。編集アクティビティを Discord に共有したくない場合はオフにしてください。
+有効にすると、Discord に MegaloEvolved で編集中であること（例: 現在のファイル）を表示できます。編集アクティビティを Discord に共有したくない場合はオフにしてください。
 
 | デフォルト | オン |
 |------------|------|

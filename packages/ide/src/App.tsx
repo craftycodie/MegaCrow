@@ -79,7 +79,7 @@ export function App() {
     } | null>
   >(() => Promise.resolve(null));
   const sourceRef = useRef(
-    "; MegaCrow — edit Megalo source and compile to .mglo\n"
+    "; MegaloEvolved — edit Megalo source and compile to .mglo\n"
   );
   const suppressFileNavRef = useRef(false);
 

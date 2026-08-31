@@ -179,7 +179,7 @@
     },
     "navpoint_set_icon": {
       "kind": "action",
-      "description": "Sets the navpoint icon displayed above an object. The ME name table ends with `coop spawning` (space). MegaloEdit cannot parse it (Megalo Headache #3); enable MegaCrow’s `coopSpawning` extension to accept the two-token form.",
+      "description": "Sets the navpoint icon displayed above an object. The ME name table ends with `coop spawning` (space). MegaloEdit cannot parse it (Megalo Headache #3); enable MegaloEvolved’s `coopSpawning` extension to accept the two-token form.",
       "slug": "navpoint-set-icon"
     },
     "navpoint_set_priority": {

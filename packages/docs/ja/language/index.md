@@ -12,7 +12,7 @@ Megalo は 2008 年 3 月、Bungie の Tyson Green によって、Halo マルチ
 
 ## Megalo とは？
 
-**Megalo** は、Bungie が Halo: Reach のマルチプレイヤールール用に作ったスクリプト言語です。作者は Megalo 対応エディタで人間が読める `.txt` スクリプトを編集します。Bungie は Reach とともに **MegaloEdit.exe** を出荷しました。無料のオープンソース代替として **MegaCrow** を推奨します。
+**Megalo** は、Bungie が Halo: Reach のマルチプレイヤールール用に作ったスクリプト言語です。作者は Megalo 対応エディタで人間が読める `.txt` スクリプトを編集します。Bungie は Reach とともに **MegaloEdit.exe** を出荷しました。無料のオープンソース代替として **MegaloEvolved** を推奨します。
 
 Megalo は汎用言語ではありません。関数も、ループも、任意の式もありません — エンジンが公開する条件とアクションの語彙だけがあり、ゲームイベントで発火する **トリガー** にまとめられます。
 

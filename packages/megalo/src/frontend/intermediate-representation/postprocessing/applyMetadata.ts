@@ -16,7 +16,7 @@ function englishFromScriptString(
 /** Content-item history name field is a fixed 16-char string. */
 const resolveAuthorName = (creatorGamertag: string): string => {
   const trimmed = creatorGamertag.trim().slice(0, 16);
-  return trimmed.length > 0 ? trimmed : "MegaCrow";
+  return trimmed.length > 0 ? trimmed : "MegaloEvolved";
 };
 
 export function applyMetadata(ir: IR, ctx: ElementLowerContext) {

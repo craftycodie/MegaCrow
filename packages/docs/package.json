@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
-  "description": "MegaCrow Megalo language documentation (VitePress)",
+  "description": "MegaloEvolved Megalo language documentation (VitePress)",
   "scripts": {
     "docs:highlight": "node ./scripts/bundle-docs-highlight.mjs",
     "predev": "npm run docs:highlight",

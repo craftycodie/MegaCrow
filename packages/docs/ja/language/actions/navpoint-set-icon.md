@@ -7,7 +7,7 @@
 
 オブジェクト上に表示されるナビポイントのアイコンを設定します。
 
-ME の名前テーブル末尾は `coop spawning`（スペース付き）です。MegaloEdit はこれをパースできません（[Megalo Headache #3](/ja/language/megalo-headaches#3-unparseable-coop-spawning-navpoint-icon)）。2 トークン形式を受け入れるには MegaCrow の [`coopSpawning`](/ja/language/compiler-settings#megacrow-extensions) 拡張を有効にしてください。
+ME の名前テーブル末尾は `coop spawning`（スペース付き）です。MegaloEdit はこれをパースできません（[Megalo Headache #3](/ja/language/megalo-headaches#3-unparseable-coop-spawning-navpoint-icon)）。2 トークン形式を受け入れるには MegaloEvolved の [`coopSpawning`](/ja/language/compiler-settings#megacrow-extensions) 拡張を有効にしてください。
 
 <ActionParameters />
 

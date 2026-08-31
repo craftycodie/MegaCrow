@@ -29,7 +29,7 @@ Built-in refs for the current evaluation context and related engine state:
 | `local_team` | Team | Always (team that owns `local_player`) |
 | `target_player` | Player | Always (HUD target player) |
 | `target_object` | Object | Always (HUD target object) |
-| `target_team` | Team | MegaCrow extension `targetTeam` (team that owns `target_player`) |
+| `target_team` | Team | MegaloEvolved extension `targetTeam` (team that owns `target_player`) |
 
 `current_*` refs are gated by trigger depth. The others are always available.
 

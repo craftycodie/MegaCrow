@@ -16,7 +16,7 @@ import {
   requestCompileViaLsp,
   type SourceAnalysis,
 } from "../compile";
-import { idleAnalysis } from "../compile/compileAnalysis";
+import { idleAnalysis, withPreservedCompileArtifacts } from "../compile/compileAnalysis";
 import { writeMccHotReloadMglo } from "../desktop";
 import {
   gametypeSaveFileName,
@@ -238,7 +238,9 @@ export function useCompileOrchestration({
           if (runId === compileRunRef.current) {
             compileParsingRef.current = false;
             setIncludeFileCache(undefined);
-            setAnalysis(compileContext.analysis);
+            setAnalysis((prev) =>
+              withPreservedCompileArtifacts(prev, compileContext.analysis)
+            );
             setCompileState("error");
           }
           return;
@@ -251,7 +253,7 @@ export function useCompileOrchestration({
         });
         if (runId === compileRunRef.current && text === sourceRef.current) {
           compileParsingRef.current = false;
-          setAnalysis(result);
+          setAnalysis((prev) => withPreservedCompileArtifacts(prev, result));
           setCompileState(result.compileState);
         }
       })();

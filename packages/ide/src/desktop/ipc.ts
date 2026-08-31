@@ -122,3 +122,10 @@ export async function ipcCliComplete(code: number): Promise<void> {
 export async function ipcGetCliArgs(): Promise<string[]> {
   return invoke<string[]>("get_cli_args");
 }
+
+export async function ipcOpenDevtools(): Promise<void> {
+  if (!isTauriRuntime()) {
+    return;
+  }
+  await invoke("open_devtools");
+}

@@ -25,7 +25,7 @@ export function useDiscordPresence({
       return;
     }
 
-    const details = fileName ?? "MegaCrow";
+    const details = fileName ?? "MegaloEvolved";
     let state = translate("discord_editing_halo_reach");
     if (fileName) {
       if (compileState === "ok" || compileState === "warn") {

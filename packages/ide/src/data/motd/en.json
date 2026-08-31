@@ -1,11 +1,11 @@
-{
+﻿{
   "title_index_identifier": 2,
   "button_key_wait_time_ms": 5,
-  "title": "MegaCrow Alpha",
+  "title": "MegaloEvolved Alpha",
   "header": "",
   "button_key": "Let's go!",
   "button_key_wait": "Transferring...",
-  "message": "Welcome to the MegaCrow Alpha. In this version you can create gametypes for Halo: Reach MCC or Xbox 360. For example scripts, check out the Halo: Reach Editing Kit.|n|nIf you're new to Megalo, check out the [documentation](docs).|n|nPlease report any bugs or suggestions to codie on Discord or via [GitHub](https://github.com/craftycodie/MegaCrow).",
+  "message": "Welcome to the MegaloEvolved Alpha. In this version you can create gametypes for Halo: Reach MCC or Xbox 360. For example scripts, check out the Halo: Reach Editing Kit.|n|nIf you're new to Megalo, check out the [documentation](docs).|n|nPlease report any bugs or suggestions to codie on Discord or via [GitHub](https://github.com/craftycodie/MegaCrow).",
   "offer_id": 0,
   "view_count": 3
 }

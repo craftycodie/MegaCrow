@@ -5,7 +5,7 @@ import {
 
 export type UiLocale = "en" | "ja";
 
-/** MegaCrow enables product extensions; MegaloEdit matches stock MegaloEdit. */
+/** MegaloEvolved enables product extensions; MegaloEdit matches stock MegaloEdit. */
 export type CompilerProfile = "megacrow" | "megaloedit";
 
 export interface AppSettings {
@@ -26,7 +26,7 @@ const STORAGE_KEY = "megacrow_settings";
 
 export const DEFAULT_APP_SETTINGS: AppSettings = {
   discordRichPresence: true,
-  gamertag: "MegaCrow",
+  gamertag: "MegaloEvolved",
   compilerStrictness: false,
   compilerProfile: "megacrow",
   editorTheme: DEFAULT_EDITOR_THEME_ID,
@@ -43,7 +43,7 @@ export function normalizeCompilerProfile(value: unknown): CompilerProfile {
   return value === "megaloedit" ? "megaloedit" : "megacrow";
 }
 
-/** Empty / missing author falls back to MegaCrow (max 16 chars on the wire). */
+/** Empty / missing author falls back to MegaloEvolved (max 16 chars on the wire). */
 export function normalizeGametypeAuthor(value: unknown): string {
   if (typeof value !== "string") {
     return DEFAULT_APP_SETTINGS.gamertag;

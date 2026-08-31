@@ -948,8 +948,8 @@ var en_default = {
   unsupported_enum_member: "{{enumName}} '{{name}}' is not supported by {{versionLabel}}.",
   only_one_base_directive_allowed: "Only one base directive is allowed",
   duplicate_declaration_name_ignored: "Duplicate {{kind}} name '{{name}}' will be ignored for name lookup (MegaloEdit uses the first declaration)",
-  reserved_keyword_variable_name: "Using language keyword '{{name}}' as a {{kind}} name is disabled by the MegaCrow compiler; switch your compiler profile to MegaloEdit if you require this behaviour",
-  variable_shadowing_disabled: "You already have a {{kind}} called '{{name}}'. MegaCrow prevents reusing names because shadowing is broken in Megalo.",
+  reserved_keyword_variable_name: "Using language keyword '{{name}}' as a {{kind}} name is disabled by the MegaloEvolved compiler; switch your compiler profile to MegaloEdit if you require this behaviour",
+  variable_shadowing_disabled: "You already have a {{kind}} called '{{name}}'. MegaloEvolved prevents reusing names because shadowing is broken in Megalo.",
   legacy_hud_widget_text_keyword: "Legacy 'text' prefix on hud_widgets entries is old syntax and will not compile with MegaloEdit",
   unsupported_dynamic_string_replacement: "'{{got}}' is not a valid dynamic-string replacement. Use a declared reference that matches the placeholder (%n number, %p player, %t team, %o object, %s timer).",
   string_literal_not_allowed_when_strict: "String literals are not allowed when strict compiler is enabled; use a string table identifier",
@@ -965,7 +965,7 @@ var en_default = {
   game_option_not_allowed_in_base_derived: "'{{entry}}' cannot define new entries in a base-derived script; override an existing option instead",
   game_option_override_requires_base: "'{{entry}}' override form requires a base-derived script",
   locking_hiding_player_traits_not_supported: "Locking/hiding of player_traits is not supported",
-  megacrow_extension_required: "'{{sourceName}}' requires MegaCrow extension '{{extension}}' (not supported by MegaloEdit)",
+  megacrow_extension_required: "'{{sourceName}}' requires MegaloEvolved extension '{{extension}}' (not supported by MegaloEdit)",
   double_jump_unofficial_requires_tag_changes: "double_jump is not official Megalo syntax and requires tag changes to work",
   sprinting_does_not_seem_to_function: "sprinting can be set in a game variant, but it does not seem to function",
   timer_rate_snapped: "Timer rate {{got}} is not a supported rate; using {{used}}",
@@ -1031,8 +1031,8 @@ var ja_default = {
   unsupported_enum_member: "{{enumName}} '{{name}}' \u306F {{versionLabel}} \u3067\u306F\u30B5\u30DD\u30FC\u30C8\u3055\u308C\u3066\u3044\u307E\u305B\u3093\u3002",
   only_one_base_directive_allowed: "base \u30C7\u30A3\u30EC\u30AF\u30C6\u30A3\u30D6\u306F1\u3064\u3060\u3051\u8A31\u53EF\u3055\u308C\u3066\u3044\u307E\u3059",
   duplicate_declaration_name_ignored: "\u91CD\u8907\u3059\u308B {{kind}} \u540D '{{name}}' \u306F\u540D\u524D\u89E3\u6C7A\u3067\u306F\u7121\u8996\u3055\u308C\u307E\u3059\uFF08MegaloEdit \u306F\u6700\u521D\u306E\u5B9A\u7FA9\u3092\u4F7F\u7528\u3057\u307E\u3059\uFF09",
-  reserved_keyword_variable_name: "\u8A00\u8A9E\u30AD\u30FC\u30EF\u30FC\u30C9 '{{name}}' \u3092 {{kind}} \u540D\u306B\u4F7F\u3046\u3053\u3068\u306F MegaCrow \u30B3\u30F3\u30D1\u30A4\u30E9\u3067\u306F\u7121\u52B9\u3067\u3059\u3002\u3053\u306E\u52D5\u4F5C\u304C\u5FC5\u8981\u306A\u5834\u5408\u306F\u30B3\u30F3\u30D1\u30A4\u30E9\u30D7\u30ED\u30D5\u30A1\u30A4\u30EB\u3092 MegaloEdit \u306B\u5207\u308A\u66FF\u3048\u3066\u304F\u3060\u3055\u3044",
-  variable_shadowing_disabled: "\u65E2\u306B {{kind}} '{{name}}' \u304C\u3042\u308A\u307E\u3059\u3002MegaCrow \u306F Megalo \u3067\u30B7\u30E3\u30C9\u30FC\u30A4\u30F3\u30B0\u304C\u58CA\u308C\u3066\u3044\u308B\u305F\u3081\u3001\u540D\u524D\u306E\u518D\u5229\u7528\u3092\u7981\u6B62\u3057\u3066\u3044\u307E\u3059\u3002",
+  reserved_keyword_variable_name: "\u8A00\u8A9E\u30AD\u30FC\u30EF\u30FC\u30C9 '{{name}}' \u3092 {{kind}} \u540D\u306B\u4F7F\u3046\u3053\u3068\u306F MegaloEvolved \u30B3\u30F3\u30D1\u30A4\u30E9\u3067\u306F\u7121\u52B9\u3067\u3059\u3002\u3053\u306E\u52D5\u4F5C\u304C\u5FC5\u8981\u306A\u5834\u5408\u306F\u30B3\u30F3\u30D1\u30A4\u30E9\u30D7\u30ED\u30D5\u30A1\u30A4\u30EB\u3092 MegaloEdit \u306B\u5207\u308A\u66FF\u3048\u3066\u304F\u3060\u3055\u3044",
+  variable_shadowing_disabled: "\u65E2\u306B {{kind}} '{{name}}' \u304C\u3042\u308A\u307E\u3059\u3002MegaloEvolved \u306F Megalo \u3067\u30B7\u30E3\u30C9\u30FC\u30A4\u30F3\u30B0\u304C\u58CA\u308C\u3066\u3044\u308B\u305F\u3081\u3001\u540D\u524D\u306E\u518D\u5229\u7528\u3092\u7981\u6B62\u3057\u3066\u3044\u307E\u3059\u3002",
   legacy_hud_widget_text_keyword: "hud_widgets \u30A8\u30F3\u30C8\u30EA\u306E\u5148\u982D\u306B\u3042\u308B\u53E4\u3044 'text' \u63A5\u982D\u8F9E\u306F\u65E7\u69CB\u6587\u3067\u3059\u3002MegaloEdit \u3067\u306F\u30B3\u30F3\u30D1\u30A4\u30EB\u3067\u304D\u307E\u305B\u3093",
   unsupported_dynamic_string_replacement: "'{{got}}' \u306F dynamic-string \u306E\u7F6E\u63DB\u3068\u3057\u3066\u7121\u52B9\u3067\u3059\u3002\u30D7\u30EC\u30FC\u30B9\u30DB\u30EB\u30C0\u306B\u5408\u3046\u5BA3\u8A00\u6E08\u307F\u53C2\u7167\u3092\u4F7F\u3063\u3066\u304F\u3060\u3055\u3044\uFF08%n \u6570\u5024\u3001%p \u30D7\u30EC\u30A4\u30E4\u30FC\u3001%t \u30C1\u30FC\u30E0\u3001%o \u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u3001%s \u30BF\u30A4\u30DE\u30FC\uFF09\u3002",
   string_literal_not_allowed_when_strict: "\u53B3\u683C\u30B3\u30F3\u30D1\u30A4\u30E9\u3067\u306F\u6587\u5B57\u5217\u30EA\u30C6\u30E9\u30EB\u306F\u4F7F\u3048\u307E\u305B\u3093\u3002string table \u306E\u8B58\u5225\u5B50\u3092\u4F7F\u7528\u3057\u3066\u304F\u3060\u3055\u3044",
@@ -1048,7 +1048,7 @@ var ja_default = {
   game_option_not_allowed_in_base_derived: "base \u6D3E\u751F\u30B9\u30AF\u30EA\u30D7\u30C8\u3067\u306F '{{entry}}' \u3067\u65B0\u898F\u5B9A\u7FA9\u306F\u3067\u304D\u307E\u305B\u3093\u3002\u65E2\u5B58\u30AA\u30D7\u30B7\u30E7\u30F3\u3092 override \u3057\u3066\u304F\u3060\u3055\u3044",
   game_option_override_requires_base: "'{{entry}}' \u306E override \u5F62\u5F0F\u306B\u306F base \u6D3E\u751F\u30B9\u30AF\u30EA\u30D7\u30C8\u304C\u5FC5\u8981\u3067\u3059",
   locking_hiding_player_traits_not_supported: "player_traits \u306E lock/hide \u306F\u30B5\u30DD\u30FC\u30C8\u3055\u308C\u3066\u3044\u307E\u305B\u3093",
-  megacrow_extension_required: "'{{sourceName}}' \u306B\u306F MegaCrow \u62E1\u5F35 '{{extension}}' \u304C\u5FC5\u8981\u3067\u3059\uFF08MegaloEdit \u3067\u306F\u672A\u5BFE\u5FDC\uFF09",
+  megacrow_extension_required: "'{{sourceName}}' \u306B\u306F MegaloEvolved \u62E1\u5F35 '{{extension}}' \u304C\u5FC5\u8981\u3067\u3059\uFF08MegaloEdit \u3067\u306F\u672A\u5BFE\u5FDC\uFF09",
   double_jump_unofficial_requires_tag_changes: "double_jump \u306F\u516C\u5F0F Megalo \u69CB\u6587\u3067\u306F\u306A\u304F\u3001\u52D5\u4F5C\u306B\u306F\u30BF\u30B0\u5909\u66F4\u304C\u5FC5\u8981\u3067\u3059",
   sprinting_does_not_seem_to_function: "sprinting \u306F game variant \u3067\u8A2D\u5B9A\u3067\u304D\u307E\u3059\u304C\u3001\u6A5F\u80FD\u3057\u3066\u3044\u306A\u3044\u3088\u3046\u3067\u3059",
   timer_rate_snapped: "\u30BF\u30A4\u30DE\u30FC\u30EC\u30FC\u30C8 {{got}} \u306F\u30B5\u30DD\u30FC\u30C8\u3055\u308C\u3066\u3044\u307E\u305B\u3093\u3002{{used}} \u3092\u4F7F\u7528\u3057\u307E\u3059",
@@ -2330,7 +2330,7 @@ var getConfigurationForVersion = ({
 
 // ../megalo/src/compiler-settings.ts
 var DEFAULT_COMPILER_SETTINGS = {
-  creatorGamertag: "MegaCrow",
+  creatorGamertag: "MegaloEvolved",
   strictStringLiterals: false,
   temporaryVariablesCanOverflowIntoUnusedGlobalVariables: true
 };
@@ -12810,7 +12810,7 @@ var en_default2 = {
       }
     },
     navpoint_set_icon: {
-      summary: "Sets the navpoint icon displayed above an object. The ME name table ends with `coop spawning` (space). MegaloEdit cannot parse it (Megalo Headache #3); enable MegaCrow\u2019s `coopSpawning` extension to accept the two-token form.",
+      summary: "Sets the navpoint icon displayed above an object. The ME name table ends with `coop spawning` (space). MegaloEdit cannot parse it (Megalo Headache #3); enable MegaloEvolved\u2019s `coopSpawning` extension to accept the two-token form.",
       params: {
         object: "Object reference or variable.",
         icon: "Icon name or keyword.",
@@ -13649,7 +13649,7 @@ var en_default2 = {
         summary: "Whether sprinting is allowed."
       },
       double_jump: {
-        summary: "Double-jump trait (MegaCrow extension): disabled, enabled, or triple."
+        summary: "Double-jump trait (MegaloEvolved extension): disabled, enabled, or triple."
       },
       equipment_usage: {
         summary: "Whether equipment use is enabled."
@@ -15154,7 +15154,7 @@ var ja_default2 = {
         summary: "\u30B9\u30D7\u30EA\u30F3\u30C8\u3092\u8A31\u53EF\u3059\u308B\u304B\u3002"
       },
       double_jump: {
-        summary: "\u4E8C\u6BB5\u30B8\u30E3\u30F3\u30D7\u7279\u6027\uFF08MegaCrow \u62E1\u5F35\uFF09: disabled / enabled / triple\u3002"
+        summary: "\u4E8C\u6BB5\u30B8\u30E3\u30F3\u30D7\u7279\u6027\uFF08MegaloEvolved \u62E1\u5F35\uFF09: disabled / enabled / triple\u3002"
       },
       equipment_usage: {
         summary: "\u88C5\u5099\u4F7F\u7528\u3092\u6709\u52B9\u306B\u3059\u308B\u304B\u3002"

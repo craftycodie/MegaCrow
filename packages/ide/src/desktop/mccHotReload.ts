@@ -12,6 +12,6 @@ export async function writeMccHotReloadMglo(bytes: Uint8Array): Promise<void> {
   }
   const path = await ipcWriteMccHotReloadMglo(bytes);
   console.log(
-    `[MegaCrow] Wrote MCC hot-reload .mglo (${bytes.length} bytes) -> ${path}`
+    `[MegaloEvolved] Wrote MCC hot-reload .mglo (${bytes.length} bytes) -> ${path}`
   );
 }

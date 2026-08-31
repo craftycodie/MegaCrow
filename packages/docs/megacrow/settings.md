@@ -21,8 +21,8 @@ Controls which language extensions the compiler and language service allow.
 
 | Profile | Behavior |
 |---------|----------|
-| **MegaCrow** (default) | Enables MegaCrow product extensions on top of stock Megalo |
-| **MegaloEdit** | Matches stock MegaloEdit — MegaCrow-only language extensions are disabled |
+| **MegaloEvolved** (default) | Enables MegaloEvolved product extensions on top of stock Megalo |
+| **MegaloEdit** | Matches stock MegaloEdit — MegaloEvolved-only language extensions are disabled |
 
 Use **MegaloEdit** when you need scripts and tooling behavior closer to the HREK MegaloEdit compiler.
 
@@ -54,11 +54,11 @@ This also affects which string-table language is preferred when displaying compi
 
 Color theme for the Megalo (Monaco) editor only — not the rest of the IDE chrome.
 
-Available themes include MegaCrow Dark, VS Dark, Clouds Midnight, Cobalt2, Dracula, GitHub Dark / Light, Monokai, Night Owl, Nord, Oceanic Next, Solarized Dark / Light, Tomorrow Night, and Twilight.
+Available themes include MegaloEvolved Dark, VS Dark, Clouds Midnight, Cobalt2, Dracula, GitHub Dark / Light, Monokai, Night Owl, Nord, Oceanic Next, Solarized Dark / Light, Tomorrow Night, and Twilight.
 
 ### Discord rich presence
 
-When enabled, Discord can show that you are editing in MegaCrow (for example the current file). Turn off if you do not want editing activity shared on Discord.
+When enabled, Discord can show that you are editing in MegaloEvolved (for example the current file). Turn off if you do not want editing activity shared on Discord.
 
 | Default | On |
 |---------|----|

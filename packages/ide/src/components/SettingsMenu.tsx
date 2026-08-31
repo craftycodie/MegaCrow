@@ -122,7 +122,7 @@ export function SettingsMenu({ settings, onChange }: Props) {
                     }
                     value={settings.compilerProfile}
                   >
-                    <option value="megacrow">MegaCrow</option>
+                    <option value="megacrow">MegaloEvolved</option>
                     <option value="megaloedit">MegaloEdit</option>
                   </select>
                 </label>

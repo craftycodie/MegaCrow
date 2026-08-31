@@ -4,7 +4,7 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
 
-/// Discord application ID for MegaCrow rich presence.
+/// Discord application ID for MegaloEvolved rich presence.
 pub const APPLICATION_ID: &str = "1517107797437841589";
 
 /// Discord application public key (Social SDK / verification; not used by IPC rich presence).
@@ -23,7 +23,7 @@ struct RpcPresence {
 impl Default for RpcPresence {
   fn default() -> Self {
     Self {
-      details: "MegaCrow".into(),
+      details: "MegaloEvolved".into(),
       state: "Editing Halo Reach gametypes".into(),
       enabled: true,
       username: None,

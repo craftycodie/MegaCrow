@@ -74,7 +74,7 @@ export function AboutDialog({ open, onClose, onVersionClick }: Props) {
             width={64}
           />
           <h2 className="about-name" id="about-title">
-            MegaCrow
+            MegaloEvolved
           </h2>
         </div>
 
@@ -84,7 +84,7 @@ export function AboutDialog({ open, onClose, onVersionClick }: Props) {
 
         <dl className="about-details">
           <div className="about-detail">
-            <dt>MegaCrow</dt>
+            <dt>MegaloEvolved</dt>
             <dd>
               <button
                 className="about-version"

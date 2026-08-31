@@ -2,7 +2,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { docsPageUrl, isTauriRuntime, listenDocsNavigate } from "../desktop";
 import "./styles.css";
 
-const DEFAULT_TITLE = "MegaCrow Docs";
+const DEFAULT_TITLE = "MegaloEvolved Docs";
 
 const backBtn = document.querySelector<HTMLButtonElement>("#docs-back")!;
 const forwardBtn = document.querySelector<HTMLButtonElement>("#docs-forward")!;

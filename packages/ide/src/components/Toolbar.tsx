@@ -1,7 +1,12 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { type MouseEvent, useState } from "react";
 import { GITHUB_LATEST_RELEASE_PAGE } from "../app/updateCheck";
-import { openDocs, openExternalUrl } from "../desktop";
+import {
+  ipcOpenDevtools,
+  isTauriDebugBuild,
+  openDocs,
+  openExternalUrl,
+} from "../desktop";
 import { useMccLaunch } from "../desktop/useMccLaunch";
 import type { GametypeSaveFormat } from "../gametype";
 import { useT } from "../localization";
@@ -10,6 +15,8 @@ import { AboutDialog } from "./dialogs/AboutDialog";
 import { SaveAsMenu } from "./SaveAsMenu";
 import { SettingsMenu } from "./SettingsMenu";
 import { WindowControls } from "./WindowControls";
+
+const showDevtoolsButton = isTauriDebugBuild();
 
 interface Props {
   canBuild: boolean;
@@ -95,7 +102,7 @@ export function Toolbar({
               src={`${import.meta.env.BASE_URL}megacrow-icon.png`}
             />
             <span className="brand-text">
-              <span className="brand-title">MegaCrow</span>
+              <span className="brand-title">MegaloEvolved</span>
               <span className="brand-subtitle">Megalo IDE</span>
             </span>
           </button>
@@ -278,6 +285,21 @@ export function Toolbar({
               {t("toolbar_download")}
             </button>
           )}
+          {showDevtoolsButton ? (
+            <button
+              aria-label={t("toolbar_devtools_title")}
+              className="toolbar-menu toolbar-menu--label"
+              onClick={() => {
+                void ipcOpenDevtools().catch((error) => {
+                  console.error("Failed to open DevTools:", error);
+                });
+              }}
+              title={t("toolbar_devtools_title")}
+              type="button"
+            >
+              {t("toolbar_devtools")}
+            </button>
+          ) : null}
           <button
             aria-label={t("toolbar_docs_title")}
             className="toolbar-menu toolbar-menu--label"

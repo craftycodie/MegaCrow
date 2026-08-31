@@ -1,4 +1,4 @@
-{
+﻿{
   "common_close": "閉じる",
   "common_cancel": "キャンセル",
   "common_delete": "削除",
@@ -17,9 +17,9 @@
   "settings_compiler_heading": "コンパイラ設定",
   "settings_gametype_author": "ゲームタイプ作者",
   "settings_gametype_author_hint": "ゲームタイプに書き込まれる作成者名（最大16文字）",
-  "settings_gamertag_placeholder": "MegaCrow",
+  "settings_gamertag_placeholder": "MegaloEvolved",
   "settings_compiler_profile": "コンパイラプロファイル",
-  "settings_compiler_profile_hint": "MegaloEdit は MegaCrow の言語拡張を無効にします",
+  "settings_compiler_profile_hint": "MegaloEdit は MegaloEvolved の言語拡張を無効にします",
   "settings_megaloedit_warning_before": "MegaloEdit プロファイルでコンパイルすると、公式 MegaloEdit コンパイラの問題により、オートコンプリートなど一部の IDE 機能が利用できません。詳しくは ",
   "settings_megaloedit_warning_link": "Megalo の注意点",
   "settings_megaloedit_warning_after": " を参照してください。",
@@ -34,7 +34,7 @@
   "settings_discord": "Discord リッチプレゼンス",
   "settings_discord_hint": "編集中の内容を Discord に表示します",
 
-  "toolbar_about": "MegaCrow について",
+  "toolbar_about": "MegaloEvolved について",
   "toolbar_hide_left_pane": "左ペインを隠す",
   "toolbar_show_left_pane": "左ペインを表示",
   "toolbar_file_history": "ファイル履歴",
@@ -53,7 +53,9 @@
   "toolbar_build_need_output": "ビルドを有効にするにはワークスペースの出力フォルダを設定してください",
   "toolbar_docs": "ドキュメント",
   "toolbar_docs_title": "Megalo ドキュメントを開く",
-  "toolbar_download": "MegaCrow をダウンロード",
+  "toolbar_devtools": "DevTools",
+  "toolbar_devtools_title": "WebView の開発者ツールを開く",
+  "toolbar_download": "MegaloEvolved をダウンロード",
   "toolbar_download_title": "GitHub Releases からデスクトップアプリをダウンロード",
 
   "about_tagline": "Halo ゲームタイプ向け Megalo スクリプト IDE",
@@ -161,8 +163,8 @@
   "workspace_add": "ワークスペースを追加…",
   "workspace_modal_add_title": "ワークスペースを追加",
   "workspace_modal_edit_title": "ワークスペースを編集",
-  "workspace_modal_hint_required": "ワークスペースが自動検出されませんでした。MegaCrow に Halo Reach Editing Kit のスクリプトフォルダ（任意で maps/megalo 出力フォルダ）を指定するか、閉じて後から追加してください。",
-  "workspace_modal_hint": "MegaCrow に Halo Reach Editing Kit のスクリプトフォルダを指定します。出力フォルダは任意で、設定するとビルドが有効になります。",
+  "workspace_modal_hint_required": "ワークスペースが自動検出されませんでした。MegaloEvolved に Halo Reach Editing Kit のスクリプトフォルダ（任意で maps/megalo 出力フォルダ）を指定するか、閉じて後から追加してください。",
+  "workspace_modal_hint": "MegaloEvolved に Halo Reach Editing Kit のスクリプトフォルダを指定します。出力フォルダは任意で、設定するとビルドが有効になります。",
   "workspace_modal_name": "名前",
   "workspace_modal_name_placeholder": "マイワークスペース",
   "workspace_modal_megalo_version": "Megalo バージョン",
@@ -223,7 +225,7 @@
   "variant_encoded_size": "エンコードサイズ",
 
   "update_title": "アップデートがあります",
-  "update_description": "MegaCrow {{version}} が利用できます。\n現在のバージョンは {{current}} です。",
+  "update_description": "MegaloEvolved {{version}} が利用できます。\n現在のバージョンは {{current}} です。",
   "update_skip": "このアップデートをスキップ",
   "update_download": "ダウンロード",
 

@@ -58,7 +58,7 @@ export function useMegacrowSettings() {
       try {
         await persistMegacrowSettings(next);
       } catch (error) {
-        console.error("Failed to persist MegaCrow settings:", error);
+        console.error("Failed to persist MegaloEvolved settings:", error);
         throw error;
       }
     },
@@ -110,7 +110,7 @@ export function useMegacrowSettings() {
         setWorkspacesReady(true);
       })
       .catch((error) => {
-        console.error("Failed to bootstrap MegaCrow settings:", error);
+        console.error("Failed to bootstrap MegaloEvolved settings:", error);
         if (!cancelled) {
           const fallback = defaultMegacrowSettings();
           setMegacrowSettings(fallback);

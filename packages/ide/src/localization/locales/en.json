@@ -1,4 +1,4 @@
-{
+﻿{
   "common_close": "Close",
   "common_cancel": "Cancel",
   "common_delete": "Delete",
@@ -17,9 +17,9 @@
   "settings_compiler_heading": "Compiler Settings",
   "settings_gametype_author": "Gametype Author",
   "settings_gametype_author_hint": "Creator written into the gametype, 16 characters maximum",
-  "settings_gamertag_placeholder": "MegaCrow",
+  "settings_gamertag_placeholder": "MegaloEvolved",
   "settings_compiler_profile": "Compiler profile",
-  "settings_compiler_profile_hint": "MegaloEdit disables MegaCrow language extensions",
+  "settings_compiler_profile_hint": "MegaloEdit disables MegaloEvolved language extensions",
   "settings_megaloedit_warning_before": "Some IDE features such as Autocomplete are unavailable when compiling with the MegaloEdit profile due to issues with the official MegaloEdit compiler. See ",
   "settings_megaloedit_warning_link": "Megalo Headaches",
   "settings_megaloedit_warning_after": " for more information.",
@@ -34,7 +34,7 @@
   "settings_discord": "Discord rich presence",
   "settings_discord_hint": "Show what you are editing in Discord",
 
-  "toolbar_about": "About MegaCrow",
+  "toolbar_about": "About MegaloEvolved",
   "toolbar_hide_left_pane": "Hide left pane",
   "toolbar_show_left_pane": "Show left pane",
   "toolbar_file_history": "File history",
@@ -53,7 +53,9 @@
   "toolbar_build_need_output": "Set a workspace output folder to enable Build",
   "toolbar_docs": "Docs",
   "toolbar_docs_title": "Open Megalo documentation",
-  "toolbar_download": "Download MegaCrow",
+  "toolbar_devtools": "DevTools",
+  "toolbar_devtools_title": "Open WebView developer tools",
+  "toolbar_download": "Download MegaloEvolved",
   "toolbar_download_title": "Download the desktop app from GitHub Releases",
 
   "about_tagline": "Megalo script IDE for Halo gametypes",
@@ -161,8 +163,8 @@
   "workspace_add": "Add workspace…",
   "workspace_modal_add_title": "Add workspace",
   "workspace_modal_edit_title": "Edit workspace",
-  "workspace_modal_hint_required": "No workspace was found automatically. Point MegaCrow at a Halo Reach Editing Kit scripts folder (and optionally a maps/megalo output folder), or close and add one later.",
-  "workspace_modal_hint": "Point MegaCrow at a Halo Reach Editing Kit scripts folder. An output folder is optional and enables Build.",
+  "workspace_modal_hint_required": "No workspace was found automatically. Point MegaloEvolved at a Halo Reach Editing Kit scripts folder (and optionally a maps/megalo output folder), or close and add one later.",
+  "workspace_modal_hint": "Point MegaloEvolved at a Halo Reach Editing Kit scripts folder. An output folder is optional and enables Build.",
   "workspace_modal_name": "Name",
   "workspace_modal_name_placeholder": "My workspace",
   "workspace_modal_megalo_version": "Megalo version",
@@ -223,7 +225,7 @@
   "variant_encoded_size": "Encoded size",
 
   "update_title": "Update Available",
-  "update_description": "MegaCrow {{version}} is available.\nYou are on {{current}}.",
+  "update_description": "MegaloEvolved {{version}} is available.\nYou are on {{current}}.",
   "update_skip": "Skip this update",
   "update_download": "Download",
 

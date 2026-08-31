@@ -12,7 +12,7 @@ I would like to give my thanks to those modders who worked tirelessly to underst
 
 ## What is Megalo?
 
-**Megalo** is the scripting language Bungie built for Halo: Reach multiplayer rules. Authors edit human-readable `.txt` scripts with a Megalo-aware editor; Bungie shipped **MegaloEdit.exe** with Reach. We recommend **MegaCrow** as a free and open-source alternative.
+**Megalo** is the scripting language Bungie built for Halo: Reach multiplayer rules. Authors edit human-readable `.txt` scripts with a Megalo-aware editor; Bungie shipped **MegaloEdit.exe** with Reach. We recommend **MegaloEvolved** as a free and open-source alternative.
 
 Megalo is not a general-purpose language. It has no functions, loops, or arbitrary expressions — only the condition and action vocabulary the engine exposes, organized into **triggers** that fire on game events.
 

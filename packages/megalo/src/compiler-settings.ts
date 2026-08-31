@@ -10,7 +10,7 @@ export interface CompilerSettings {
 }
 
 export const DEFAULT_COMPILER_SETTINGS: CompilerSettings = {
-  creatorGamertag: "MegaCrow",
+  creatorGamertag: "MegaloEvolved",
   strictStringLiterals: false,
   temporaryVariablesCanOverflowIntoUnusedGlobalVariables: true,
 };

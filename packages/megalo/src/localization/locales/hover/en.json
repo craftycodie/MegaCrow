@@ -269,7 +269,7 @@
       }
     },
     "navpoint_set_icon": {
-      "summary": "Sets the navpoint icon displayed above an object. The ME name table ends with `coop spawning` (space). MegaloEdit cannot parse it (Megalo Headache #3); enable MegaCrow’s `coopSpawning` extension to accept the two-token form.",
+      "summary": "Sets the navpoint icon displayed above an object. The ME name table ends with `coop spawning` (space). MegaloEdit cannot parse it (Megalo Headache #3); enable MegaloEvolved’s `coopSpawning` extension to accept the two-token form.",
       "params": {
         "object": "Object reference or variable.",
         "icon": "Icon name or keyword.",
@@ -1108,7 +1108,7 @@
         "summary": "Whether sprinting is allowed."
       },
       "double_jump": {
-        "summary": "Double-jump trait (MegaCrow extension): disabled, enabled, or triple."
+        "summary": "Double-jump trait (MegaloEvolved extension): disabled, enabled, or triple."
       },
       "equipment_usage": {
         "summary": "Whether equipment use is enabled."

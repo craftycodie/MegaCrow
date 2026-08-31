@@ -29,7 +29,7 @@ Megalo には 5 種類の型付き参照があります。
 | `local_team` | Team | 常時（`local_player` を所有するチーム） |
 | `target_player` | Player | 常時（HUD ターゲットプレイヤー） |
 | `target_object` | Object | 常時（HUD ターゲットオブジェクト） |
-| `target_team` | Team | MegaCrow 拡張 `targetTeam`（`target_player` を所有するチーム） |
+| `target_team` | Team | MegaloEvolved 拡張 `targetTeam`（`target_player` を所有するチーム） |
 
 `current_*` 参照はトリガーの深さでゲートされます。その他は常に利用可能です。
 

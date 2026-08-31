@@ -36,7 +36,7 @@ export function compilerSettingsFromApp(
   settings: AppSettings
 ): MegaCrowCompilerSettings {
   return {
-    creatorGamertag: normalizeCreatorGamertag(settings.gamertag) || "MegaCrow",
+    creatorGamertag: normalizeCreatorGamertag(settings.gamertag) || "MegaloEvolved",
     locale: settings.locale,
     megacrowExtensions: megacrowExtensionsForProfile(settings.compilerProfile),
     strictStringLiterals: settings.compilerStrictness,
@@ -46,7 +46,7 @@ export function compilerSettingsFromApp(
 const DEFAULT_COMPILER_SETTINGS: MegaCrowCompilerSettings =
   compilerSettingsFromApp({
     discordRichPresence: true,
-    gamertag: "MegaCrow",
+    gamertag: "MegaloEvolved",
     compilerStrictness: false,
     compilerProfile: "megacrow",
     editorTheme: "megacrow-dark",
@@ -119,7 +119,7 @@ export function mergeMegaloCompileOptions(
     creatorGamertag:
       normalizeCreatorGamertag(
         compilerSettings?.creatorGamertag ?? options?.creatorGamertag ?? ""
-      ) || "MegaCrow",
+      ) || "MegaloEvolved",
     strictStringLiterals:
       compilerSettings?.strictStringLiterals ??
       options?.strictStringLiterals ??

@@ -68,7 +68,7 @@ fn default_locale() -> String {
 }
 
 fn default_gamertag() -> String {
-  "MegaCrow".to_string()
+  "MegaloEvolved".to_string()
 }
 
 impl Default for MegacrowSettings {
@@ -288,6 +288,6 @@ mod tests {
 
   #[test]
   fn default_gamertag_is_megacrow() {
-    assert_eq!(MegacrowSettings::default().gamertag, "MegaCrow");
+    assert_eq!(MegacrowSettings::default().gamertag, "MegaloEvolved");
   }
 }
